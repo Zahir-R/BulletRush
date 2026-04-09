@@ -1,4 +1,4 @@
-#include "BulletSpawnerComponent.h"
+#include "../../Public/Components/BulletSpawnerComponent.h"
 #include "DrawDebugHelpers.h"
 
 UBulletSpawnerComponent::UBulletSpawnerComponent()
@@ -18,9 +18,6 @@ void UBulletSpawnerComponent::TickComponent(float DeltaTime, ELevelTick TickType
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	CurrentSpiralAngle += 90.0f * DeltaTime;
-
-	SpawnSpiral(1, 500.0f, CurrentSpiralAngle);
 }
 
 void UBulletSpawnerComponent::SpawnCircle(int32 BulletCount, float Speed)
