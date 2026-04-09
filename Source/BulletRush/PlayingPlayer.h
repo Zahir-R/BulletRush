@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "BulletSpawnerComponent.h"
 #include "PlayingPlayer.generated.h"
 
 class USpringArmComponent;
@@ -21,6 +22,12 @@ public:
 	USpringArmComponent* CameraBoom;
 	UCameraComponent* FollowCamera;
 	UStaticMeshComponent* VisualMesh;
+
+	// TESTING
+	UBulletSpawnerComponent* Spawner;
+	void TestCircle();
+	void TestSpiral();
+	void TestBurst();
 
 protected:
 	virtual void BeginPlay() override;
