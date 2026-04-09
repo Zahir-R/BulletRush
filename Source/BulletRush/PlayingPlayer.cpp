@@ -48,6 +48,10 @@ APlayingPlayer::APlayingPlayer()
 	GetCharacterMovement()->BrakingDecelerationFlying = AbsurdAcceleration;
 	GetCharacterMovement()->BrakingFrictionFactor = 1.0f;
 	GetCharacterMovement()->bRequestedMoveUseAcceleration = false;
+
+
+	// Testing
+	Spawner = CreateDefaultSubobject<UBulletSpawnerComponent>(TEXT("Spawner"));
 }
 
 void APlayingPlayer::BeginPlay()
@@ -74,6 +78,9 @@ void APlayingPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 
+	PlayerInputComponent->BindKey(EKeys::One, IE_Pressed, this, &APlayingPlayer::TestCircle);
+	PlayerInputComponent->BindKey(EKeys::Two, IE_Pressed, this, &APlayingPlayer::TestSpiral);
+	PlayerInputComponent->BindKey(EKeys::Three, IE_Pressed, this, &APlayingPlayer::TestBurst);
 }
 
 void APlayingPlayer::MoveForward(float Val)
@@ -102,3 +109,8 @@ void APlayingPlayer::MoveUp(float Val)
 {
 	if (Val) AddMovementInput(FVector::UpVector, Val);
 }
+
+
+void APlayingPlayer::TestCircle() { if (Spawner) Spawner->SpawnCircle(24, 600.0f); }
+void APlayingPlayer::TestSpiral() { if (Spawner) Spawner->SpawnSpiral(30, 600.0f, 75.0f); }
+void APlayingPlayer::TestBurst() { if (Spawner) Spawner->SpawnBurst(10, 800.0f, 0.1f); }
