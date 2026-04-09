@@ -14,4 +14,5 @@ class BULLETRUSH_API ABulletRushGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 	
+	ABulletRushGameModeBase();
 };

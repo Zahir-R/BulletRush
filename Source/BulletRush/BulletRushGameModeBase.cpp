@@ -1,5 +1,7 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
-
 #include "BulletRushGameModeBase.h"
+#include "PlayingPlayer.h"
 
+ABulletRushGameModeBase::ABulletRushGameModeBase()
+{
+	DefaultPawnClass = APlayingPlayer::StaticClass();
+}
