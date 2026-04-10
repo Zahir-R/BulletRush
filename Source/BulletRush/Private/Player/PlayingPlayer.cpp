@@ -1,4 +1,4 @@
-#include "PlayingPlayer.h"
+#include "../../Public/Player/PlayingPlayer.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -48,10 +48,6 @@ APlayingPlayer::APlayingPlayer()
 	GetCharacterMovement()->BrakingDecelerationFlying = AbsurdAcceleration;
 	GetCharacterMovement()->BrakingFrictionFactor = 1.0f;
 	GetCharacterMovement()->bRequestedMoveUseAcceleration = false;
-
-
-	// Testing
-	Spawner = CreateDefaultSubobject<UBulletSpawnerComponent>(TEXT("Spawner"));
 }
 
 void APlayingPlayer::BeginPlay()
@@ -109,8 +105,3 @@ void APlayingPlayer::MoveUp(float Val)
 {
 	if (Val) AddMovementInput(FVector::UpVector, Val);
 }
-
-
-void APlayingPlayer::TestCircle() { if (Spawner) Spawner->SpawnCircle(24, 600.0f); }
-void APlayingPlayer::TestSpiral() { if (Spawner) Spawner->SpawnSpiral(30, 600.0f, 75.0f); }
-void APlayingPlayer::TestBurst() { if (Spawner) Spawner->SpawnBurst(10, 800.0f, 0.1f); }
