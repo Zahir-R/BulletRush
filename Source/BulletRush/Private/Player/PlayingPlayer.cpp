@@ -48,7 +48,6 @@ APlayingPlayer::APlayingPlayer()
 	GetCharacterMovement()->BrakingDecelerationFlying = AbsurdAcceleration;
 	GetCharacterMovement()->BrakingFrictionFactor = 1.0f;
 	GetCharacterMovement()->bRequestedMoveUseAcceleration = false;
-
 }
 
 void APlayingPlayer::BeginPlay()
@@ -75,6 +74,9 @@ void APlayingPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 
+	PlayerInputComponent->BindKey(EKeys::One, IE_Pressed, this, &APlayingPlayer::TestCircle);
+	PlayerInputComponent->BindKey(EKeys::Two, IE_Pressed, this, &APlayingPlayer::TestSpiral);
+	PlayerInputComponent->BindKey(EKeys::Three, IE_Pressed, this, &APlayingPlayer::TestBurst);
 }
 
 void APlayingPlayer::MoveForward(float Val)
