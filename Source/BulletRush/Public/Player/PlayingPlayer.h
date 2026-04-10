@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "BulletSpawnerComponent.h"
+#include "../Components/BulletSpawnerComponent.h"
 #include "PlayingPlayer.generated.h"
 
 class USpringArmComponent;
