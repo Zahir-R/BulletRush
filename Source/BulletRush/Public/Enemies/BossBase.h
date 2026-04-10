@@ -8,10 +8,12 @@
 #include "BossBase.generated.h"
 
 class UShapeComponent;
+class UBulletSpawnerComponent;
 
 UENUM(BluePrintType)
 enum class EBossState : uint8
 {
+	// Jefe invulnerable, ejecuta "animación" de entrada
 	Intro UMETA(DisplayName = "Introduccion"),
 	Attacking UMETA(DisplayName = "Ejecutando Patrón"),
 	Idle UMETA(DisplayName = "Moviendose / Esperando"),
@@ -40,6 +42,15 @@ protected:
 
 	int32 AttackIdentifier = 0; // Define que patrón de ataque utilizar
 
+	// Cuántos puntos débiles le quedan vivos
+    int32 ActiveWeakPoints;
+
+    // Función que se ejecutará cuando un punto débil grite
+    UFUNCTION()
+    virtual void HandleWeakPointDestroyed();
+
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -60,6 +71,13 @@ public:
 	UShapeComponent* Hitbox; // Hitbox estática, no se como aplicar la hitbox para un gusano de multiples partes :)
 
 	float MaxHealth;
-	float CurrentHealth;
+	float CurrentHealth = 4000.0f;
+
+	FTimerHandle IntroTimer;
+
+	void SetInvulnerable(bool newstate);
+
+	UBulletSpawnerComponent* BulletSpawner;
+	FTimerHandle AttackLoopTimer;
 
 };

@@ -1,9 +1,10 @@
 #include "../../Public/Components/BulletSpawnerComponent.h"
+#include "../../Public/Combat/AttackPatterns.h"
 #include "DrawDebugHelpers.h"
 
 UBulletSpawnerComponent::UBulletSpawnerComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
 
@@ -11,6 +12,11 @@ void UBulletSpawnerComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	AttackRegist.Add(EAttackType::Circle, MakeShared<FCircleAttack>());
+	AttackRegist.Add(EAttackType::Spiral, MakeShared<FSpiralAttack>());
+	AttackRegist.Add(EAttackType::Burst, MakeShared<FBurstAttack>());
+	// Otros patrones
+
 }
 
 
@@ -20,59 +26,47 @@ void UBulletSpawnerComponent::TickComponent(float DeltaTime, ELevelTick TickType
 
 }
 
-void UBulletSpawnerComponent::SpawnCircle(int32 BulletCount, float Speed)
-{
-	if (BulletCount <= 0) return;
 
-	for (int32 i = 0; i < BulletCount; ++i)
-	{
-		float Angle = (PI * 2.0f / BulletCount) * i;
-		FVector Direction(FMath::Cos(Angle), FMath::Sin(Angle), 0.0f);
-
-		InternalSpawn(Direction, Speed);
-	}
-}
-
-void UBulletSpawnerComponent::SpawnSpiral(int32 BulletCount, float Speed, float RotationOffset)
-{
-	for (int32 i = 0; i < BulletCount; ++i)
-	{
-		float Angle = (PI * 2.0f / BulletCount) * i + FMath::DegreesToRadians(RotationOffset);
-		FVector Direction(FMath::Cos(Angle), FMath::Sin(Angle), 0.0f);
-
-		InternalSpawn(Direction, Speed);
-	}
-}
-
-void UBulletSpawnerComponent::SpawnBurst(int32 BulletCount, float Speed, float Interval)
-{
-	if (BulletCount <= 0) return;
-	BulletsLeftToBurst = BulletCount;
-	CachedBurstSpeed = Speed;
-	
-	GetWorld()->GetTimerManager().SetTimer(BurstTimerHandle, this, &UBulletSpawnerComponent::ExecuteBurstStep, Interval, true);
-}
-
-void UBulletSpawnerComponent::ExecuteBurstStep()
-{
-	if (BulletsLeftToBurst > 0)
-	{
-		FVector Forward = GetOwner()->GetActorForwardVector();
-		InternalSpawn(Forward, CachedBurstSpeed);
-		BulletsLeftToBurst--;
-	}
-	else GetWorld()->GetTimerManager().ClearTimer(BurstTimerHandle);
-}
-
-void UBulletSpawnerComponent::InternalSpawn(FVector Direction, float Speed)
+void UBulletSpawnerComponent::InternalSpawn(FVector Origin, FVector Direction, float Speed)
 {
 	if (!GetOwner()) return;
 
 	// TODO: Integrar con Object Pool
 	UE_LOG(LogTemp, Warning, TEXT("Bala disparada hacia: %s a velocidad: %f"), *Direction.ToString(), Speed);
 
-	FVector Start = GetOwner()->GetActorLocation();
-	FVector End = Start + Direction * 200.0f;
+	FVector End = Origin + Direction * 200.0f;
 
-	DrawDebugDirectionalArrow(GetWorld(), Start, End, 50.0f, FColor::Red, false, 2.0f, 0, 2.0f);
+	DrawDebugDirectionalArrow(GetWorld(), Origin, End, 50.0f, FColor::Red, false, 2.0f, 0, 2.0f);
+}
+
+void UBulletSpawnerComponent::StartSequence(const TArray<FAttackStep>& NewSequence)
+{
+	if (NewSequence.Num() == 0) return;
+	CurrentSequence = NewSequence;
+	CurrentStepIndex = 0;
+	ExecuteNextStep();
+}
+
+void UBulletSpawnerComponent::ExecuteNextStep()
+{
+	if (CurrentStepIndex >= CurrentSequence.Num()) return;
+
+	FAttackStep& Step = CurrentSequence[CurrentStepIndex];
+
+	FVector SpawnOrigin = Step.bUseBossLocation && GetOwner() ?
+		GetOwner()->GetActorLocation() :
+		Step.CustomOrigin;
+
+	if (AttackRegist.Contains(Step.Type))
+	{
+		FAttackParams Params{ Step.BulletCount, Step.Speed, Step.DelayAfter, Step.SpecialParam, SpawnOrigin };
+		AttackRegist[Step.Type]->Execute(this, Params);
+	}
+
+	CurrentStepIndex++;
+
+	if (CurrentSequence.IsValidIndex(CurrentStepIndex))
+	{
+		GetWorld()->GetTimerManager().SetTimer(SequenceTimerHandle, this, &UBulletSpawnerComponent::ExecuteNextStep, Step.DelayAfter, false);
+	}
 }

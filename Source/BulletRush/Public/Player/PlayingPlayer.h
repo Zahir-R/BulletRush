@@ -23,12 +23,6 @@ public:
 	UCameraComponent* FollowCamera;
 	UStaticMeshComponent* VisualMesh;
 
-	// TESTING
-	UBulletSpawnerComponent* Spawner;
-	void TestCircle();
-	void TestSpiral();
-	void TestBurst();
-
 protected:
 	virtual void BeginPlay() override;
 
