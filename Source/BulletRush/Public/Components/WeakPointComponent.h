@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings. 
 
 #pragma once
 
@@ -20,7 +20,7 @@ class BULLETRUSH_API UWeakPointComponent : public UShapeComponent
 public:
 	UWeakPointComponent();
 
-	// La batiseÒal que el jefe escuchar·
+	// La batise√±al que el jefe escuchar√°
 	UPROPERTY(BlueprintAssignable, Category = "Weak Point")
 	FOnWeakPointDestroyed OnDestroyedEvent;
 
@@ -32,7 +32,7 @@ protected:
 
     float CurrentHealth;
 
-    // El punto dÈbil detecta sus propias colisiones
+    // El punto d√©bil detecta sus propias colisiones
     UFUNCTION()
     void OnWeakPointOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
         UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
