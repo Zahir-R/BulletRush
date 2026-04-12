@@ -14,7 +14,7 @@ ATopDownPlayer::ATopDownPlayer()
     VisualMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualMesh"));
     VisualMesh->SetupAttachment(RootComponent);
 
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Pipe.Shape_Pipe'"));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_TriPyramid.Shape_TriPyramid'"));
     if (MeshAsset.Succeeded())
     {
         VisualMesh->SetStaticMesh(MeshAsset.Object);
@@ -62,6 +62,13 @@ ATopDownPlayer::ATopDownPlayer()
         MoveComp->SetMovementMode(MOVE_Flying);
         MoveComp->GravityScale = 0.0f;
         MoveComp->bOrientRotationToMovement = true;
+
+        // No momentum
+        float AbsurdAcceleration = 100000000.0f;
+        GetCharacterMovement()->MaxAcceleration = AbsurdAcceleration;
+        GetCharacterMovement()->BrakingDecelerationFlying = AbsurdAcceleration;
+        GetCharacterMovement()->BrakingFrictionFactor = 1.0f;
+        GetCharacterMovement()->bRequestedMoveUseAcceleration = false;
     }
 }
 
@@ -78,4 +85,18 @@ void ATopDownPlayer::Tick(float DeltaTime)
 void ATopDownPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+    PlayerInputComponent->BindAxis("MoveForward", this, &ATopDownPlayer::MoveForward);
+    PlayerInputComponent->BindAxis("MoveRight", this, &ATopDownPlayer::MoveRight);
+
+}void ATopDownPlayer::MoveForward(float Val)
+{
+    if (Val) AddMovementInput(FVector::ForwardVector, Val); // X axis
+    
+}
+
+void ATopDownPlayer::MoveRight(float Val)
+{
+    if (Val)AddMovementInput(FVector::RightVector, Val); // Y axis
+    
 }
