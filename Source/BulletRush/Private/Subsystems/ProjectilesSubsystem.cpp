@@ -4,6 +4,7 @@
 #include "../../Public/Subsystems/ProjectilesSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
+#include "Kismet/KismetMaterialLibrary.h"
 
 void UProjectilesSubsystem::Tick(float DeltaTime)
 {
@@ -14,7 +15,9 @@ void UProjectilesSubsystem::Tick(float DeltaTime)
 		if (Bullet && Bullet->BulletData.bIsActive)
 		{
 			FVector CurrentLoc = Bullet->GetActorLocation();
-			FVector NewLoc = CurrentLoc + (Bullet->BulletData.Direction * Bullet->BulletData.Speed * DeltaTime);
+			// FVector NewLoc = CurrentLoc + (Bullet->BulletData.Direction * Bullet->BulletData.Speed * DeltaTime);
+
+			FVector NewLoc = CurrentLoc + (Bullet->BulletData.Direction * Bullet->BulletData.Speed * GlobalSpeedMultiplier * DeltaTime);
 
 			// DETECCIÓN DE COLISIÓN LIGERA
 			FHitResult Hit;
@@ -97,4 +100,23 @@ ABulletBase* UProjectilesSubsystem::RequestBullet(FVector Loc, FVector Dir, floa
 void UProjectilesSubsystem::ReturnBullet(ABulletBase* Bullet)
 {
 	if (Bullet) Bullet->DesactivateBullet();
+}
+
+void UProjectilesSubsystem::HandleBeatHit(bool bIsStrongBeat)
+{
+	GlobalSpeedMultiplier = 1.0f;
+	if (RhythmMPC && GetWorld())
+	{
+		float ScaleTarget = bIsStrongBeat ? 2.0f : 1.25f;
+		UKismetMaterialLibrary::SetScalarParameterValue(GetWorld(), RhythmMPC, FName("BeatPulseScale"), ScaleTarget);
+	}
+}
+
+void UProjectilesSubsystem::HandleSilenceEnter()
+{
+	GlobalSpeedMultiplier = 0.0f;
+	if (RhythmMPC && GetWorld())
+	{
+		UKismetMaterialLibrary::SetScalarParameterValue(GetWorld(), RhythmMPC, FName("BeatPulseScale"), 1.0f);
+	}
 }

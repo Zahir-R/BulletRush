@@ -12,7 +12,7 @@
 UCLASS()
 class BULLETRUSH_API ABulletRushGameModeBase : public AGameModeBase
 {
-	GENERATED_BODY(
+	GENERATED_BODY()
 	
 	ABulletRushGameModeBase();
 public:

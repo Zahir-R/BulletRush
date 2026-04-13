@@ -6,6 +6,7 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "Tickable.h"
 #include "../Combat/BulletBase.h"
+#include "Materials/MaterialParameterCollection.h"
 #include "ProjectilesSubsystem.generated.h"
 
 
@@ -23,6 +24,14 @@ public:
 	// Funciones para el equipo
 	ABulletBase* RequestBullet(FVector Loc, FVector Dir, float Spd, bool bIsPlayer, float Damage, FVector SpawnLocation);
 	void ReturnBullet(ABulletBase* Bullet);
+
+	float GlobalSpeedMultiplier = 1.0f; // El jefe deberá poder cambiar esto
+
+	UMaterialParameterCollection* RhythmMPC;
+
+	void HandleBeatHit(bool bIsStrongBeat);
+
+	void HandleSilenceEnter();
 
 private:
 	UPROPERTY()
