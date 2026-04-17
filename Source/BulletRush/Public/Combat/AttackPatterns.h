@@ -10,6 +10,7 @@ class UBulletSpawnerComponent;
 * DelayAfter: Tiempo a esperar después de ejecutar este ataque antes de pasar al siguiente
 * SpecialParam: Parámetro especial para cada patrón (ej. rotación inicial para círculo, intervalo entre balas para ráfaga, etc.)
 * Origin: Punto de origen para el ataque, puede ser el jefe o una ubicación específica
+* Damage: Daño que infligirán las balas generadas por este ataque
 */
 struct FAttackParams
 {
@@ -18,6 +19,7 @@ struct FAttackParams
 	float DelayAfter;
 	float SpecialParam; // Rotacion, intervalo, o algún otro para diferente patrón
 	FVector Origin;
+	float Damage;
 };
 
 class IAttackStrategy

@@ -23,6 +23,11 @@ void UProjectilesSubsystem::Tick(float DeltaTime)
 			FHitResult Hit;
 			FCollisionQueryParams Params;
 			Params.AddIgnoredActor(Bullet);
+			
+			if (Bullet->BulletData.OwnerActor)
+			{
+				Params.AddIgnoredActor(Bullet->BulletData.OwnerActor);
+			}
 
 			if (GetWorld()->LineTraceSingleByChannel(Hit, CurrentLoc, NewLoc, ECC_Visibility, Params))
 			{
@@ -84,13 +89,13 @@ void UProjectilesSubsystem::InitializePool()
 	}
 }
 
-ABulletBase* UProjectilesSubsystem::RequestBullet(FVector Loc, FVector Dir, float Spd, bool bIsPlayer, float Damage, FVector SpawnLocation)
+ABulletBase* UProjectilesSubsystem::RequestBullet(FVector Loc, FVector Dir, float Spd, bool bIsPlayer, float Damage, FVector SpawnLocation, AActor* Owner)
 {
 	for (ABulletBase* Bullet : BulletPool)
 	{
 		if (Bullet && !Bullet->BulletData.bIsActive)
 		{
-			Bullet->ActivateBullet(Loc, Dir, Spd, bIsPlayer,Damage, SpawnLocation);
+			Bullet->ActivateBullet(Loc, Dir, Spd, bIsPlayer,Damage, SpawnLocation, Owner);
 			return Bullet;
 		}
 	}

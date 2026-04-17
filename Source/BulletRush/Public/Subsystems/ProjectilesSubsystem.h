@@ -22,7 +22,7 @@ public:
 	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(UProjectilesSubsystem, STATGROUP_Tickables); }
 
 	// Funciones para el equipo
-	ABulletBase* RequestBullet(FVector Loc, FVector Dir, float Spd, bool bIsPlayer, float Damage, FVector SpawnLocation);
+	ABulletBase* RequestBullet(FVector Loc, FVector Dir, float Spd, bool bIsPlayer, float Damage, FVector SpawnLocation, AActor* Owner);
 	void ReturnBullet(ABulletBase* Bullet);
 
 	float GlobalSpeedMultiplier = 1.0f; // El jefe deberá poder cambiar esto
