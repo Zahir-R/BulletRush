@@ -1,6 +1,5 @@
 #include "../../Public/Components/BulletSpawnerComponent.h"
 #include "../../Public/Combat/AttackPatterns.h"
-#include "DrawDebugHelpers.h"
 
 UBulletSpawnerComponent::UBulletSpawnerComponent()
 {
@@ -11,6 +10,11 @@ UBulletSpawnerComponent::UBulletSpawnerComponent()
 void UBulletSpawnerComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (GetWorld() && GetWorld()->GetGameInstance())
+	{
+		ProjectilesSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UProjectilesSubsystem>();
+	}
 	
 	AttackRegist.Add(EAttackType::Circle, MakeShared<FCircleAttack>());
 	AttackRegist.Add(EAttackType::Spiral, MakeShared<FSpiralAttack>());
@@ -27,16 +31,25 @@ void UBulletSpawnerComponent::TickComponent(float DeltaTime, ELevelTick TickType
 }
 
 
-void UBulletSpawnerComponent::InternalSpawn(FVector Origin, FVector Direction, float Speed)
+void UBulletSpawnerComponent::InternalSpawn(FVector Origin, FVector Direction, float Speed, float Damage)
 {
-	if (!GetOwner()) return;
+	if (!GetOwner() || !ProjectilesSubsystem) return;
 
-	// TODO: Integrar con Object Pool
-	UE_LOG(LogTemp, Warning, TEXT("Bala disparada hacia: %s a velocidad: %f"), *Direction.ToString(), Speed);
+	FVector SpawnLocation = Origin + Direction * 300.0f;
+	AActor* OwnerActor = GetOwner();
 
-	FVector End = Origin + Direction * 200.0f;
+	ABulletBase* Bullet = ProjectilesSubsystem->RequestBullet(
+		Origin, Direction, Speed, bIsPlayerSource, Damage, SpawnLocation, OwnerActor
+	);
 
-	DrawDebugDirectionalArrow(GetWorld(), Origin, End, 50.0f, FColor::Red, false, 2.0f, 0, 2.0f);
+	if (Bullet)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Bala disparada desde %s hacia %s"), *Origin.ToString(), *Direction.ToString());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No se pudo generar la bala o no hay disponibles en el pool"));
+	}
 }
 
 void UBulletSpawnerComponent::StartSequence(const TArray<FAttackStep>& NewSequence)
@@ -59,7 +72,14 @@ void UBulletSpawnerComponent::ExecuteNextStep()
 
 	if (AttackRegist.Contains(Step.Type))
 	{
-		FAttackParams Params{ Step.BulletCount, Step.Speed, Step.DelayAfter, Step.SpecialParam, SpawnOrigin };
+		FAttackParams Params{ 
+			Step.BulletCount,
+			Step.Speed,
+			Step.DelayAfter,
+			Step.SpecialParam,
+			SpawnOrigin,
+			Step.Damage
+		};
 		AttackRegist[Step.Type]->Execute(this, Params);
 	}
 
@@ -69,4 +89,11 @@ void UBulletSpawnerComponent::ExecuteNextStep()
 	{
 		GetWorld()->GetTimerManager().SetTimer(SequenceTimerHandle, this, &UBulletSpawnerComponent::ExecuteNextStep, Step.DelayAfter, false);
 	}
+}
+
+void UBulletSpawnerComponent::StopCurrentSequence()
+{
+	if (GetWorld()) GetWorld()->GetTimerManager().ClearTimer(SequenceTimerHandle);
+	CurrentStepIndex = 0;
+	CurrentSequence.Empty();
 }

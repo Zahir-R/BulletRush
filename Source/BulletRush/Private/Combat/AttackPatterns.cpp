@@ -11,7 +11,7 @@ void FCircleAttack::Execute(UBulletSpawnerComponent* Spawner, const FAttackParam
 		float Angle = PI * 2.0f / Params.Count * i;
 		FVector Direction(FMath::Cos(Angle), FMath::Sin(Angle), 0.0f);
 
-		Spawner->InternalSpawn(Params.Origin, Direction, Params.Speed);
+		Spawner->InternalSpawn(Params.Origin, Direction, Params.Speed, Params.Damage);
 	}
 }
 
@@ -24,7 +24,7 @@ void FSpiralAttack::Execute(UBulletSpawnerComponent* Spawner, const FAttackParam
 		float Angle = (PI * 2.0f / Params.Count) * i + FMath::DegreesToRadians(Params.SpecialParam);
 		FVector Direction(FMath::Cos(Angle), FMath::Sin(Angle), 0.0f);
 
-		Spawner->InternalSpawn(Params.Origin, Direction, Params.Speed);
+		Spawner->InternalSpawn(Params.Origin, Direction, Params.Speed, Params.Damage);
 	}
 }
 
@@ -58,7 +58,7 @@ void FBurstAttack::Execute(UBulletSpawnerComponent* Spawner, const FAttackParams
 					FireDirection = SpawnerPtr->GetOwner()->GetActorForwardVector();
 				}
 
-				SpawnerPtr->InternalSpawn(BurstData->Config.Origin, FireDirection, BurstData->Config.Speed);
+				SpawnerPtr->InternalSpawn(BurstData->Config.Origin, FireDirection, BurstData->Config.Speed, BurstData->Config.Damage);
 				BurstData->Remaining--;
 			}
 			else if (SpawnerPtr.IsValid())
