@@ -28,6 +28,6 @@ private:
 	UPROPERTY()
 	TArray<ABulletBase*> BulletPool;
 
-	int32 PoolSize = 1500;
+	int32 PoolSize = 3500;
 	void InitializePool();
 };

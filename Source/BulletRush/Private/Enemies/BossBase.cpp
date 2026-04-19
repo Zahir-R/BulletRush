@@ -138,11 +138,11 @@ void ABossBase::Attack()
 	*/
 
 	TArray<FAttackStep> Combo;
-	Combo.Add(FAttackStep(EAttackType::Circle, 400, 600.0f, 0.5f, 300.0f, 10.0f));
-	FVector TestOrigin = GetActorLocation() + (GetActorRightVector() * 300.0f);
-	Combo.Add(FAttackStep(EAttackType::Spiral, 300, 500.0f, 1.0f, TestOrigin, 240.0f, 10.0f));
-	Combo.Add(FAttackStep(EAttackType::Burst, 5, 800.0f, 0.2f, 0.1f));
-
+	//Combo.Add(FAttackStep(EAttackType::Circle, 20, 60.0f, 0.5f, 300.0f, 10.0f));
+	//FVector TestOrigin = GetActorLocation() + (GetActorRightVector() * 300.0f);
+	//Combo.Add(FAttackStep(EAttackType::Spiral, 30, 50.0f, 1.0f, GetActorLocation(), 240.0f, 10.0f));
+	//Combo.Add(FAttackStep(EAttackType::Burst, 5, 80.0f, 0.2f, 0.1f));
+	Combo.Add(FAttackStep(EAttackType::Sphere, 500, 800.0f, 0.5f, 0.1f));
 	BulletSpawner->StartSequence(Combo); // Esto debería ir en estado Attacking, lo dejo acá por test xd
 
 }

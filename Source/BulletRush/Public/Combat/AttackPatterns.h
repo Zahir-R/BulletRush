@@ -17,7 +17,7 @@ struct FAttackParams
 	int32 Count;
 	float Speed;
 	float DelayAfter;
-	float SpecialParam; // Rotacion, intervalo, o algún otro para diferente patrón
+	float SpecialParam; // Rotacion para círculo, intervalo para ráfaga, o algún otro para diferente patrón
 	FVector Origin;
 	float Damage;
 };
@@ -44,6 +44,13 @@ public:
 	void Execute(UBulletSpawnerComponent* Spawner, const FAttackParams& Params) override;
 };
 
+class FSphereAttack : public IAttackStrategy
+{
+public:
+	// Ejecuta un ataque esférico, generando balas distribuidas en todas las direcciones alrededor del origen definido en Params.
+	// Se utiliza un algoritmo tipo "Fibonacci sphere" para distribuir `Count` puntos uniformemente sobre la superficie de una esfera.
+	void Execute(UBulletSpawnerComponent* Spawner, const FAttackParams& Params) override;
+};
 
 class FBurstAttack : public IAttackStrategy
 {

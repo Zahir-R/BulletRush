@@ -30,7 +30,7 @@ void UProjectilesSubsystem::Tick(float DeltaTime)
 			{
 				AActor* OtherActor = Hit.GetActor();
 
-				if (OtherActor && OtherActor != Bullet) // Verificamos que no sea la propia bala
+			if (OtherActor && OtherActor != Bullet) // Verificamos que no sea la propia bala
 				{
 					// 1. LÓGICA DE FACCIONES (Contexto que hablamos)
 					bool bIsEnemy = OtherActor->ActorHasTag("Jefe") || OtherActor->ActorHasTag("Enemigo");
@@ -92,7 +92,7 @@ ABulletBase* UProjectilesSubsystem::RequestBullet(FVector Loc, FVector Dir, floa
 	{
 		if (Bullet && !Bullet->BulletData.bIsActive)
 		{
-			Bullet->ActivateBullet(Loc, Dir, Spd, bIsPlayer,Damage, SpawnLocation, Owner);
+			Bullet->ActivateBullet(SpawnLocation, Dir, Spd, bIsPlayer, Damage, SpawnLocation, Owner);
 			return Bullet;
 		}
 	}
