@@ -3,11 +3,15 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "../Subsystems/ProjectilesSubsystem.h"
+#include "../Combat/AttackPatterns.h"
 #include "BulletSpawnerComponent.generated.h"
+
+class IAttackStrategy;
 
 enum class EAttackType : uint8
 {
 	Circle,
+	Sphere,
 	Spiral,
 	Burst
 	// otros tipos de ataque
@@ -38,8 +42,6 @@ struct FAttackStep
 	FAttackStep(EAttackType InType, int32 InCount, float InSpeed, float InDelay, FVector InOrigin, float InSpecial = 0.0f, float InDamage = 10.0f)
 		: Type(InType), BulletCount(InCount), Speed(InSpeed), DelayAfter(InDelay), SpecialParam(InSpecial), bUseBossLocation(false), CustomOrigin(InOrigin), Damage(InDamage) {}
 };
-
-class IAttackStrategy;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BULLETRUSH_API UBulletSpawnerComponent : public UActorComponent

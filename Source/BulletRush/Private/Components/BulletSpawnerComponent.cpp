@@ -16,7 +16,8 @@ void UBulletSpawnerComponent::BeginPlay()
 		ProjectilesSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UProjectilesSubsystem>();
 	}
 	
-	AttackRegist.Add(EAttackType::Circle, MakeShared<FCircleAttack>());
+    AttackRegist.Add(EAttackType::Circle, MakeShared<FCircleAttack>());
+	AttackRegist.Add(EAttackType::Sphere, MakeShared<FSphereAttack>());
 	AttackRegist.Add(EAttackType::Spiral, MakeShared<FSpiralAttack>());
 	AttackRegist.Add(EAttackType::Burst, MakeShared<FBurstAttack>());
 	// Otros patrones
@@ -35,11 +36,11 @@ void UBulletSpawnerComponent::InternalSpawn(FVector Origin, FVector Direction, f
 {
 	if (!GetOwner() || !ProjectilesSubsystem) return;
 
-	FVector SpawnLocation = Origin + Direction * 300.0f;
+	FVector SpawnLocation = Origin + Direction * 150.0f;
 	AActor* OwnerActor = GetOwner();
 
 	ABulletBase* Bullet = ProjectilesSubsystem->RequestBullet(
-		Origin, Direction, Speed, bIsPlayerSource, Damage, SpawnLocation, OwnerActor
+        SpawnLocation, Direction, Speed, bIsPlayerSource, Damage, SpawnLocation, OwnerActor
 	);
 
 	if (Bullet)
