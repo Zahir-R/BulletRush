@@ -37,5 +37,5 @@ public:
 
 	void MoveForward(float Val);
 	void MoveRight(float Val);
-	void MoveUp(float Val);
+	void Interact();
 };

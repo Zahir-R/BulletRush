@@ -1,9 +1,11 @@
 #include "../../Public/Player/TopDownPlayer.h" // Ajusta esta ruta según tu proyecto
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "MapObjects/Planet.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ATopDownPlayer::ATopDownPlayer()
@@ -63,6 +65,9 @@ ATopDownPlayer::ATopDownPlayer()
         MoveComp->GravityScale = 0.0f;
         MoveComp->bOrientRotationToMovement = true;
 
+        //Speed up rotation on input
+        MoveComp->RotationRate = FRotator(0.f, 1440.f, 0.f);
+
         // No momentum
         float AbsurdAcceleration = 100000000.0f;
         GetCharacterMovement()->MaxAcceleration = AbsurdAcceleration;
@@ -88,6 +93,7 @@ void ATopDownPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
     PlayerInputComponent->BindAxis("MoveForward", this, &ATopDownPlayer::MoveForward);
     PlayerInputComponent->BindAxis("MoveRight", this, &ATopDownPlayer::MoveRight);
+    PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &ATopDownPlayer::Interact); //E
 
 }void ATopDownPlayer::MoveForward(float Val)
 {
@@ -99,4 +105,40 @@ void ATopDownPlayer::MoveRight(float Val)
 {
     if (Val)AddMovementInput(FVector::RightVector, Val); // Y axis
     
+}
+void ATopDownPlayer::Interact()
+{
+    FVector Start = GetActorLocation();
+
+    FVector Forward = GetActorForwardVector();
+
+    FVector End = Start + Forward * 500.f;
+
+    FHitResult Hit;
+    FCollisionQueryParams Params;
+    Params.AddIgnoredActor(this);
+
+    bool bHit = GetWorld()->LineTraceSingleByChannel(
+        Hit,
+        Start,
+        End,
+        ECC_Visibility,
+        Params
+    );
+
+    
+    if (bHit)
+    {
+        APlanet* Planet = Cast<APlanet>(Hit.GetActor());
+
+        if (Planet)
+        {
+            float Dist = FVector::Dist2D(GetActorLocation(), Planet->GetActorLocation());
+
+            if (Dist <= Planet->UseRange)
+            {
+                UGameplayStatics::OpenLevel(this, Planet->LevelToLoad);
+            }
+        }
+    }
 }
