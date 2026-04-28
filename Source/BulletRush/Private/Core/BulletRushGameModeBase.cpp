@@ -3,7 +3,7 @@
 #include "../../Public/Player/TopDownPlayer.h"
 #include "Engine/World.h"
 
-#include "PortalManager.h"
+#include "../../Public/Map/PortalManager.h"
 
 ABulletRushGameModeBase::ABulletRushGameModeBase()
 {

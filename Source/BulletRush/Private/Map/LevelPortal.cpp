@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "LevelPortal.h"
+#include "../../Public/Map/LevelPortal.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "../Public/Player/TopDownPlayer.h"
+#include "../../Public/Player/TopDownPlayer.h"
 
 
 

@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "TopDownGameMode.h"
+#include "../../Public/Core/TopDownGameMode.h"
 #include "../Public/Player/TopDownPlayer.h"
-#include "PortalManager.h"
+#include "../../Public/Map/PortalManager.h"
 
 ATopDownGameMode::ATopDownGameMode()
 {

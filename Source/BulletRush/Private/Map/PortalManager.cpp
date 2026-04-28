@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "PortalManager.h"
-#include "LevelPortal.h"
+#include "../../Public/Map/PortalManager.h"
+#include "../../Public/Map/LevelPortal.h"
 #include "Engine/World.h"
 
 // Sets default values
