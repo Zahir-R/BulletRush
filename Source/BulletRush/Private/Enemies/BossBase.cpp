@@ -142,7 +142,7 @@ void ABossBase::Attack()
 	//FVector TestOrigin = GetActorLocation() + (GetActorRightVector() * 300.0f);
 	//Combo.Add(FAttackStep(EAttackType::Spiral, 30, 50.0f, 1.0f, GetActorLocation(), 240.0f, 10.0f));
 	//Combo.Add(FAttackStep(EAttackType::Burst, 5, 80.0f, 0.2f, 0.1f));
-	Combo.Add(FAttackStep(EAttackType::Sphere, 500, 800.0f, 0.5f, 0.1f));
+	Combo.Add(FAttackStep(EAttackType::Sphere, 1000, 800.0f, 0.5f, 0.1f));
 	BulletSpawner->StartSequence(Combo); // Esto debería ir en estado Attacking, lo dejo acá por test xd
 
 }

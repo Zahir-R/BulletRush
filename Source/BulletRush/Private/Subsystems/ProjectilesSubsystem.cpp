@@ -16,14 +16,29 @@ void UProjectilesSubsystem::Tick(float DeltaTime)
 			FVector CurrentLoc = Bullet->GetActorLocation();
 			FVector NewLoc = CurrentLoc + (Bullet->BulletData.Direction * Bullet->BulletData.Speed * DeltaTime);
 
-			// DETECCIÓN DE COLISIÓN LIGERA
-			FHitResult Hit;
+
 			FCollisionQueryParams Params;
 			Params.AddIgnoredActor(Bullet);
+			//if (Bullet->BulletData.OwnerActor) Params.AddIgnoredActor(Bullet->BulletData.OwnerActor);
+
+			
+
+			// DETECCIÓN DE COLISIÓN LIGERA
+			FHitResult Hit;
+			//FCollisionQueryParams Params;
+			//Params.AddIgnoredActor(Bullet);
 			
 			if (Bullet->BulletData.OwnerActor)
 			{
 				Params.AddIgnoredActor(Bullet->BulletData.OwnerActor);
+			}
+
+			for (ABulletBase* OtherBullet : BulletPool)
+			{
+				if (OtherBullet && OtherBullet != Bullet && OtherBullet->BulletData.bIsActive)
+				{
+					Params.AddIgnoredActor(OtherBullet);
+				}
 			}
 
 			if (GetWorld()->LineTraceSingleByChannel(Hit, CurrentLoc, NewLoc, ECC_Visibility, Params))
