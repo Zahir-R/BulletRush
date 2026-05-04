@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "EnemyBase.h"
 #include "Components/StaticMeshComponent.h"
 #include "BossBase.generated.h"
 
@@ -23,7 +24,7 @@ enum class EBossState : uint8
 };
 
 UCLASS()
-class BULLETRUSH_API ABossBase : public APawn
+class BULLETRUSH_API ABossBase : public AEnemyBase
 {
 	GENERATED_BODY()
 
@@ -67,11 +68,11 @@ public:
 	UStaticMeshComponent* BossMesh;
 
 	// La HitBox se usará en caso de que la mesh no tenga colisiones bien definidas
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UShapeComponent* Hitbox; // Hitbox estática, no se como aplicar la hitbox para un gusano de multiples partes :)
+	//UPROPERTY(VisibleAnywhere, Category = "Components")
+	//UShapeComponent* Hitbox; // Hitbox estática, no se como aplicar la hitbox para un gusano de multiples partes :)
 
-	float MaxHealth;
-	float CurrentHealth = 4000.0f;
+	float MaxHealth = 4000.0f;
+	float CurrentHealthh = 4000.0f;
 
 	FTimerHandle IntroTimer;
 

@@ -14,13 +14,23 @@ ABossBase::ABossBase()
 	bIsInvulnerable = false;
 	MaxHealth = 4000.0f;
 
-	BulletSpawner = CreateDefaultSubobject<UBulletSpawnerComponent>(TEXT("BulletSpawner"));
-	BossMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BossMesh"));
-	RootComponent = BossMesh;
+	BulletSpawner = CreateDefaultSubobject<UBulletSpawnerComponent>(TEXT("BulletSpawnerr"));
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
 
-	if (MeshAsset.Succeeded()) BossMesh->SetStaticMesh(MeshAsset.Object);
+	Tags.Add("Jefe");
+
+	TestWeak = CreateDefaultSubobject<UWeakPointComponent>(TEXT("TestWeakPoint"));
+	TestWeak->SetupAttachment(RootComponent);
+	TestWeak->SetRelativeLocation(FVector(-100.0f, -500.0f, 20.0f));
+
+	bIsInvulnerable = true;
+
+	//BossMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BossMesh"));
+	//RootComponent = BossMesh;
+
+	//static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
+
+	//if (MeshAsset.Succeeded()) BossMesh->SetStaticMesh(MeshAsset.Object);
 	//Hitbox->SetGenerateOverlapEvents(true);
 }
 
@@ -33,7 +43,7 @@ Despues de cinco segundos, el jefe pasa a estado idle
 void ABossBase::BeginPlay()
 {
 	Super::BeginPlay();
-	CurrentHealth = MaxHealth;
+	CurrentHealthh = 5000.0f;
 	// Empezamos con el estado de "animación"
 	SetBossState(EBossState::Intro);
 	ActiveWeakPoints = 0;
@@ -176,7 +186,7 @@ El resto se define en clases hijas
 float ABossBase::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
 {
 	// Siempre llamamos a la versión del padre (AActor) por seguridad interna del motor
-	float RealDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	float RealDamage = APawn::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 	// Si somos invulnerables, estamos muertos, o el daño es negativo/cero, ignoramos todo.
 	if (bIsInvulnerable || CurrentState == EBossState::Dead || RealDamage <= 0.0f)
@@ -185,11 +195,11 @@ float ABossBase::TakeDamage(float DamageAmount, struct FDamageEvent const& Damag
 	}
 
 	// Hacemos un daño base
-	CurrentHealth = FMath::Clamp(CurrentHealth - RealDamage, 0.0f, MaxHealth);
+	CurrentHealthh = FMath::Clamp(CurrentHealthh - RealDamage, 0.0f, MaxHealth);
 
-	UE_LOG(LogTemp, Warning, TEXT("Jefe recibió daño. Salud restante: %f"), CurrentHealth);
+	UE_LOG(LogTemp, Warning, TEXT("Jefe recibe danio. Salud restante: %f"), CurrentHealthh);
 
-	if (CurrentHealth <= 0.0f)
+	if (CurrentHealthh <= 0.0f)
 	{
 		SetBossState(EBossState::Dead);
 	}

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ShapeComponent.h"
+#include "Components/SphereComponent.h"
 #include "WeakPointComponent.generated.h"
 
 
@@ -11,7 +11,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWeakPointDestroyed);
  * 
  */
 UCLASS()
-class BULLETRUSH_API UWeakPointComponent : public UShapeComponent
+class BULLETRUSH_API UWeakPointComponent : public USphereComponent
 {
 	GENERATED_BODY()
 	
@@ -26,7 +26,7 @@ protected:
     virtual void BeginPlay() override;
 
     UPROPERTY(EditAnywhere, Category = "Weak Point")
-    float MaxHealth;
+    float MaxHealth = 3000.0f;
 
     float CurrentHealth;
 

@@ -75,6 +75,7 @@ void UProjectilesSubsystem::Tick(float DeltaTime)
 					if (!bIsEnemy && !bIsPlayer)
 					{
 						ReturnBullet(Bullet);
+						if (Bullet.Tags.Num() > 0)	Bullet.Tags.Pop();
 						continue;
 					}
 				}

@@ -10,6 +10,7 @@ UWeakPointComponent::UWeakPointComponent()
     InitSphereRadius(40.0f); // Tamaño del punto débil
 	*/
 	// Detecta daño mediante Overlaps, siempre será true
+    InitSphereRadius(30.0f);
 	SetGenerateOverlapEvents(true);
 }
 
@@ -29,7 +30,7 @@ void UWeakPointComponent::OnWeakPointOverlap(UPrimitiveComponent* OverlappedComp
 	
 	if (OtherActor && OtherActor->ActorHasTag("BalaJugador"))
     {
-        CurrentHealth -= 10.0f; // O el daño que haga la bala
+        CurrentHealth -= OtherActor->BulletData.Damage; // O el daño que haga la bala
         // OtherActor->Destroy();  // Destruimos la bala
 
         if (CurrentHealth <= 0.0f)

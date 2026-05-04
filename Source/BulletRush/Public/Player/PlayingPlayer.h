@@ -10,6 +10,7 @@
 class USpringArmComponent;
 class UCameraComponent;
 class UStaticMeshComponent;
+class UWeaponBaseComponent;
 
 UCLASS()
 class BULLETRUSH_API APlayingPlayer : public ACharacter
@@ -41,4 +42,10 @@ public:
 	void MoveForward(float Val);
 	void MoveRight(float Val);
 	void MoveUp(float Val);
+
+	void OnFirePressed();
+	void OnFireReleased();
+
+	TArray<UWeaponBaseComponent*> EquippedWeapons;
+	UWeaponBaseComponent* TestWeapon;
 };

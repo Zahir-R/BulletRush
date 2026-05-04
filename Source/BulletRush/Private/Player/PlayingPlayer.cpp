@@ -3,6 +3,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/InputComponent.h"
+#include "../../Public/Components/WeaponBaseComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 APlayingPlayer::APlayingPlayer()
@@ -48,11 +49,22 @@ APlayingPlayer::APlayingPlayer()
 	GetCharacterMovement()->BrakingDecelerationFlying = AbsurdAcceleration;
 	GetCharacterMovement()->BrakingFrictionFactor = 1.0f;
 	GetCharacterMovement()->bRequestedMoveUseAcceleration = false;
+
+	
 }
 
 void APlayingPlayer::BeginPlay()
 {
 	Super::BeginPlay();
+	// TestWeapons
+	TestWeapon = CreateDefaultSubobject<UWeaponBaseComponent>(TEXT("ArmaPrincipal"));
+	TestWeapontwo = CreateDefaultSubobject<UWeaponBaseComponent>(TEXT("ArmaSecundaria"));
+	TestWeapon->SetupAttachment(RootComponent);
+	TestWeapontwo->SetupAttachment(RootComponent);
+	TestWeapon->SetRelativeLocation(FVector(100.0f, -100.0f, 0.0f));
+	TestWeapontwo->SetRelativeLocation(FVector(100.0f, 100.0f, 0.0f));
+	EquippedWeapons.Add(TestWeapon);
+	EquippedWeapons.Add(TestWeapontwo);
 	
 }
 
@@ -78,6 +90,9 @@ void APlayingPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindKey(EKeys::Two, IE_Pressed, this, &APlayingPlayer::TestSpiral);
 	PlayerInputComponent->BindKey(EKeys::Three, IE_Pressed, this, &APlayingPlayer::TestBurst);
 	*/
+
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayingPlayer::OnFirePressed);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayingPlayer::OnFireReleased);
 }
 
 void APlayingPlayer::MoveForward(float Val)
@@ -105,4 +120,20 @@ void APlayingPlayer::MoveRight(float Val)
 void APlayingPlayer::MoveUp(float Val)
 {
 	if (Val) AddMovementInput(FVector::UpVector, Val);
+}
+
+void APlayingPlayer::OnFirePressed()
+{
+	for (UWeaponBaseComponent* Weapon : EquippedWeapons)
+	{
+		Weapon->StartFiring();
+	}
+}
+
+void APlayingPlayer::OnFireReleased()
+{
+	for (UWeaponBaseComponent* Weapon : EquippedWeapons)
+	{
+		Weapon->StopFiring();
+	}
 }
