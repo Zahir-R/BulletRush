@@ -19,16 +19,36 @@ void UProjectilesSubsystem::Tick(float DeltaTime)
 
 			FVector NewLoc = CurrentLoc + (Bullet->BulletData.Direction * Bullet->BulletData.Speed * GlobalSpeedMultiplier * DeltaTime);
 
-			// DETECCIÓN DE COLISIÓN LIGERA
-			FHitResult Hit;
+
 			FCollisionQueryParams Params;
 			Params.AddIgnoredActor(Bullet);
+			//if (Bullet->BulletData.OwnerActor) Params.AddIgnoredActor(Bullet->BulletData.OwnerActor);
+
+			
+
+			// DETECCIÓN DE COLISIÓN LIGERA
+			FHitResult Hit;
+			//FCollisionQueryParams Params;
+			//Params.AddIgnoredActor(Bullet);
+			
+			if (Bullet->BulletData.OwnerActor)
+			{
+				Params.AddIgnoredActor(Bullet->BulletData.OwnerActor);
+			}
+
+			for (ABulletBase* OtherBullet : BulletPool)
+			{
+				if (OtherBullet && OtherBullet != Bullet && OtherBullet->BulletData.bIsActive)
+				{
+					Params.AddIgnoredActor(OtherBullet);
+				}
+			}
 
 			if (GetWorld()->LineTraceSingleByChannel(Hit, CurrentLoc, NewLoc, ECC_Visibility, Params))
 			{
 				AActor* OtherActor = Hit.GetActor();
 
-				if (OtherActor && OtherActor != Bullet) // Verificamos que no sea la propia bala
+			if (OtherActor && OtherActor != Bullet) // Verificamos que no sea la propia bala
 				{
 					// 1. LÓGICA DE FACCIONES (Contexto que hablamos)
 					bool bIsEnemy = OtherActor->ActorHasTag("Jefe") || OtherActor->ActorHasTag("Enemigo");
@@ -84,13 +104,13 @@ void UProjectilesSubsystem::InitializePool()
 	}
 }
 
-ABulletBase* UProjectilesSubsystem::RequestBullet(FVector Loc, FVector Dir, float Spd, bool bIsPlayer, float Damage, FVector SpawnLocation)
+ABulletBase* UProjectilesSubsystem::RequestBullet(FVector Loc, FVector Dir, float Spd, bool bIsPlayer, float Damage, FVector SpawnLocation, AActor* Owner)
 {
 	for (ABulletBase* Bullet : BulletPool)
 	{
 		if (Bullet && !Bullet->BulletData.bIsActive)
 		{
-			Bullet->ActivateBullet(Loc, Dir, Spd, bIsPlayer,Damage, SpawnLocation);
+			Bullet->ActivateBullet(SpawnLocation, Dir, Spd, bIsPlayer, Damage, SpawnLocation, Owner);
 			return Bullet;
 		}
 	}
