@@ -1,11 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Pawn.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/BulletSpawnerComponent.h"
+#include "Components/HealthComponent.h"
 #include "EnemyBase.generated.h"
 
 class UShapeComponent;
@@ -26,38 +24,43 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	float MaxHealth;
-	float CurrentHealth;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UHealthComponent* HealthComp;
+
+	UPROPERTY(EditAnywhere, Category = "Enemy")
 	FName TeamTag;
-	bool bIsInvulnerable;
-	float AtackInterval;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	float AttackInterval;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
 	bool bAutoStartAttack;
 
 	FTimerHandle AttackLoopTimer;
 
-	virtual void StartAttack();
+	UFUNCTION()
+	virtual void OnHealthDeath();
+	
 	virtual void Die();
 
 public:	
-	
-
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
 		class AController* EventInstigator, AActor* DamageCauser) override;
 
+	UFUNCTION(BlueprintCallable)
 	virtual void SetInvulnerability(bool bNewState);
 
 	void BeginAttackLoop();
 	void StopAttackLoop();
+
+	virtual void StartAttack();
 	
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* MeshEnemy;
-	UPROPERTY(VisibleAnywhere);
+	UPROPERTY(VisibleAnywhere)
 	UShapeComponent* Hitbox;
 	UPROPERTY(VisibleAnywhere)
 	UBulletSpawnerComponent* BulletSpawner;
 	
 	FOnEnemyDeath OnEnemyDeath;
-
-
-
 };
