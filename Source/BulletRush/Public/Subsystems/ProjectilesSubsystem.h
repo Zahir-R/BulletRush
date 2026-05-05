@@ -21,6 +21,13 @@ public:
 	virtual bool IsTickable() const override { return true; }
 	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(UProjectilesSubsystem, STATGROUP_Tickables); }
 
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+	virtual void Deinitialize() override;
+
+	void ClearPool();
+	void ReinitializePool();
+
+
 	// Funciones para el equipo
 	ABulletBase* RequestBullet(FVector Loc, FVector Dir, float Spd, bool bIsPlayer, float Damage, FVector SpawnLocation, AActor* Owner);
 	void ReturnBullet(ABulletBase* Bullet);
@@ -36,7 +43,8 @@ public:
 private:
 	UPROPERTY()
 	TArray<ABulletBase*> BulletPool;
+	FDelegateHandle OnMapLoadedHandle;
 
-	int32 PoolSize = 3500;
+	int32 PoolSize = 2500;
 	void InitializePool();
 };
