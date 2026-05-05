@@ -21,19 +21,21 @@ AEnemyBase::AEnemyBase()
 	BulletSpawner = CreateDefaultSubobject<UBulletSpawnerComponent>(TEXT("BulletSpawner"));
 	
 
-	MaxHealth = 100.0f;
+	MaxHealth = 110.0f;
 	CurrentHealth = 0.0f;
 	bIsInvulnerable = false;
 	TeamTag = FName("Enemy");
 	AtackInterval = 1.0f;
 	bAutoStartAttack = true;
-
+	tags.Add("Enemigo");
+	tags.Add("Jefe");
 }
 
 // Called when the game starts or when spawned
 void AEnemyBase::BeginPlay()
 {
 	Super::BeginPlay();
+	bIsInvulnerable = false;
 
 	CurrentHealth = MaxHealth;
 	Tags.Add(TeamTag);
@@ -44,7 +46,7 @@ void AEnemyBase::BeginPlay()
 
 }
 
-float AEnemyBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+float AEnemyBase::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	float RealDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
@@ -53,7 +55,7 @@ float AEnemyBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 	}
 	CurrentHealth = FMath::Clamp(CurrentHealth - RealDamage, 0.0f, MaxHealth);
 
-	//UE_LOG(LogTemp, Warning, TEXT("[%s] Recibió daño.Salud: % f"), *GetName(), CurrentHealth);
+	UE_LOG(LogTemp, Warning, TEXT("[%s] Recibió daño.Salud: % f"), *GetName(), CurrentHealth);
 
 	if (CurrentHealth <= 0.0f) {
 		Die();

@@ -50,6 +50,12 @@ APlayingPlayer::APlayingPlayer()
 	GetCharacterMovement()->BrakingFrictionFactor = 1.0f;
 	GetCharacterMovement()->bRequestedMoveUseAcceleration = false;
 
+	TestWeapon = CreateDefaultSubobject<UWeaponBaseComponent>(TEXT("ArmaPrincipal"));
+	TestWeapontwo = CreateDefaultSubobject<UWeaponBaseComponent>(TEXT("ArmaSecundaria"));
+	TestWeapon->SetupAttachment(RootComponent);
+	TestWeapontwo->SetupAttachment(RootComponent);
+	TestWeapon->SetRelativeLocation(FVector(100.0f, -100.0f, 0.0f));
+	TestWeapontwo->SetRelativeLocation(FVector(100.0f, 100.0f, 0.0f));
 	
 }
 
@@ -57,12 +63,7 @@ void APlayingPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 	// TestWeapons
-	TestWeapon = CreateDefaultSubobject<UWeaponBaseComponent>(TEXT("ArmaPrincipal"));
-	TestWeapontwo = CreateDefaultSubobject<UWeaponBaseComponent>(TEXT("ArmaSecundaria"));
-	TestWeapon->SetupAttachment(RootComponent);
-	TestWeapontwo->SetupAttachment(RootComponent);
-	TestWeapon->SetRelativeLocation(FVector(100.0f, -100.0f, 0.0f));
-	TestWeapontwo->SetRelativeLocation(FVector(100.0f, 100.0f, 0.0f));
+	
 	EquippedWeapons.Add(TestWeapon);
 	EquippedWeapons.Add(TestWeapontwo);
 	
