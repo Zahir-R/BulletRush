@@ -144,3 +144,38 @@ void UProjectilesSubsystem::HandleSilenceEnter()
 		UKismetMaterialLibrary::SetScalarParameterValue(GetWorld(), RhythmMPC, FName("BeatPulseScale"), 1.0f);
 	}
 }
+
+void UProjectilesSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+{
+	Super::Initialize(Collection);
+
+	OnMapLoadedHandle = FCoreUObjectDelegates::PostLoadMapWithWorld.AddLambda(
+		[this](UWorld* LoadedWorld)
+		{
+			ClearPool();
+			ReinitializePool();
+		});
+}
+
+void UProjectilesSubsystem::Deinitialize()
+{
+	FCoreUObjectDelegates::PostLoadMapWithWorld.Remove(OnMapLoadedHandle);
+	ClearPool();
+	Super::Deinitialize();
+}
+
+void UProjectilesSubsystem::ClearPool()
+{
+	for (ABulletBase* Bullet : BulletPool)
+	{
+		if (Bullet && IsValid(Bullet))
+			Bullet->Destroy();
+	}
+	BulletPool.Empty();
+}
+
+void UProjectilesSubsystem::ReinitializePool()
+{
+	InitializePool();
+	UE_LOG(LogTemp, Warning, TEXT("[ProjectilesSubsystem] Pool reinicializado con %d balas."), BulletPool.Num());
+}

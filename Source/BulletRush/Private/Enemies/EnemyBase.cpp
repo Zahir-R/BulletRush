@@ -89,6 +89,17 @@ void AEnemyBase::StartAttack()
 	// TArray<FAttackStep> Patron;
 	// Patron.Add(FAttackStep(EAttackType::Circle, 8, 400.0f, 1.0f));
 	// BulletSpawner->StartSequence(Patron);
+	// 1. Verificamos que el spawner exista
+	//test:
+	if (!BulletSpawner) return;
+	FVector FireDirection = GetActorForwardVector();
+	TArray<FAttackStep> TestCombo;
+	TestCombo.Add(FAttackStep(EAttackType::Circle, 12, 600.0f, 0.0f));
+	BulletSpawner->StartSequence(TestCombo);
+
+	UE_LOG(LogTemp, Log, TEXT("[%s] Ejecutando disparo de prueba."), *GetName());
+
+
 }
 
 void AEnemyBase::BeginAttackLoop()
