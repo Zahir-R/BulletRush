@@ -48,4 +48,5 @@ public:
 
 	TArray<UWeaponBaseComponent*> EquippedWeapons;
 	UWeaponBaseComponent* TestWeapon;
+	UWeaponBaseComponent* TestWeapontwo;
 };

@@ -7,6 +7,8 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWeakPointDestroyed);
 
+class UProjectilesSubsystem;
+
 /**
  * 
  */
@@ -26,14 +28,22 @@ protected:
     virtual void BeginPlay() override;
 
     UPROPERTY(EditAnywhere, Category = "Weak Point")
-    float MaxHealth = 3000.0f;
+    float MaxHealth = 100.0f;
 
     float CurrentHealth;
 
+    //----Zona de Test, borralo o modificalo si no quieres que tu Unreal crasheé sin querer----
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "VisualMesh")
+    class UStaticMeshComponent* VisualMesh;
+    //-----------------------------------------------------------------------------------------
+
+    UPROPERTY()
+    UProjectilesSubsystem* PoolCache;
 
     // El punto débil detecta sus propias colisiones
     UFUNCTION()
     void OnWeakPointOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
         UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
         bool bFromSweep, const FHitResult& SweepResult);
+
 };

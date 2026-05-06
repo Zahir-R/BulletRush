@@ -10,6 +10,7 @@
 
 class UShapeComponent;
 class UBulletSpawnerComponent;
+class UWeakPointComponent;
 
 UENUM(BluePrintType)
 enum class EBossState : uint8
@@ -80,5 +81,7 @@ public:
 
 	UBulletSpawnerComponent* BulletSpawner;
 	FTimerHandle AttackLoopTimer;
+
+	UWeakPointComponent* TestWeak;
 
 };

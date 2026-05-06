@@ -21,7 +21,7 @@ ABossBase::ABossBase()
 
 	TestWeak = CreateDefaultSubobject<UWeakPointComponent>(TEXT("TestWeakPoint"));
 	TestWeak->SetupAttachment(RootComponent);
-	TestWeak->SetRelativeLocation(FVector(-100.0f, -500.0f, 20.0f));
+	TestWeak->SetRelativeLocation(FVector(-50.0f, -250.0f, 100.0f));
 
 	bIsInvulnerable = true;
 

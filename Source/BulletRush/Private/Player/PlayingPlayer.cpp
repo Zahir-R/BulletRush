@@ -54,7 +54,7 @@ APlayingPlayer::APlayingPlayer()
 	TestWeapontwo = CreateDefaultSubobject<UWeaponBaseComponent>(TEXT("ArmaSecundaria"));
 	TestWeapon->SetupAttachment(RootComponent);
 	TestWeapontwo->SetupAttachment(RootComponent);
-	TestWeapon->SetRelativeLocation(FVector(100.0f, -100.0f, 0.0f));
+	TestWeapon->SetRelativeLocation(FVector(100.0f, 0.0f, 0.0f));
 	TestWeapontwo->SetRelativeLocation(FVector(100.0f, 100.0f, 0.0f));
 	
 }

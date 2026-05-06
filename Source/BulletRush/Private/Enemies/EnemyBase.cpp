@@ -21,14 +21,15 @@ AEnemyBase::AEnemyBase()
 	BulletSpawner = CreateDefaultSubobject<UBulletSpawnerComponent>(TEXT("BulletSpawner"));
 	
 
-	MaxHealth = 110.0f;
-	CurrentHealth = 0.0f;
-	bIsInvulnerable = false;
+	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
+	HealthComp->MaxHealth = 100.0f;
+
 	TeamTag = FName("Enemy");
-	AtackInterval = 1.0f;
+	AttackInterval = 1.0f;
 	bAutoStartAttack = true;
-	tags.Add("Enemigo");
-	tags.Add("Jefe");
+
+	Tags.Add("Enemigo");
+	Tags.Add("Jefe");
 }
 
 // Called when the game starts or when spawned
@@ -37,36 +38,40 @@ void AEnemyBase::BeginPlay()
 	Super::BeginPlay();
 	bIsInvulnerable = false;
 
-	CurrentHealth = MaxHealth;
+	HealthComp->CurrentHealth = HealthComp->MaxHealth;
 	Tags.Add(TeamTag);
 
-	if (bAutoStartAttack && AtackInterval > 0.0f) {
+	HealthComp->OnDeath.AddDynamic(this, &AEnemyBase::OnHealthDeath);
+
+	if (bAutoStartAttack && AttackInterval > 0.0f) {
 		BeginAttackLoop();
 	}
+
 
 }
 
 float AEnemyBase::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	float RealDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	if (bIsInvulnerable || CurrentHealth <= 0.0f || RealDamage <= 0.0f) {
-		return 0.0f;
+	if (HealthComp)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[%s] Recibió daño: %f"), *GetName(), DamageAmount);
+		return HealthComp->TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	}
-	CurrentHealth = FMath::Clamp(CurrentHealth - RealDamage, 0.0f, MaxHealth);
-
-	UE_LOG(LogTemp, Warning, TEXT("[%s] Recibió daño.Salud: % f"), *GetName(), CurrentHealth);
-
-	if (CurrentHealth <= 0.0f) {
-		Die();
-	}
-	return RealDamage;
+	return 0.0f;
 }
 
 void AEnemyBase::SetInvulnerability(bool bNewState)
 {
-	bIsInvulnerable = bNewState;
+	if (HealthComp)
+	{
+		HealthComp->SetInvulnerable(bNewState);
+	}
+}
 
+void AEnemyBase::OnHealthDeath()
+{
+	Die();
 }
 
 void AEnemyBase::Die() {
@@ -88,12 +93,12 @@ void AEnemyBase::StartAttack()
 
 void AEnemyBase::BeginAttackLoop()
 {
-	if (!GetWorld() || AtackInterval <= 0.0f) return;
+	if (!GetWorld() || AttackInterval <= 0.0f) return;
 	GetWorld()->GetTimerManager().SetTimer(
 		AttackLoopTimer,
 		this,
 		&AEnemyBase::StartAttack,
-		AtackInterval,
+		AttackInterval,
 		true  // loop
 	);
 }

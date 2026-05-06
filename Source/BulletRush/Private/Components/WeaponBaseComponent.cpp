@@ -80,7 +80,12 @@ void UWeaponBaseComponent::ExecuteFire()
 
 	FVector Location = GetComponentLocation();
 	FVector Direction = GetComponentRotation().Vector();
-	ABulletBase* Bullet = PoolSubsystem->RequestBullet(Location, Direction, 1000.0f, true, 100.0f, Location, GetOwner());
-	Bullet.Tags.Add("BalaJugador");
+	ABulletBase* Bullet = PoolSubsystem->RequestBullet(Location, Direction, 1000.0f, true, 20.0f, Location, GetOwner());
+	if (!Bullet)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No se pudo RequestBullet"));
+		return;
+	}
+	Bullet->Tags.Add("BalaJugador");
 	
 }
