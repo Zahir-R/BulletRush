@@ -17,9 +17,12 @@ class BULLETRUSH_API ABulletRushGameModeBase : public AGameModeBase
 	ABulletRushGameModeBase();
 public:
 	virtual void BeginPlay() override;
-	// Esta función permite decidir qué Pawn usar dinámicamente
-	virtual UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
 
 	UFUNCTION(Exec)
 	void DealDamageToTarget(float Damage);
+
+	/*
+	// Esta función permite decidir qué Pawn usar dinámicamente
+	virtual UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
+	*/
 };
