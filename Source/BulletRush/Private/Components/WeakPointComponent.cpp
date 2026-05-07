@@ -7,6 +7,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/GameInstance.h"
+#include "Materials/MaterialInstance.h"
 
 UWeakPointComponent::UWeakPointComponent()
 {
@@ -22,11 +23,22 @@ UWeakPointComponent::UWeakPointComponent()
     VisualMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualMesh"));
     VisualMesh->SetupAttachment(this);
 
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("Material'/Game/StarterContent/Materials/M_CobbleStone_Smooth.M_CobbleStone_Smooth'"));
+
+
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
     if (MeshAsset.Succeeded())
     {
         VisualMesh->SetStaticMesh(MeshAsset.Object);
     }
+
+	static ConstructorHelpers::FObjectFinder<UMaterial> MaterialAsset(TEXT("Material'/Game/StarterContent/Materials/M_CobbleStone_Smooth.M_CobbleStone_Smooth'"));
+
+    if (MaterialAsset.Succeeded())
+    {
+        VisualMesh->SetMaterial(0, MaterialAsset.Object);
+	}
+
+    VisualMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -40.0f));
 
     VisualMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     //-----------------------------------------------------------------------------------------
