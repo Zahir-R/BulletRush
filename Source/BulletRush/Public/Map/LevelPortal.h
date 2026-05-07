@@ -31,9 +31,15 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Componentes")
 	UStaticMeshComponent* PortalMesh;
 
-	// Función que se ejecuta al chocar
+	// Funcion que se activa cuando el player choca con el box, para cargar el nivel correspondiente
 	UFUNCTION()
-	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void OnOverlapBegin(
+		UPrimitiveComponent* OverlappedComp,
+		AActor* OtherActor, 
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex, 
+		bool bFromSweep, 
+		const FHitResult& SweepResult);
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
