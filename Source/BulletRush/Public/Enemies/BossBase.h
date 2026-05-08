@@ -76,6 +76,8 @@ public:
 	float CurrentHealthh = 4000.0f;
 
 	FTimerHandle IntroTimer;
+	FTimerHandle StunnedTimer;
+	FTimerHandle PhaseTransitionTimer;
 
 	void SetInvulnerable(bool newstate);
 
@@ -83,5 +85,8 @@ public:
 	FTimerHandle AttackLoopTimer;
 
 	UWeakPointComponent* TestWeak;
+
+	TArray<FAttackStep> Combo;
+	TArray<FAttackStep> Combo2;
 
 };

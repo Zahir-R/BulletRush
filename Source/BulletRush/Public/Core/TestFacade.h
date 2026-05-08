@@ -27,7 +27,6 @@ public:
 
 	void SummonBoss(FVector Location);
 	void SummonEnemies(FVector Center,int NoEnemies);
-	APlayingPlayer* SummonPlayer(FVector Location);
 
 	UWorld* World;
 

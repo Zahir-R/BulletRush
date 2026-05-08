@@ -4,6 +4,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/InputComponent.h"
 #include "../../Public/Components/WeaponBaseComponent.h"
+#include "../../Public/Components/ChargedWeaponComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 APlayingPlayer::APlayingPlayer()
@@ -51,7 +52,7 @@ APlayingPlayer::APlayingPlayer()
 	GetCharacterMovement()->bRequestedMoveUseAcceleration = false;
 
 	TestWeapon = CreateDefaultSubobject<UWeaponBaseComponent>(TEXT("ArmaPrincipal"));
-	TestWeapontwo = CreateDefaultSubobject<UWeaponBaseComponent>(TEXT("ArmaSecundaria"));
+	TestWeapontwo = CreateDefaultSubobject<UChargedWeaponComponent>(TEXT("ArmaSecundaria"));
 	TestWeapon->SetupAttachment(RootComponent);
 	TestWeapontwo->SetupAttachment(RootComponent);
 	TestWeapon->SetRelativeLocation(FVector(100.0f, 0.0f, 0.0f));

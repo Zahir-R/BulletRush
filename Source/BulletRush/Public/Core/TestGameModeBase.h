@@ -16,6 +16,8 @@ class BULLETRUSH_API ATestGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 
+	ATestGameModeBase();
+
 public:
 	
 	virtual void BeginPlay() override;

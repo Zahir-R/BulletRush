@@ -24,8 +24,8 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	void StartFiring();
-	void StopFiring();
+	virtual void StartFiring();
+	virtual void StopFiring();
 
 	float FireRate;
 

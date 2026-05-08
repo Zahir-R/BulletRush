@@ -12,6 +12,7 @@ ATestFacade::ATestFacade()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	World = GetWorld();
 	
 
 }
@@ -20,7 +21,6 @@ ATestFacade::ATestFacade()
 void ATestFacade::BeginPlay()
 {
 	Super::BeginPlay();
-	World = GetWorld();
 	
 }
 
@@ -42,12 +42,8 @@ void ATestFacade::SummonEnemies(FVector Center, int NoEnemies)
 	for (int i = 0; i < NoEnemies; i++)
 	{
 		FVector NewLocation = Center;
-		NewLocation.Y += i * 100;
+		NewLocation.Y += i * 200;
 		World->SpawnActor<AEnemyBase>(AEnemyBase::StaticClass(), NewLocation, FRotator::ZeroRotator);
 	}
 
-}
-APlayingPlayer* ATestFacade::SummonPlayer(FVector Location)
-{
-	World->SpawnActor<APlayingPlayer>(APlayingPlayer::StaticClass(), Location, FRotator::ZeroRotator);
 }

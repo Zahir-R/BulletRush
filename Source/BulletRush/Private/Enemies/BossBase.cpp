@@ -42,7 +42,7 @@ Despues de cinco segundos, el jefe pasa a estado idle
 */
 void ABossBase::BeginPlay()
 {
-	Super::BeginPlay();
+	APawn::BeginPlay();
 	CurrentHealthh = 5000.0f;
 	// Empezamos con el estado de "animación"
 	SetBossState(EBossState::Intro);
@@ -62,8 +62,13 @@ void ABossBase::BeginPlay()
 	GetWorld()->GetTimerManager().SetTimer(IntroTimer, [this]()
 		{
 			SetBossState(EBossState::Idle); 
-			GetWorld()->GetTimerManager().SetTimer(AttackLoopTimer, this, &ABossBase::Attack, 5.0f, true); // Testing, esto debería ser en Attacking xd
 		}, 5.0f, false);
+
+	//Combo.Add(FAttackStep(EAttackType::Circle, 20, 60.0f, 0.5f, 300.0f, 10.0f));
+	//FVector TestOrigin = GetActorLocation() + (GetActorRightVector() * 300.0f);
+	//Combo.Add(FAttackStep(EAttackType::Spiral, 30, 50.0f, 1.0f, GetActorLocation(), 240.0f, 10.0f));
+	Combo2.Add(FAttackStep(EAttackType::Burst, 5, 80.0f, 0.2f, 0.1f));
+	Combo.Add(FAttackStep(EAttackType::Sphere, 1000, 800.0f, 0.5f, 0.1f));
 }
 
 /**
@@ -90,17 +95,23 @@ void ABossBase::SetBossState(EBossState NewState)
 {
 	// Molde de como override la función en cualquier hijo
 	CurrentState = NewState;
-	/*
+	// Zona de Testo!!
 	switch (CurrentState)
 	{
 	case EBossState::Attacking:
+		SetInvulnerable(false);
 		Attack();
+		GetWorld()->GetTimerManager().SetTimer(AttackLoopTimer, this, &ABossBase::Attack, 3.0f, true); // Testing, esto debería ser en Attacking xd
 		break;
 	case EBossState::Stunned:
 		SetInvulnerable(false);
+		UE_LOG(LogTemp, Display, TEXT("Jefe Vulnerable!!"));
+		GetWorld()->GetTimerManager().SetTimer(StunnedTimer, [this]()
+			{
+				GetWorld()->GetTimerManager().ClearTimer(AttackLoopTimer); // Detenemos el ataque anterior
+				SetBossState(EBossState::Attacking);
+			}, 5.0f, false);
 		break;
-		// GetWorld()->SetTimer(TimeHandler, 5.0f, &ABossBase::SetBossState(EBossState::Idle), false) o algo así para desestunearse automaticamente xd
-		// Es más conveniente utilizar algo parecido a lo que está en BeginPlay
 	case EBossState::Idle:
 		UE_LOG(LogTemp, Display, TEXT("Jefe descansando..."));
 		break;
@@ -111,6 +122,22 @@ void ABossBase::SetBossState(EBossState NewState)
 		// Animación de intro();
 	case EBossState::PhaseTransition:
 		SetInvulnerable(true);
+		UE_LOG(LogTemp, Warning, TEXT("Jefe en transición de fase"));
+
+		if (!PhaseTransitionTimer.IsValid())
+		{
+			GetWorld()->GetTimerManager().ClearTimer(PhaseTransitionTimer);
+		}
+
+		if (GetWorld())
+		{
+			AttackIdentifier++;
+			GetWorld()->GetTimerManager().ClearTimer(AttackLoopTimer); // Detenemos el ataque anterior
+			GetWorld()->GetTimerManager().SetTimer(PhaseTransitionTimer, [this]()
+				{
+					SetBossState(EBossState::Attacking);
+				}, 5.0f, false);
+		}
 		// Otro Timer como stunned
 		break;
 
@@ -120,8 +147,7 @@ void ABossBase::SetBossState(EBossState NewState)
 		// Animación de muerte?
 		// Función para salir del nivel y detruirlo :3
 	};
-	*/
-	//
+	//----------------
 
 }
 
@@ -129,31 +155,30 @@ void ABossBase::Attack()
 {
 	// Molde de como override la función en cualquier hijo
 	if (!BulletSpawner) return;
-	/*
+	// Zona de Testeo!!!
 	switch (AttackIdentifier) // Identificador de ataques, los hijos también lo heredan
 	{
 	case 0:
 		// PrimerPatronDeAtaque();
+		BulletSpawner->StartSequence(Combo);
 		break;
 	case 1:
 		// Codigo de primer patrón de ataque
+		BulletSpawner->StartSequence(Combo2);
 		break;
 	case 2:
 		// Codigo de segundo patrón de ataque
+		UE_LOG(LogTemp, Warning, TEXT("Patrón de Ataque en desarrollo"));
 		break;
 	default:
+		UE_LOG(LogTemp, Warning, TEXT("Patrón de Ataque Default en desarrollo"));
 		break;
 		// DefaultAttack();
 	}
-	*/
+	//-------------------
 
-	TArray<FAttackStep> Combo;
-	//Combo.Add(FAttackStep(EAttackType::Circle, 20, 60.0f, 0.5f, 300.0f, 10.0f));
-	//FVector TestOrigin = GetActorLocation() + (GetActorRightVector() * 300.0f);
-	//Combo.Add(FAttackStep(EAttackType::Spiral, 30, 50.0f, 1.0f, GetActorLocation(), 240.0f, 10.0f));
-	//Combo.Add(FAttackStep(EAttackType::Burst, 5, 80.0f, 0.2f, 0.1f));
-	Combo.Add(FAttackStep(EAttackType::Sphere, 1000, 800.0f, 0.5f, 0.1f));
-	BulletSpawner->StartSequence(Combo); // Esto debería ir en estado Attacking, lo dejo acá por test xd
+	
+	
 
 }
 
@@ -167,7 +192,7 @@ void ABossBase::HandleWeakPointDestroyed()
 	// Si ya no quedan puntos débiles, el jefe queda expuesto
 	if (ActiveWeakPoints <= 0)
 	{
-		SetInvulnerable(false);
+		SetBossState(EBossState::Stunned);
 
 		// Opcional: Forzarlo al estado Stunned para que el jugador aproveche
 		// SetBossState(EBossState::Stunned);
@@ -199,10 +224,16 @@ float ABossBase::TakeDamage(float DamageAmount, struct FDamageEvent const& Damag
 
 	UE_LOG(LogTemp, Warning, TEXT("Jefe recibe danio. Salud restante: %f"), CurrentHealthh);
 
-	if (CurrentHealthh <= 0.0f)
+	
+	if (CurrentHealthh > 0.0f && CurrentHealthh <= 3000.0f && AttackIdentifier < 1)
+	{
+		SetBossState(EBossState::PhaseTransition);
+	}
+	else if (CurrentHealthh <= 0.0f)
 	{
 		SetBossState(EBossState::Dead);
 	}
+	
 
 	// Esto queda a su necesidad cuando hereden de esta clase, todo lo que está arriba se ejecutará antes de lo que 
 	// lleguen a escribir luego (En teoría xD, no pude comprobarlo)
