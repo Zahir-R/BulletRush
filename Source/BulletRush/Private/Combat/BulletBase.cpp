@@ -30,7 +30,7 @@ void ABulletBase::BeginPlay()
 }
 
 
-void ABulletBase::ActivateBullet(FVector position, FVector Direction, float Speed, bool bIsPlayerBullet,float Damage, FVector SpawnLocation )
+void ABulletBase::ActivateBullet(FVector position, FVector Direction, float Speed, bool bIsPlayerBullet,float Damage, FVector SpawnLocation, AActor* OwnerAct)
 {
 	SetActorLocation(position);
 	BulletData.Direction = Direction;
@@ -39,6 +39,7 @@ void ABulletBase::ActivateBullet(FVector position, FVector Direction, float Spee
 	BulletData.bIsPlayerBullet = bIsPlayerBullet;
 	BulletData.Damage = Damage;
 	BulletData.SpawnLocation = SpawnLocation;
+	BulletData.OwnerActor = OwnerAct;
 
 	SetActorHiddenInGame(false);
 	SetActorEnableCollision(true);

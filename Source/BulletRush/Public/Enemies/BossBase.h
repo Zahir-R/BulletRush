@@ -1,10 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Pawn.h"
-#include "Components/StaticMeshComponent.h"
+#include "Enemies/EnemyBase.h"
+#include "Components/WeakPointComponent.h"
+#include "Components/HealthComponent.h"
 #include "BossBase.generated.h"
 
 class UShapeComponent;
@@ -23,12 +22,11 @@ enum class EBossState : uint8
 };
 
 UCLASS()
-class BULLETRUSH_API ABossBase : public APawn
+class BULLETRUSH_API ABossBase : public AEnemyBase
 {
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this pawn's properties
 	ABossBase();
 
 protected:
@@ -37,22 +35,16 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Boss Logic")
 	EBossState CurrentState;
 
-	UPROPERTY(VisibleAnywhere, Category = "Boss Logic")
-	bool bIsInvulnerable;
+	int32 AttackIdentifier = 0;
+	int32 ActiveWeakPoints;
 
-	int32 AttackIdentifier = 0; // Define que patrón de ataque utilizar
+	FTimerHandle IntroTimer;
 
-	// Cuántos puntos débiles le quedan vivos
-    int32 ActiveWeakPoints;
-
-    // Función que se ejecutará cuando un punto débil grite
-    UFUNCTION()
-    virtual void HandleWeakPointDestroyed();
-
-	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+	UFUNCTION()
+	virtual void HandleWeakPointDestroyed();
+	virtual void Die() override;
 
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
@@ -60,24 +52,7 @@ public:
 
 	virtual void SetBossState(EBossState NewState);
 
-	virtual void Attack();
+	virtual void StartAttack() override;
 
-	// Mesh para la nave, cada hijo puede usarla
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UStaticMeshComponent* BossMesh;
-
-	// La HitBox se usará en caso de que la mesh no tenga colisiones bien definidas
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UShapeComponent* Hitbox; // Hitbox estática, no se como aplicar la hitbox para un gusano de multiples partes :)
-
-	float MaxHealth;
-	float CurrentHealth = 4000.0f;
-
-	FTimerHandle IntroTimer;
-
-	void SetInvulnerable(bool newstate);
-
-	UBulletSpawnerComponent* BulletSpawner;
-	FTimerHandle AttackLoopTimer;
-
+	void SetBossInvulnerability(bool bInv);
 };
