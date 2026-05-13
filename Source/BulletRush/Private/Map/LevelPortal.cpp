@@ -59,8 +59,10 @@ void ALevelPortal::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 		ATopDownPlayer* Player = Cast<ATopDownPlayer>(OtherActor);
 		if (Player && !TargetLevelName.IsNone())
 		{
+			
 			//cargamos el nivel corespondiente
 			UGameplayStatics::OpenLevel(this, TargetLevelName);
+			UE_LOG(LogTemp, Warning, TEXT("Playerrr a entrado al nivel %s"), *TargetLevelName.ToString());
 		}
 	}
 }

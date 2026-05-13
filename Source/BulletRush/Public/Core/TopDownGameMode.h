@@ -15,9 +15,9 @@ class BULLETRUSH_API ATopDownGameMode : public AGameModeBase
 	GENERATED_BODY()
 public:
 	ATopDownGameMode();
-	/*
+	
 public:
 	virtual void BeginPlay() override;
-	*/
+	
 	
 };
