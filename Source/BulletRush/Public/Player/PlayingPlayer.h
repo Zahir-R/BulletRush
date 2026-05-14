@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "../Components/BulletSpawnerComponent.h"
+#include "Components/HealthComponent.h"
+#include "Components/BuffComponent.h"
 #include "PlayingPlayer.generated.h"
 
 class USpringArmComponent;
@@ -49,4 +51,7 @@ public:
 	TArray<UWeaponBaseComponent*> EquippedWeapons;
 	UWeaponBaseComponent* TestWeapon;
 	UWeaponBaseComponent* TestWeapontwo;
+
+	UHealthComponent* HealthComp;
+	UBuffComponent* BuffComp;
 };

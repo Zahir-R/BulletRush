@@ -38,7 +38,7 @@ void ATestFacade::SummonBoss(FVector Location)
 }
 void ATestFacade::SummonEnemies(FVector Center, int NoEnemies)
 {
-	if (NoEnemies < 5)	return;
+	// if (NoEnemies < 5)	return;
 	for (int i = 0; i < NoEnemies; i++)
 	{
 		FVector NewLocation = Center;

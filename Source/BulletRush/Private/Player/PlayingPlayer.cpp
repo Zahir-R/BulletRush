@@ -11,6 +11,8 @@ APlayingPlayer::APlayingPlayer()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
+	Tags.Add(FName("Player"));
+
 	// MALLA
 	VisualMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualMesh"));
 	VisualMesh->SetupAttachment(RootComponent);
@@ -57,7 +59,11 @@ APlayingPlayer::APlayingPlayer()
 	TestWeapontwo->SetupAttachment(RootComponent);
 	TestWeapon->SetRelativeLocation(FVector(100.0f, 0.0f, 0.0f));
 	TestWeapontwo->SetRelativeLocation(FVector(100.0f, 100.0f, 0.0f));
-	
+
+	HealthComp= CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
+	HealthComp->MaxHealth = 100.0f;
+
+	BuffComp = CreateDefaultSubobject<UBuffComponent>(TEXT("BuffComp"));
 }
 
 void APlayingPlayer::BeginPlay()

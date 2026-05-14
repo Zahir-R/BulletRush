@@ -52,6 +52,7 @@ void UHealthComponent::Heal(float Amount)
 
 void UHealthComponent::SetInvulnerable(bool bInvulnerable, float Duration)
 {
+	bIsInvulnerable = bInvulnerable;
 	if (bInvulnerable && Duration > 0.0f)
 	{
 		UWorld* World = GetWorld();
@@ -60,14 +61,13 @@ void UHealthComponent::SetInvulnerable(bool bInvulnerable, float Duration)
 			World->GetTimerManager().ClearTimer(InvulnerabilityTimer);
 			World->GetTimerManager().SetTimer(InvulnerabilityTimer, [this]()
 			{
-				this->bIsInvulnerable = false;
+				bIsInvulnerable = false;
 				}, Duration, false);
 		}
 	}
 	else if (!bInvulnerable)
 	{
 		UWorld* World = GetWorld();
-		bIsInvulnerable = false;
 		if (World)
 		{
 			World->GetTimerManager().ClearTimer(InvulnerabilityTimer);

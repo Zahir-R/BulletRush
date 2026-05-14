@@ -39,8 +39,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Boss Logic")
 	EBossState CurrentState;
 
-	UPROPERTY(VisibleAnywhere, Category = "Boss Logic")
-	bool bIsInvulnerable;
+	// ya existe en el componente health UPROPERTY(VisibleAnywhere, Category = "Boss Logic")
+	// ya existe en el componente health bool bIsInvulnerable;
 
 	int32 AttackIdentifier = 0; // Define que patrón de ataque utilizar
 
@@ -72,9 +72,9 @@ public:
 	//UPROPERTY(VisibleAnywhere, Category = "Components")
 	//UShapeComponent* Hitbox; // Hitbox estática, no se como aplicar la hitbox para un gusano de multiples partes :)
 
-	float MaxHealth = 4000.0f;
-	float CurrentHealthh = 4000.0f;
-
+	// ya existe en el componente health float MaxHealth = 4000.0f;
+	// ya existe en el componente health float CurrentHealthh = 4000.0f;
+	
 	FTimerHandle IntroTimer;
 	FTimerHandle StunnedTimer;
 	FTimerHandle PhaseTransitionTimer;
@@ -89,4 +89,5 @@ public:
 	TArray<FAttackStep> Combo;
 	TArray<FAttackStep> Combo2;
 
+	void Die() override;
 };

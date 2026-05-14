@@ -2,6 +2,7 @@
 
 #include "../../Public/Enemies/BossBase.h"
 #include "Engine/World.h"
+#include "Components/HealthComponent.h"
 #include "../../Public/Components/WeakPointComponent.h"
 #include "../../Public/Components/BulletSpawnerComponent.h"
 
@@ -11,8 +12,10 @@ ABossBase::ABossBase()
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	CurrentState = EBossState::Idle;
-	bIsInvulnerable = false;
-	MaxHealth = 4000.0f;
+
+	bAutoStartAttack = false;
+	//bIsInvulnerable = false;
+	HealthComp->MaxHealth = 4000.0f;
 
 	BulletSpawner = CreateDefaultSubobject<UBulletSpawnerComponent>(TEXT("BulletSpawnerr"));
 
@@ -23,8 +26,8 @@ ABossBase::ABossBase()
 	TestWeak->SetupAttachment(RootComponent);
 	TestWeak->SetRelativeLocation(FVector(-50.0f, -250.0f, 100.0f));
 
-	bIsInvulnerable = true;
-
+	//bIsInvulnerable = true;
+	HealthComp->SetInvulnerable(true);
 	//BossMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BossMesh"));
 	//RootComponent = BossMesh;
 
@@ -42,9 +45,18 @@ Despues de cinco segundos, el jefe pasa a estado idle
 */
 void ABossBase::BeginPlay()
 {
-	APawn::BeginPlay();
-	CurrentHealthh = 5000.0f;
+	//APawn::BeginPlay();
+	//HealthComp->CurrentHealth = 5000.0f;
 	// Empezamos con el estado de "animación"
+
+	Super::BeginPlay();
+
+	HealthComp->CurrentHealth = 5000.0f;
+
+	//HealthComp->OnHealthChanged.AddDynamic(this, &ABossBase::OnHealthChangedHandler);
+	//HealthComp->OnDeath.AddDynamic(this, &ABossBase::OnBossDeath);
+
+
 	SetBossState(EBossState::Intro);
 	ActiveWeakPoints = 0;
 
@@ -62,7 +74,7 @@ void ABossBase::BeginPlay()
 	GetWorld()->GetTimerManager().SetTimer(IntroTimer, [this]()
 		{
 			SetBossState(EBossState::Idle); 
-		}, 5.0f, false);
+		}, 2.0f, false);
 
 	//Combo.Add(FAttackStep(EAttackType::Circle, 20, 60.0f, 0.5f, 300.0f, 10.0f));
 	//FVector TestOrigin = GetActorLocation() + (GetActorRightVector() * 300.0f);
@@ -99,12 +111,12 @@ void ABossBase::SetBossState(EBossState NewState)
 	switch (CurrentState)
 	{
 	case EBossState::Attacking:
-		SetInvulnerable(false);
+		HealthComp->SetInvulnerable(false);
 		Attack();
 		GetWorld()->GetTimerManager().SetTimer(AttackLoopTimer, this, &ABossBase::Attack, 3.0f, true); // Testing, esto debería ser en Attacking xd
 		break;
 	case EBossState::Stunned:
-		SetInvulnerable(false);
+		HealthComp->SetInvulnerable(false);
 		UE_LOG(LogTemp, Display, TEXT("Jefe Vulnerable!!"));
 		GetWorld()->GetTimerManager().SetTimer(StunnedTimer, [this]()
 			{
@@ -117,11 +129,11 @@ void ABossBase::SetBossState(EBossState NewState)
 		break;
 		// ChillFunction() o algo así, definido en cada boss
 	case EBossState::Intro:
-		SetInvulnerable(true);
+		HealthComp->SetInvulnerable(true);
 		break;
 		// Animación de intro();
 	case EBossState::PhaseTransition:
-		SetInvulnerable(true);
+		HealthComp->SetInvulnerable(true);
 		UE_LOG(LogTemp, Warning, TEXT("Jefe en transición de fase"));
 
 		if (!PhaseTransitionTimer.IsValid())
@@ -210,6 +222,18 @@ El resto se define en clases hijas
 */
 float ABossBase::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
 {
+	float RealDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	if (RealDamage <= 0.0f) return 0.0f;
+
+	float CurrentHP = HealthComp->CurrentHealth;
+	if (CurrentHP <= 3000.0f && AttackIdentifier < 1) SetBossState(EBossState::PhaseTransition);
+
+	return RealDamage;
+
+	/*
+	
+	
 	// Siempre llamamos a la versión del padre (AActor) por seguridad interna del motor
 	float RealDamage = APawn::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
@@ -261,5 +285,14 @@ void ABossBase::SetInvulnerable(bool newstate)
 	{
 		//Cualquiero otra modificación necesaria para enemigo ZoteNot
 	}
-	bIsInvulnerable = newstate;
+	//bIsInvulnerable = newstate;
+	HealthComp->SetInvulnerable(newstate);
+}
+
+
+void ABossBase::Die()
+{
+	if (CurrentState == EBossState::Dead) return;
+	SetBossState(EBossState::Dead);
+	Super::Die();
 }
