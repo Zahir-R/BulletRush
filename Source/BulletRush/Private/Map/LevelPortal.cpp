@@ -6,9 +6,10 @@
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "../../Public/Player/TopDownPlayer.h"
+#include "../../Public/Subsystems/LevelRoutingSubsystem.h"
 
-
-
+//mas testeo
+#include "../../Public/Player/PlayingPlayer.h"
 
 // Sets default values
 ALevelPortal::ALevelPortal()
@@ -57,12 +58,20 @@ void ALevelPortal::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 		// verificamos que el actor que choco sea el jugador 
 		//referencia al player TopDown
 		ATopDownPlayer* Player = Cast<ATopDownPlayer>(OtherActor);
-		if (Player && !TargetLevelName.IsNone())
+		//testeo referencai al playingplayer
+		APlayingPlayer* Player2 = Cast<APlayingPlayer>(OtherActor);
+		if ((Player || Player2) && !TargetLevelName.IsNone())
 		{
-			
+			ULevelRoutingSubsystem* LevelRouter = GetGameInstance()->GetSubsystem<ULevelRoutingSubsystem>();
+			if (LevelRouter)
+			{
+				LevelRouter->SolicitarViajeANivel(TargetLevelName, this);
+			}
+			/*
 			//cargamos el nivel corespondiente
 			UGameplayStatics::OpenLevel(this, TargetLevelName);
 			UE_LOG(LogTemp, Warning, TEXT("Playerrr a entrado al nivel %s"), *TargetLevelName.ToString());
+			*/
 		}
 	}
 }

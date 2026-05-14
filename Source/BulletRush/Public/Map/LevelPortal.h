@@ -8,6 +8,7 @@
 
 class UBoxComponent;
 class UStaticMeshComponent;
+class ULevelRoutingSubsystem;
 
 UCLASS()
 class BULLETRUSH_API ALevelPortal : public AActor
@@ -17,8 +18,8 @@ class BULLETRUSH_API ALevelPortal : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ALevelPortal();
-
-	FName TargetLevelName; // El nombre del nivel al que quieres teletransportar a la nave
+	// var para el nombre del nivel
+	FName TargetLevelName; 
 
 protected:
 	// Called when the game starts or when spawned
@@ -34,12 +35,10 @@ protected:
 	// Funcion que se activa cuando el player choca con el box, para cargar el nivel correspondiente
 	UFUNCTION()
 	void OnOverlapBegin(
-		UPrimitiveComponent* OverlappedComp,
-		AActor* OtherActor, 
-		UPrimitiveComponent* OtherComp,
-		int32 OtherBodyIndex, 
-		bool bFromSweep, 
-		const FHitResult& SweepResult);
+		UPrimitiveComponent* OverlappedComp,AActor* OtherActor, 
+		UPrimitiveComponent* OtherComp,int32 OtherBodyIndex, 
+		bool bFromSweep, const FHitResult& SweepResult
+	);
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

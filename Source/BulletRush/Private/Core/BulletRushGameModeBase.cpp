@@ -6,6 +6,8 @@
 #include "../../Public/Map/PortalManager.h"
 #include <Kismet/GameplayStatics.h>
 
+#include "../../Public/Map/LevelPortal.h"
+
 ABulletRushGameModeBase::ABulletRushGameModeBase()
 {
 	DefaultPawnClass = APlayingPlayer::StaticClass();
@@ -15,7 +17,18 @@ ABulletRushGameModeBase::ABulletRushGameModeBase()
 void ABulletRushGameModeBase::BeginPlay() 
 {
 	Super::BeginPlay();
-
+	//para testeo 
+	if (GetWorld()) {
+		ALevelPortal* NivelRetorno = GetWorld()->SpawnActor<ALevelPortal>(ALevelPortal::StaticClass(), FVector(300.0f, 300.0f, 50.0f), FRotator::ZeroRotator);
+		if (NivelRetorno)
+		{
+			NivelRetorno->TargetLevelName = "Map_CupHeadMap";
+		}
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		//spawneamos el nivel para volver al cuphead
+		
+	}
 }
 
 UFUNCTION(Exec)
@@ -58,7 +71,7 @@ UClass* ABulletRushGameModeBase::GetDefaultPawnClassForController_Implementation
 		FString LevelName = GetWorld()->GetMapName();
 		if (LevelName.Contains("Map_CupHeadMap"))
 		{
-			// Si estamos en tu mapa, usamos nave TopDown
+			// Si estamos en tu mapa Cuphead
 			return ATopDownPlayer::StaticClass();
 		}
 	}
