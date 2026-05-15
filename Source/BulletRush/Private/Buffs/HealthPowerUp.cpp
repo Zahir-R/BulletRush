@@ -1,9 +1,9 @@
 #include "Buffs/HealthPowerUp.h"
-#include "Buffs/Buff_HealthBoost.h"
+#include "Buffs/HealthBonus.h"
 
 AHealthPowerUp::AHealthPowerUp()
 {
-	BuffClass = UBuff_HealthBoost::StaticClass();
+	BuffClass = UHealthBonus::StaticClass();
 	BuffMagnitude = 50.0f;
 	BuffDuration = 5.0f;
 

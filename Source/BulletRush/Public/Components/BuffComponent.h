@@ -2,9 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Buffs/PlayerStatsDecorator.h"
 #include "BuffComponent.generated.h"
 
-class UBuffBase;
+class UPlayerStatsDecorator;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BULLETRUSH_API UBuffComponent : public UActorComponent
@@ -15,13 +16,21 @@ public:
 	UBuffComponent();
 
 	UFUNCTION(BlueprintCallable)
-	void ApplyBuff(TSubclassOf<UBuffBase> BuffClass, float Duration, float Magnitude);
+	void ApplyBuff(TSubclassOf<UPlayerStatsDecorator> DecoratorClass, float Duration, float Magnitude);
 
 	UFUNCTION(BlueprintCallable)
 	void ClearAllBuffs();
 
 protected:
 	UPROPERTY()
-	TArray<UBuffBase*> ActiveBuffs;
-		
+	TArray<UPlayerStatsDecorator*> ActiveBuffs;
+
+private:
+	struct FActiveDecorator
+	{
+		UPlayerStatsDecorator* Decorator;
+		FTimerHandle Timer;
+	};
+	TArray<FActiveDecorator> ActiveDecorators;
+	void RemoveDecorator(UPlayerStatsDecorator* Decorator);
 };

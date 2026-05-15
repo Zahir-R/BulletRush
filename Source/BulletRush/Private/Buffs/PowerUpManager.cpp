@@ -29,7 +29,7 @@ void APowerUpManager::SpawnRandomPowerUp()
 		return;
 	}
 
-	int32 Index = FMath::RandRange(0, PowerUpClasses.Num() - 2);
+	int32 Index = FMath::RandRange(0, PowerUpClasses.Num() - 1);
 	TSubclassOf<APowerUpBase> ChosenClass = PowerUpClasses[Index];
 	if (!ChosenClass) return;
 

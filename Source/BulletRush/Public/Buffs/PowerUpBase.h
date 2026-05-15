@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "BuffBase.h"
+#include "PlayerStatsDecorator.h"
 #include "PowerUpBase.generated.h"
 
 UENUM(BlueprintType)
@@ -26,7 +26,7 @@ public:
 	EPowerUpType Type;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<class UBuffBase> BuffClass;
+	TSubclassOf<class UPlayerStatsDecorator> BuffClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float BuffDuration = 3.0f;

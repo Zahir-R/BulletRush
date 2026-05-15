@@ -1,11 +1,18 @@
-#include "../../Public/Player/PlayingPlayer.h"
+#include "Player/PlayingPlayer.h"
+#include "Player/PlayerStatsInterface.h"
+#include "Player/PlayerStatsBase.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/InputComponent.h"
-#include "../../Public/Components/WeaponBaseComponent.h"
-#include "../../Public/Components/ChargedWeaponComponent.h"
+#include "Components/HealthComponent.h"
+#include "Components/WeaponBaseComponent.h"
+#include "Components/ChargedWeaponComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Buffs/PlayerStatsDecorator.h"
+#include "Buffs/DoubleDamage.h"
+#include "Buffs/SpeedBoost.h"
+#include "Buffs/HealthBonus.h"
 
 APlayingPlayer::APlayingPlayer()
 {
@@ -73,6 +80,9 @@ void APlayingPlayer::BeginPlay()
 	
 	EquippedWeapons.Add(TestWeapon);
 	EquippedWeapons.Add(TestWeapontwo);
+
+	BaseStats = NewObject<UPlayerStatsBase>();
+	CurrentStats = BaseStats;
 	
 }
 
@@ -144,4 +154,54 @@ void APlayingPlayer::OnFireReleased()
 	{
 		Weapon->StopFiring();
 	}
+}
+
+void APlayingPlayer::WrapStats(UPlayerStatsDecorator* NewDecorator)
+{
+	if (!NewDecorator) return;
+	NewDecorator->SetInner(CurrentStats);
+	CurrentStats = NewDecorator;
+
+	if (HealthComp)
+	{
+		float HealthRestore = CurrentStats->GetHealthRestore();
+		if (HealthRestore > 0.0f) HealthComp->Heal(HealthRestore);
+	}
+	RefreshStatsFromChain();
+}
+
+void APlayingPlayer::UnwrapStats()
+{
+	UPlayerStatsDecorator* CurrentDec = Cast<UPlayerStatsDecorator>(CurrentStats.GetObject());
+	if (!CurrentDec || !CurrentDec->GetInnerStats().GetObject()) return;
+
+	CurrentStats = CurrentDec->GetInnerStats();
+	RefreshStatsFromChain();
+}
+
+void APlayingPlayer::UpdateMovementSpeed()
+{
+	if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
+	{
+		float BaseSpeed = 1200.0f;
+		float NewSpeed = BaseSpeed * GetTotalSpeedMultiplier();
+		MoveComp->MaxFlySpeed = NewSpeed;
+		UE_LOG(LogTemp, Warning, TEXT("Updated movement speed to %f"), NewSpeed);
+	}
+}
+
+
+void APlayingPlayer::RefreshStatsFromChain()
+{
+	if (!HealthComp || !GetCharacterMovement()) return;
+
+	float BaseSpeed = 1200.0f;
+	float NewSpeed = BaseSpeed * GetTotalSpeedMultiplier();
+	GetCharacterMovement()->MaxFlySpeed = NewSpeed;
+
+	float NewMaxHealth = 100.0f + GetTotalMaxHealthBonus();
+	HealthComp->MaxHealth = NewMaxHealth;
+	if (HealthComp->CurrentHealth > NewMaxHealth) HealthComp->CurrentHealth = NewMaxHealth;
+
+	UE_LOG(LogTemp, Warning, TEXT("STATS: SPEED: %f, MAXHEALTH: %f"), NewSpeed, NewMaxHealth);
 }
