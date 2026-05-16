@@ -33,4 +33,5 @@ public:
 
 	virtual void ExecuteFire();
 		
+	float BaseDamage = 20.0f;
 };

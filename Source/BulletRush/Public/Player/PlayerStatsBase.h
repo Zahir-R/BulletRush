@@ -11,8 +11,8 @@ class BULLETRUSH_API UPlayerStatsBase : public UObject, public IPlayerStatsInter
 	GENERATED_BODY()
 
 public:
-	virtual float GetDamageMultiplier() const override { return 1.0f; }
-	virtual float GetSpeedMultiplier() const override { return 1.0f; }
-	virtual float GetMaxHealthBonus() const override { return 0.0f; }
-	virtual float GetHealthRestore() const override { return 0.0f; }	
+	virtual float GetDamageMultiplier() const { return 1.0f; }
+	virtual float GetSpeedMultiplier() const { return 1.0f; }
+	virtual float GetMaxHealthBonus() const { return 0.0f; }
+	virtual float GetHealthRestore() const { return 0.0f; }	
 };

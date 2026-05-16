@@ -5,6 +5,7 @@
 #include "PowerUpManager.generated.h"
 
 class UBoxComponent;
+class APowerUpBase;
 
 UCLASS()
 class BULLETRUSH_API APowerUpManager : public AActor
@@ -13,6 +14,9 @@ class BULLETRUSH_API APowerUpManager : public AActor
 	
 public:	
 	APowerUpManager();
+
+	void OnPowerUpCollected(APowerUpBase* PowerUp);
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -26,6 +30,15 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Spawning")
 	float MaxSpawnTime = 10.0f;
 
+	UPROPERTY(EditAnywhere, Category = "Spawning")
+	int32 MaxPowerUps = 5;
+
+	UPROPERTY(EditAnywhere, Category = "Spawning")
+	float PowerUpLifetime = 50.0f;
+
+	UPROPERTY()
+	TArray<APowerUpBase*> SpawnedPowerUps;
+
 	UPROPERTY(VisibleAnywhere)
 	UBoxComponent* SpawnArea;
 
@@ -33,5 +46,5 @@ protected:
 	void SpawnRandomPowerUp();
 
 	FTimerHandle SpawnTimer;
-
+	void ScheduleNextSpawn();
 };

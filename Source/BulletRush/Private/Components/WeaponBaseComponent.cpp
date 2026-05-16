@@ -2,6 +2,7 @@
 
 
 #include "Components/WeaponBaseComponent.h"
+#include "Player/PlayingPlayer.h"
 #include "../../Public/Subsystems/ProjectilesSubsystem.h"
 
 // Sets default values for this component's properties
@@ -78,9 +79,15 @@ void UWeaponBaseComponent::ExecuteFire()
 		return;
 	}
 
+	// Player only ?
+	APlayingPlayer* Player = Cast<APlayingPlayer>(GetOwner());
+	if (!Player) return;
+	float DamageMultiplier = Player->GetTotalDamageMultiplier();
+	float FinalDamage = BaseDamage * DamageMultiplier;
+
 	FVector Location = GetComponentLocation();
 	FVector Direction = GetComponentRotation().Vector();
-	ABulletBase* Bullet = PoolSubsystem->RequestBullet(Location, Direction, 1000.0f, true, 20.0f, Location, GetOwner());
+	ABulletBase* Bullet = PoolSubsystem->RequestBullet(Location, Direction, 1000.0f, true, FinalDamage, Location, GetOwner());
 	if (!Bullet)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No se pudo RequestBullet"));

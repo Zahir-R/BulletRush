@@ -22,10 +22,18 @@ void APowerUpManager::BeginPlay()
 
 void APowerUpManager::SpawnRandomPowerUp()
 {
-	if (!SpawnArea || PowerUpClasses.Num() == 0)
+	if (!GetWorld() || !GetWorld()->IsGameWorld()) {
+		ScheduleNextSpawn();
+		return;
+	}
+	SpawnedPowerUps.RemoveAll([](APowerUpBase* P)
+		{
+			return !IsValid(P);
+		});
+
+	if (!SpawnArea || PowerUpClasses.Num() == 0 || SpawnedPowerUps.Num() >= MaxPowerUps)
 	{
-		float Next = FMath::RandRange(MinSpawnTime, MaxSpawnTime);
-		GetWorldTimerManager().SetTimer(SpawnTimer, this, &APowerUpManager::SpawnRandomPowerUp, Next, false);
+		ScheduleNextSpawn();
 		return;
 	}
 
@@ -39,9 +47,42 @@ void APowerUpManager::SpawnRandomPowerUp()
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-	GetWorld()->SpawnActor<APowerUpBase>(ChosenClass, SpawnLoc, FRotator::ZeroRotator, SpawnParams);
+	APowerUpBase* NewPowerUp = GetWorld()->SpawnActor<APowerUpBase>(ChosenClass, SpawnLoc, FRotator::ZeroRotator, SpawnParams);
 
+	if (NewPowerUp)
+	{
+		SpawnedPowerUps.Add(NewPowerUp);
+		if (PowerUpLifetime > 0.0f)
+		{
+			FTimerHandle LifeTimer;
+			GetWorldTimerManager().SetTimer(LifeTimer, [this, NewPowerUp]()
+				{
+					if (IsValid(NewPowerUp))
+					{
+						OnPowerUpCollected(NewPowerUp);
+						NewPowerUp->Destroy();
+					}
+				}, PowerUpLifetime, false);
+		}
+	}
+
+	ScheduleNextSpawn();
+}
+
+void APowerUpManager::ScheduleNextSpawn()
+{
 	float NextDelay = FMath::RandRange(MinSpawnTime, MaxSpawnTime);
 	GetWorldTimerManager().SetTimer(SpawnTimer, this, &APowerUpManager::SpawnRandomPowerUp, NextDelay, false);
+}
 
+void APowerUpManager::OnPowerUpCollected(APowerUpBase* PowerUp)
+{
+	if (!PowerUp) return;
+	SpawnedPowerUps.Remove(PowerUp);
+}
+
+void APowerUpManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	GetWorldTimerManager().ClearTimer(SpawnTimer);
+	Super::EndPlay(EndPlayReason);
 }

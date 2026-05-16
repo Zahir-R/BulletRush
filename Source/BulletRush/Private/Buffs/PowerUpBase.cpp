@@ -2,7 +2,13 @@
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Player/PlayingPlayer.h"
+#include "Buffs/PowerUpManager.h"
 #include "Components/BuffComponent.h"
+
+void APowerUpBase::SetManager(APowerUpManager* Manager)
+{
+	ManagerRef = Manager;
+}
 
 APowerUpBase::APowerUpBase()
 {
@@ -29,8 +35,10 @@ void APowerUpBase::OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 	if (!OtherActor || !OtherActor->ActorHasTag("Player")) return;
 
 	UBuffComponent* BuffComp = OtherActor->FindComponentByClass<UBuffComponent>();
-	if (BuffComp && BuffClass) {
+	if (BuffComp && BuffClass) 
+	{
 		BuffComp->ApplyBuff(BuffClass, BuffDuration, BuffMagnitude);
+		if (ManagerRef.IsValid()) ManagerRef->OnPowerUpCollected(this);
 		Destroy();
 	}
 }

@@ -12,6 +12,6 @@ class BULLETRUSH_API UDoubleDamage : public UPlayerStatsDecorator
 public:
 	virtual float GetDamageMultiplier() const override
 	{
-		return InnerStats->GetDamageMultiplier() * 2.0f;
+		return InnerStats ? InnerStats->GetDamageMultiplier() * 2.0f : 2.0f;
 	}
 };

@@ -5,6 +5,8 @@
 #include "PlayerStatsDecorator.h"
 #include "PowerUpBase.generated.h"
 
+class APowerUpManager;
+
 UENUM(BlueprintType)
 enum class EPowerUpType : uint8
 {
@@ -21,6 +23,8 @@ class BULLETRUSH_API APowerUpBase : public AActor
 	
 public:	
 	APowerUpBase();
+
+	void SetManager(APowerUpManager* Manager);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EPowerUpType Type;
@@ -43,4 +47,7 @@ protected:
 
 	UFUNCTION()
 	void OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+private:
+	TWeakObjectPtr<APowerUpManager> ManagerRef;
 };

@@ -2,10 +2,12 @@
 
 
 #include "Components/ChargedWeaponComponent.h"
+#include "Player/PlayingPlayer.h"
 #include "../../Public/Subsystems/ProjectilesSubsystem.h"
 
 void UChargedWeaponComponent::StartFiring()
 {
+	Damage = DamageBase;
     GetWorld()->GetTimerManager().SetTimer(FiringTimer, [this]()
         {
             // Incrementamos el daño mientras se mantenga el clic
@@ -47,13 +49,22 @@ void UChargedWeaponComponent::ExecuteFire()
 		return;
 	}
 
+	// Player only ?
+	// Also, duplicate with WeaponBaseComponent www
+	APlayingPlayer* Player = Cast<APlayingPlayer>(GetOwner());
+	if (!Player) return;
+
+	float DamageMultiplier = Player->GetTotalDamageMultiplier();
+	float FinalDamage = Damage * DamageMultiplier;
+
 	FVector Location = GetComponentLocation();
 	FVector Direction = GetComponentRotation().Vector();
-	ABulletBase* Bullet = PoolSubsystem->RequestBullet(Location, Direction, 1000.0f, true, Damage, Location, GetOwner());
+	ABulletBase* Bullet = PoolSubsystem->RequestBullet(Location, Direction, 1000.0f, true, FinalDamage, Location, GetOwner());
 	if (!Bullet)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No se pudo RequestBullet"));
 		return;
 	}
 	Bullet->Tags.Add("BalaJugador");
+	Damage = DamageBase; // Reset
 }
