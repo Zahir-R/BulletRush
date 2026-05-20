@@ -5,11 +5,16 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "../Components/BulletSpawnerComponent.h"
+#include "Components/HealthComponent.h"
+#include "Components/BuffComponent.h"
+#include "PlayerStatsInterface.h"
 #include "PlayingPlayer.generated.h"
 
 class USpringArmComponent;
 class UCameraComponent;
 class UStaticMeshComponent;
+class UWeaponBaseComponent;
+class UPlayerStatsBase;
 
 UCLASS()
 class BULLETRUSH_API APlayingPlayer : public ACharacter
@@ -25,20 +30,46 @@ public:
 
 	// TESTING
 	UBulletSpawnerComponent* Spawner;
-	
+
 	void TestCircle();
 	void TestSpiral();
 	void TestBurst();
-	
+
 
 protected:
 	virtual void BeginPlay() override;
+	UPROPERTY()
+	TScriptInterface<IPlayerStatsInterface> CurrentStats;
 
-public:	
+	UPROPERTY()
+	UPlayerStatsBase* BaseStats;
+
+public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	void MoveForward(float Val);
 	void MoveRight(float Val);
 	void MoveUp(float Val);
+
+	void OnFirePressed();
+	void OnFireReleased();
+
+	TArray<UWeaponBaseComponent*> EquippedWeapons;
+	UWeaponBaseComponent* TestWeapon;
+	UWeaponBaseComponent* TestWeapontwo;
+
+	UHealthComponent* HealthComp;
+	UBuffComponent* BuffComp;
+
+	void WrapStats(class UPlayerStatsDecorator* NewDecorator);
+	void UnwrapStats();
+	float GetTotalDamageMultiplier() const { return CurrentStats->GetDamageMultiplier(); }
+	float GetTotalSpeedMultiplier() const { return CurrentStats->GetSpeedMultiplier(); }
+	float GetTotalMaxHealthBonus() const { return CurrentStats->GetMaxHealthBonus(); }
+	TScriptInterface<IPlayerStatsInterface> GetCurrentStats() const { return CurrentStats; }
+
+	void UpdateMovementSpeed();
+
+	void RefreshStatsFromChain();
 };

@@ -45,6 +45,6 @@ private:
 	TArray<ABulletBase*> BulletPool;
 	FDelegateHandle OnMapLoadedHandle;
 
-	int32 PoolSize = 2500;
+	int32 PoolSize = 5000;
 	void InitializePool();
 };

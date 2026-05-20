@@ -24,6 +24,11 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	float MaxHealth;
+	float CurrentHealth;
+	bool bIsInvulnerable;
+
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UHealthComponent* HealthComp;
 
@@ -40,10 +45,9 @@ protected:
 
 	UFUNCTION()
 	virtual void OnHealthDeath();
-	
-	virtual void Die();
 
 public:	
+
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
 		class AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -52,9 +56,10 @@ public:
 
 	void BeginAttackLoop();
 	void StopAttackLoop();
-
-	virtual void StartAttack();
 	
+	virtual void StartAttack();
+	virtual void Die();
+
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* MeshEnemy;
 	UPROPERTY(VisibleAnywhere)

@@ -1,6 +1,7 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
 #include "Enemies/EnemyBase.h"
-#include "Engine/World.h"
-#include "Components/HealthComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/BulletSpawnerComponent.h"
 
@@ -19,19 +20,23 @@ AEnemyBase::AEnemyBase()
 
 	BulletSpawner = CreateDefaultSubobject<UBulletSpawnerComponent>(TEXT("BulletSpawner"));
 	
-	HealthComp= CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
+
+	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
 	HealthComp->MaxHealth = 100.0f;
 
 	TeamTag = FName("Enemy");
 	AttackInterval = 1.0f;
 	bAutoStartAttack = true;
 
+	Tags.Add("Enemigo");
+	Tags.Add("Jefe");
 }
 
 // Called when the game starts or when spawned
 void AEnemyBase::BeginPlay()
 {
 	Super::BeginPlay();
+	bIsInvulnerable = false;
 
 	HealthComp->CurrentHealth = HealthComp->MaxHealth;
 	Tags.Add(TeamTag);
@@ -42,10 +47,12 @@ void AEnemyBase::BeginPlay()
 		BeginAttackLoop();
 	}
 
+
 }
 
-float AEnemyBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+float AEnemyBase::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+
 	if (HealthComp)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[%s] Recibió daño: %f"), *GetName(), DamageAmount);

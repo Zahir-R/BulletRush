@@ -60,6 +60,7 @@ void UProjectilesSubsystem::Tick(float DeltaTime)
 					{
 						UGameplayStatics::ApplyDamage(OtherActor, Bullet->BulletData.Damage, nullptr, Bullet, UDamageType::StaticClass());
 						ReturnBullet(Bullet); // RECICLAMOS, NO DESTRUIMOS
+						if (Bullet->Tags.Num() > 0)	Bullet->Tags.Pop();
 						continue;
 					}
 
@@ -68,6 +69,7 @@ void UProjectilesSubsystem::Tick(float DeltaTime)
 					{
 						UGameplayStatics::ApplyDamage(OtherActor, Bullet->BulletData.Damage, nullptr, Bullet, UDamageType::StaticClass());
 						ReturnBullet(Bullet);
+						if (Bullet->Tags.Num() > 0)	Bullet->Tags.Pop();
 						continue;
 					}
 
@@ -75,6 +77,7 @@ void UProjectilesSubsystem::Tick(float DeltaTime)
 					if (!bIsEnemy && !bIsPlayer)
 					{
 						ReturnBullet(Bullet);
+						if (Bullet->Tags.Num() > 0)	Bullet->Tags.Pop();
 						continue;
 					}
 				}
@@ -86,6 +89,7 @@ void UProjectilesSubsystem::Tick(float DeltaTime)
 			// RECICLAJE POR DISTANCIA (Límite de 8000 unidades)
 			if (FVector::Dist(NewLoc,Bullet->BulletData.SpawnLocation) > 8000.f)
 			{
+				if (Bullet->Tags.Num() > 0)	Bullet->Tags.Pop();
 				ReturnBullet(Bullet);
 			}
 		}

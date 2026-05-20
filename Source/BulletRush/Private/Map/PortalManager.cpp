@@ -16,6 +16,7 @@ APortalManager::APortalManager()
 	PortalesDataBase.Add(FPortalData("Map_03Boss", FVector(300.0f,-300.0f,50.0f)));
 	PortalesDataBase.Add(FPortalData("Map_04Boss", FVector(-200.0f,-400.0f,50.0f)));
 	PortalesDataBase.Add(FPortalData("Map_05Boss", FVector(-400.0f,-80.0f,50.0f)));
+	PortalesDataBase.Add(FPortalData("Map_Test", FVector(-1200.0f, -80.0f, 50.0f)));
 }	
 // Called when the game starts or when spawned
 void APortalManager::BeginPlay()
