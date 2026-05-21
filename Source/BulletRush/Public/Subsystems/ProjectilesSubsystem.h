@@ -6,14 +6,14 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "Tickable.h"
 #include "../Combat/BulletBase.h"
-#include "../Core/Subscriber.h"
+#include "../Core/Observer.h"
 #include "Materials/MaterialParameterCollection.h"
 #include "ProjectilesSubsystem.generated.h"
 
 class ABossBase;
 
 UCLASS()
-class BULLETRUSH_API UProjectilesSubsystem : public UGameInstanceSubsystem, public FTickableGameObject, public ISubscriber
+class BULLETRUSH_API UProjectilesSubsystem : public UGameInstanceSubsystem, public FTickableGameObject, public IObserver
 {
 	GENERATED_BODY()
 
