@@ -22,5 +22,10 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	TArray<AActor*> Suscribers;
 
+
+	virtual void NotifySubscribers();
+	virtual void Subscribe(AActor* Subscriber);
+	virtual void Unsubscribe(AActor* Subscriber);
 };
