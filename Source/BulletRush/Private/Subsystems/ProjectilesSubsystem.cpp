@@ -179,3 +179,11 @@ void UProjectilesSubsystem::ReinitializePool()
 	InitializePool();
 	UE_LOG(LogTemp, Warning, TEXT("[ProjectilesSubsystem] Pool reinicializado con %d balas."), BulletPool.Num());
 }
+
+void UProjectilesSubsystem::Update(APublisher* Pusblisher)
+{
+	for (ABulletBase* Bullet : BulletPool)
+	{
+		ReturnBullet(Bullet);
+	}
+}

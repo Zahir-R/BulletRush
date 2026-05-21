@@ -6,12 +6,14 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "Tickable.h"
 #include "../Combat/BulletBase.h"
+#include "../Core/Subscriber.h"
 #include "Materials/MaterialParameterCollection.h"
 #include "ProjectilesSubsystem.generated.h"
 
+class ABossBase;
 
 UCLASS()
-class BULLETRUSH_API UProjectilesSubsystem : public UGameInstanceSubsystem, public FTickableGameObject
+class BULLETRUSH_API UProjectilesSubsystem : public UGameInstanceSubsystem, public FTickableGameObject, public ISubscriber
 {
 	GENERATED_BODY()
 
@@ -40,6 +42,7 @@ public:
 
 	void HandleSilenceEnter();
 
+	virtual void Update(class APublisher* Publisher) override;
 private:
 	UPROPERTY()
 	TArray<ABulletBase*> BulletPool;
@@ -47,4 +50,8 @@ private:
 
 	int32 PoolSize = 5000;
 	void InitializePool();
+
+public:
+	UPROPERTY()
+	ABossBase* Boss;
 };

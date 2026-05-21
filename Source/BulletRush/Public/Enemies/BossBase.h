@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "EnemyBase.h"
+#include "../Core/Publisher.h"
 #include "Components/StaticMeshComponent.h"
 #include "BossBase.generated.h"
 
@@ -25,7 +26,7 @@ enum class EBossState : uint8
 };
 
 UCLASS()
-class BULLETRUSH_API ABossBase : public AEnemyBase
+class BULLETRUSH_API ABossBase : public AEnemyBase, APublisher
 {
 	GENERATED_BODY()
 

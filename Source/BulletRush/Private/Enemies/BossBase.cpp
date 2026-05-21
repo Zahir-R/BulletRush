@@ -289,10 +289,10 @@ void ABossBase::SetInvulnerable(bool newstate)
 	HealthComp->SetInvulnerable(newstate);
 }
 
-
 void ABossBase::Die()
 {
 	if (CurrentState == EBossState::Dead) return;
 	SetBossState(EBossState::Dead);
+	NotifySubscribers();
 	Super::Die();
 }
