@@ -106,3 +106,10 @@ void UWeakPointComponent::OnWeakPointOverlap(UPrimitiveComponent* OverlappedComp
         }
     }
 }
+
+void UWeakPointComponent::ResetWeakPoint()
+{
+    CurrentHealth = MaxHealth;
+    SetGenerateOverlapEvents(false); // Se reactivará en Open()
+    if (VisualMesh) VisualMesh->SetVisibility(true);
+}

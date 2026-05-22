@@ -24,6 +24,9 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Weak Point")
 	FOnWeakPointDestroyed OnDestroyedEvent;
 
+    void ResetWeakPoint();
+    bool IsDestroyed() const { return CurrentHealth <= 0.0f; }
+
 protected:
     virtual void BeginPlay() override;
 
