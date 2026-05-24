@@ -20,6 +20,8 @@ class BULLETRUSH_API UWeakPointComponent : public USphereComponent
 public:
 	UWeakPointComponent();
 
+    void SetVisualMaterial(UMaterialInterface* NewMat);
+
 	// La batiseñal que el jefe escuchará
 	UPROPERTY(BlueprintAssignable, Category = "Weak Point")
 	FOnWeakPointDestroyed OnDestroyedEvent;

@@ -27,7 +27,7 @@ public:
 	bool IsDead() const { return bDead; }
 	bool IsInvulnerable() const { return bIsInvulnerable; }
 
-protected:
+public:
 	virtual void BeginPlay() override;
 	bool bDead = false;
 	bool bIsInvulnerable = false;

@@ -107,6 +107,13 @@ void UWeakPointComponent::OnWeakPointOverlap(UPrimitiveComponent* OverlappedComp
     }
 }
 
+void UWeakPointComponent::SetVisualMaterial(UMaterialInterface* NewMat)
+{
+    
+    if (VisualMesh && NewMat)
+        VisualMesh->SetMaterial(0, NewMat);
+}
+
 void UWeakPointComponent::ResetWeakPoint()
 {
     CurrentHealth = MaxHealth;
