@@ -1,10 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "../../Public/Enemies/BossBase.h"
+#include "Enemies/BossBase.h"
 #include "Engine/World.h"
 #include "Components/HealthComponent.h"
-#include "../../Public/Components/WeakPointComponent.h"
-#include "../../Public/Components/BulletSpawnerComponent.h"
+#include "Components/WeakPointComponent.h"
+#include "Components/BulletSpawnerComponent.h"
+#include "Subsystems/ProjectilesSubsystem.h"
+#include "Map/LevelPortal.h"
 
 // Sets default values
 ABossBase::ABossBase()
@@ -292,7 +294,25 @@ void ABossBase::SetInvulnerable(bool newstate)
 void ABossBase::Die()
 {
 	if (CurrentState == EBossState::Dead) return;
-	SetBossState(EBossState::Dead);
-	NotifySubscribers();
+    SetBossState(EBossState::Dead);
+	// Clear all active bullets from the world by asking the subsystem to return them to the pool
+	if (GetWorld() && GetWorld()->GetGameInstance())
+	{
+		UProjectilesSubsystem* ProjSys = GetWorld()->GetGameInstance()->GetSubsystem<UProjectilesSubsystem>();
+		if (ProjSys)
+		{
+			ProjSys->ReturnAllActiveBullets();
+		}
+
+		// Spawn a return portal that takes player back to Cuphead Map
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		FTransform SpawnTransform(FRotator::ZeroRotator, GetActorLocation() + FVector(300.0f, 0.0f, 50.0f));
+		ALevelPortal* ReturnPortal = GetWorld()->SpawnActor<ALevelPortal>(ALevelPortal::StaticClass(), SpawnTransform, SpawnParams);
+		if (ReturnPortal)
+		{
+			ReturnPortal->TargetLevelName = FName(TEXT("Map_CupHeadMap"));
+		}
+	}
 	Super::Die();
 }

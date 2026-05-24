@@ -14,8 +14,8 @@ class BULLETRUSH_API ABulletRushGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 	
-	ABulletRushGameModeBase();
 public:
+	ABulletRushGameModeBase();
 	virtual void BeginPlay() override;
 
 	UFUNCTION(Exec)

@@ -1,10 +1,22 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
-#include "../../Public/Subsystems/ProjectilesSubsystem.h"
+#include "Subsystems/ProjectilesSubsystem.h"
+#include "GameFramework/Actor.h"
+#include "Player/PlayerStatsInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 #include "Kismet/KismetMaterialLibrary.h"
+
+float UProjectilesSubsystem::GetPlayerProjectileSpeedMultiplier(AActor* OwnerActor)
+{
+    if (!OwnerActor) return 1.f;
+    // Try to get player stats interface from owner actor
+    if (OwnerActor->GetClass()->ImplementsInterface(UPlayerStatsInterface::StaticClass()))
+    {
+        IPlayerStatsInterface* PSI = Cast<IPlayerStatsInterface>(OwnerActor);
+        if (PSI) return PSI->GetProjectileSpeedMultiplier();
+    }
+    // fallback: try to find buff component and compute multipliers (not implemented here)
+    return 1.f;
+}
 
 void UProjectilesSubsystem::Tick(float DeltaTime)
 {
@@ -24,13 +36,13 @@ void UProjectilesSubsystem::Tick(float DeltaTime)
 			Params.AddIgnoredActor(Bullet);
 			//if (Bullet->BulletData.OwnerActor) Params.AddIgnoredActor(Bullet->BulletData.OwnerActor);
 
-			
 
-			// DETECCIÓN DE COLISIÓN LIGERA
+
+			// DETECCI?N DE COLISI?N LIGERA
 			FHitResult Hit;
 			//FCollisionQueryParams Params;
 			//Params.AddIgnoredActor(Bullet);
-			
+
 			if (Bullet->BulletData.OwnerActor)
 			{
 				Params.AddIgnoredActor(Bullet->BulletData.OwnerActor);
@@ -48,19 +60,18 @@ void UProjectilesSubsystem::Tick(float DeltaTime)
 			{
 				AActor* OtherActor = Hit.GetActor();
 
-			if (OtherActor && OtherActor != Bullet) // Verificamos que no sea la propia bala
+				if (OtherActor && OtherActor != Bullet) // Verificamos que no sea la propia bala
 				{
-					// 1. LÓGICA DE FACCIONES (Contexto que hablamos)
+					// 1. L?GICA DE FACCIONES (Contexto que hablamos)
 					bool bIsEnemy = OtherActor->ActorHasTag("Jefe") || OtherActor->ActorHasTag("Enemigo");
 					bool bIsPlayer = OtherActor->ActorHasTag("Player");
 
-					// 2. ¿QUIÉN LE PEGA A QUIÉN?
+					// 2. ?QUI?N LE PEGA A QUI?N?
 					// Si la bala es del jugador y le pega a un enemigo...
 					if (Bullet->BulletData.bIsPlayerBullet && bIsEnemy)
 					{
 						UGameplayStatics::ApplyDamage(OtherActor, Bullet->BulletData.Damage, nullptr, Bullet, UDamageType::StaticClass());
 						ReturnBullet(Bullet); // RECICLAMOS, NO DESTRUIMOS
-						if (Bullet->Tags.Num() > 0)	Bullet->Tags.Pop();
 						continue;
 					}
 
@@ -69,15 +80,13 @@ void UProjectilesSubsystem::Tick(float DeltaTime)
 					{
 						UGameplayStatics::ApplyDamage(OtherActor, Bullet->BulletData.Damage, nullptr, Bullet, UDamageType::StaticClass());
 						ReturnBullet(Bullet);
-						if (Bullet->Tags.Num() > 0)	Bullet->Tags.Pop();
 						continue;
 					}
 
-					// Si choca con una pared (sin tags), también se recicla
+					// Si choca con una pared (sin tags), tambi?n se recicla
 					if (!bIsEnemy && !bIsPlayer)
 					{
 						ReturnBullet(Bullet);
-						if (Bullet->Tags.Num() > 0)	Bullet->Tags.Pop();
 						continue;
 					}
 				}
@@ -86,10 +95,9 @@ void UProjectilesSubsystem::Tick(float DeltaTime)
 			// MOVIMIENTO
 			Bullet->SetActorLocation(NewLoc);
 
-			// RECICLAJE POR DISTANCIA (Límite de 8000 unidades)
-			if (FVector::Dist(NewLoc,Bullet->BulletData.SpawnLocation) > 8000.f)
+			// RECICLAJE POR DISTANCIA (L?mite de 8000 unidades)
+			if (FVector::Dist(NewLoc, Bullet->BulletData.SpawnLocation) > 8000.f)
 			{
-				if (Bullet->Tags.Num() > 0)	Bullet->Tags.Pop();
 				ReturnBullet(Bullet);
 			}
 		}
@@ -180,10 +188,13 @@ void UProjectilesSubsystem::ReinitializePool()
 	UE_LOG(LogTemp, Warning, TEXT("[ProjectilesSubsystem] Pool reinicializado con %d balas."), BulletPool.Num());
 }
 
-void UProjectilesSubsystem::Update(APublisher* Pusblisher)
+void UProjectilesSubsystem::ReturnAllActiveBullets()
 {
 	for (ABulletBase* Bullet : BulletPool)
 	{
-		ReturnBullet(Bullet);
+		if (Bullet && Bullet->BulletData.bIsActive)
+		{
+			ReturnBullet(Bullet);
+		}
 	}
 }

@@ -1,15 +1,17 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "../../Public/Map/LevelPortal.h"
+#include "Map/LevelPortal.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "../../Public/Player/TopDownPlayer.h"
-#include "../../Public/Subsystems/LevelRoutingSubsystem.h"
+#include "Player/TopDownPlayer.h"
+#include "Subsystems/LevelRoutingSubsystem.h"
+
+#include "Core/Publisher.h"
 
 //mas testeo
-#include "../../Public/Player/PlayingPlayer.h"
+#include "Player/PlayingPlayer.h"
 
 // Sets default values
 ALevelPortal::ALevelPortal()
@@ -81,5 +83,11 @@ void ALevelPortal::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void ALevelPortal::Update(APublisher* Publisher)
+{
+	// Simple update reaction: activate portal or change visual. For now no-op.
+	UE_LOG(LogTemp, Log, TEXT("ALevelPortal::Update called by Publisher %s"), Publisher ? *Publisher->GetName() : TEXT("(null)"));
 }
 

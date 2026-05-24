@@ -1,5 +1,5 @@
-#include "../../Public/Components/BulletSpawnerComponent.h"
-#include "../../Public/Combat/AttackPatterns.h"
+#include "Components/BulletSpawnerComponent.h"
+#include "Combat/AttackPatterns.h"
 
 UBulletSpawnerComponent::UBulletSpawnerComponent()
 {
@@ -45,11 +45,11 @@ void UBulletSpawnerComponent::InternalSpawn(FVector Origin, FVector Direction, f
 
 	if (Bullet)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Bala disparada desde %s hacia %s"), *Origin.ToString(), *Direction.ToString());
+		//UE_LOG(LogTemp, Log, TEXT("Bala disparada desde %s hacia %s"), *Origin.ToString(), *Direction.ToString());
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No se pudo generar la bala o no hay disponibles en el pool"));
+		//UE_LOG(LogTemp, Warning, TEXT("No se pudo generar la bala o no hay disponibles en el pool"));
 	}
 }
 

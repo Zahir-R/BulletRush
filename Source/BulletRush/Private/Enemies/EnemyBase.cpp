@@ -1,8 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Enemies/EnemyBase.h"
+#include "Engine/World.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/HealthComponent.h"
 #include "Components/BulletSpawnerComponent.h"
 
 // Sets default values
@@ -29,7 +28,6 @@ AEnemyBase::AEnemyBase()
 	bAutoStartAttack = true;
 
 	Tags.Add("Enemigo");
-	Tags.Add("Jefe");
 }
 
 // Called when the game starts or when spawned
@@ -97,7 +95,7 @@ void AEnemyBase::StartAttack()
 	TestCombo.Add(FAttackStep(EAttackType::Circle, 12, 600.0f, 0.0f));
 	BulletSpawner->StartSequence(TestCombo);
 
-	UE_LOG(LogTemp, Log, TEXT("[%s] Ejecutando disparo de prueba."), *GetName());
+//	UE_LOG(LogTemp, Log, TEXT("[%s] Ejecutando disparo de prueba."), *GetName());
 
 
 }
