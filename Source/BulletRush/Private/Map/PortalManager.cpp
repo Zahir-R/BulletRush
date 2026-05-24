@@ -1,8 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "../../Public/Map/PortalManager.h"
-#include "../../Public/Map/LevelPortal.h"
+#include "Map/PortalManager.h"
+#include "Map/LevelPortal.h"
+#include "Core/BulletRushGameModeBase.h"
+#include "Core/Chronostasis/ChronostasisEnemyFactory.h"
 #include "Engine/World.h"
 
 // Sets default values
@@ -31,8 +33,9 @@ void APortalManager::BeginPlay()
 			FActorSpawnParameters SpawnParams;
 			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-			// generamos el portal físicamente en el mapa
-			ALevelPortal* SpawnedPortal = World->SpawnActor<ALevelPortal>(ALevelPortal::StaticClass(), data.SpawnLocation, FRotator::ZeroRotator, SpawnParams);
+            // generamos el portal físicamente en el mapa
+			FTransform SpawnTransform(FRotator::ZeroRotator, data.SpawnLocation);
+			ALevelPortal* SpawnedPortal = World->SpawnActor<ALevelPortal>(ALevelPortal::StaticClass(), SpawnTransform, SpawnParams);
 
 			// asignamos
 			if (SpawnedPortal)

@@ -205,3 +205,28 @@ void APlayingPlayer::RefreshStatsFromChain()
 
 	UE_LOG(LogTemp, Warning, TEXT("STATS: SPEED: %f, MAXHEALTH: %f"), NewSpeed, NewMaxHealth);
 }
+
+void APlayingPlayer::RemoveDecorator(UPlayerStatsDecorator* Decorator)
+{
+	if (!Decorator) return;
+
+	UPlayerStatsDecorator* Current = Cast<UPlayerStatsDecorator>(CurrentStats.GetObject());
+	TScriptInterface<IPlayerStatsInterface> Prev = nullptr;
+
+	while (Current)
+	{
+		if (Current == Decorator)
+		{
+			if (Prev == nullptr) CurrentStats = Current->GetInnerStats();
+			else
+			{
+				UPlayerStatsDecorator* PrevDec = Cast<UPlayerStatsDecorator>(Prev.GetObject());
+				if (PrevDec) PrevDec->SetInner(Current->GetInnerStats());
+			}
+			break;
+		}
+		Prev = Current;
+		Current = Cast<UPlayerStatsDecorator>(Current->GetInnerStats().GetObject());
+	}
+	RefreshStatsFromChain();
+}

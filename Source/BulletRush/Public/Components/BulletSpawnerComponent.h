@@ -2,8 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "../Subsystems/ProjectilesSubsystem.h"
-#include "../Combat/AttackPatterns.h"
+#include "Subsystems/ProjectilesSubsystem.h"
+#include "Combat/AttackPatterns.h"
 #include "BulletSpawnerComponent.generated.h"
 
 class IAttackStrategy;
@@ -13,7 +13,7 @@ enum class EAttackType : uint8
 	Circle,
 	Sphere,
 	Spiral,
-	Burst
+	Burst,
 	// otros tipos de ataque
 };
 

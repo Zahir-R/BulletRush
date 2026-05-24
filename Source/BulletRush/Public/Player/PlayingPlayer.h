@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -70,6 +68,7 @@ public:
 	TScriptInterface<IPlayerStatsInterface> GetCurrentStats() const { return CurrentStats; }
 
 	void UpdateMovementSpeed();
+	void RemoveDecorator(UPlayerStatsDecorator* Decorator);
 
 	void RefreshStatsFromChain();
 };

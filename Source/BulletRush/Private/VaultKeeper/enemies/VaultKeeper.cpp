@@ -2,6 +2,7 @@
 #include "Components/WeakPointComponent.h"
 #include "Components/HealthComponent.h"
 #include "Components/BulletSpawnerComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 
@@ -17,10 +18,23 @@ AVaultKeeper::AVaultKeeper()
     UWeakPointComponent* WP2 = CreateDefaultSubobject<UWeakPointComponent>(TEXT("WeakPoint_Right"));
     WP2->SetupAttachment(RootComponent);
     WP2->SetRelativeLocation(FVector(0.0f, 200.0f, 0.0f));
+    
 
     UWeakPointComponent* WP3 = CreateDefaultSubobject<UWeakPointComponent>(TEXT("WeakPoint_Core"));
     WP3->SetupAttachment(RootComponent);
     WP3->SetRelativeLocation(FVector(200.0f, 0.0f, 0.0f));
+
+    // En AVaultKeeper::AVaultKeeper() — asigna materiales (reemplaza las rutas por las de tu proyecto)
+    static ConstructorHelpers::FObjectFinder<UMaterialInterface> OpenMatObj(TEXT("/Game/StarterContent/Materials/M_Tech_Hex_Tile_Pulse.M_Tech_Hex_Tile_Pulse"));
+    if (OpenMatObj.Succeeded())
+    {
+        OpenMaterial = OpenMatObj.Object;
+    }
+    static ConstructorHelpers::FObjectFinder<UMaterialInterface> ClosedMatObj(TEXT("Material'/Game/StarterContent/Materials/M_Tech_Hex_Tile.M_Tech_Hex_Tile'"));
+    if (ClosedMatObj.Succeeded())
+    {
+        ClosedMaterial = ClosedMatObj.Object;
+    }
 }
 
 void AVaultKeeper::BeginPlay()
@@ -73,10 +87,18 @@ void AVaultKeeper::Open()
     bIsOpen = true;
     UE_LOG(LogTemp, Warning, TEXT("[VaultKeeper] Abierto — WeakPoints activos"));
 
+    // Cambia material a estado Abierto (si están asignados)
+    if (BossMesh && OpenMaterial)
+    {
+        BossMesh->SetMaterial(0, OpenMaterial);
+    }
+
     for (UWeakPointComponent* WP : CachedWeakPoints)
     {
-        if (WP && !WP->IsDestroyed())
+        if (WP && !WP->IsDestroyed()) {
             WP->SetGenerateOverlapEvents(true);
+        }
+
     }
 
     // Curación pasiva cada segundo
@@ -108,6 +130,12 @@ void AVaultKeeper::Close()
 {
     bIsOpen = false;
     UE_LOG(LogTemp, Warning, TEXT("[VaultKeeper] Cerrado — WeakPoints inactivos"));
+
+    // Cambia material a estado Cerrado (si están asignados)
+    if (BossMesh && ClosedMaterial)
+    {
+        BossMesh->SetMaterial(0, ClosedMaterial);
+    }
 
     for (UWeakPointComponent* WP : CachedWeakPoints)
     {

@@ -10,7 +10,7 @@ APowerUpManager::APowerUpManager()
 	SpawnArea = CreateDefaultSubobject<UBoxComponent>(TEXT("SpawnArea"));
 	RootComponent = SpawnArea;
 
-	SpawnArea->SetBoxExtent(FVector(1000.0f, 1000.0f, 400.0f));
+	SpawnArea->SetBoxExtent(FVector(10000.0f, 10000.0f, 4000.0f));
 }
 
 void APowerUpManager::BeginPlay()
@@ -43,6 +43,9 @@ void APowerUpManager::SpawnRandomPowerUp()
 
 	FBoxSphereBounds Bounds = SpawnArea->Bounds;
 	FVector SpawnLoc = Bounds.Origin + FMath::RandPointInBox(FBox(-Bounds.BoxExtent, Bounds.BoxExtent));
+
+	// TODO while (estaOtroObjeto)
+		// FVector SpawnLoc = Bounds.Origin + FMath::RandPointInBox(FBox(-Bounds.BoxExtent, Bounds.BoxExtent));
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;

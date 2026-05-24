@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
-#include "EnemyBase.h"
+#include "Enemies/EnemyBase.h"
+#include "Components/HealthComponent.h"
+#include "Components/WeakPointComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "BossBase.generated.h"
 
@@ -12,7 +14,7 @@ class UShapeComponent;
 class UBulletSpawnerComponent;
 class UWeakPointComponent;
 
-UENUM(BluePrintType)
+UENUM(BlueprintType)
 enum class EBossState : uint8
 {
 	// Jefe invulnerable, ejecuta "animación" de entrada

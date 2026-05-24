@@ -19,6 +19,11 @@ protected:
     UPROPERTY(EditDefaultsOnly, Category = "VaultKeeper|Cycle")
     float OpenDuration = 6.0f;
 
+    UPROPERTY(EditDefaultsOnly, Category = "VaultKeeper|Visuals")
+	class UMaterialInterface* OpenMaterial;
+	UPROPERTY(EditDefaultsOnly, Category = "VaultKeeper|Visuals")
+	class UMaterialInterface* ClosedMaterial;
+
     UPROPERTY(EditDefaultsOnly, Category = "VaultKeeper|Cycle")
     float ClosedDuration = 4.0f;
 

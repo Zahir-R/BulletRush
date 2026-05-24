@@ -10,10 +10,36 @@ UBuffComponent::UBuffComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
+void UBuffComponent::RemoveDecoratorByClass(TSubclassOf<UPlayerStatsDecorator> DecoratorClass)
+{
+	for (int32 i = ActiveDecorators.Num() - 1; i >= 0; --i)
+	{
+		if (ActiveDecorators[i].Decorator && ActiveDecorators[i].Decorator->IsA(DecoratorClass))
+		{
+			RemoveDecorator(ActiveDecorators[i].Decorator);
+		}
+	}
+}
+
+bool UBuffComponent::HasDecoratorOfClass(TSubclassOf<UPlayerStatsDecorator> DecoratorClass) const
+{
+	for (const FActiveDecorator& Active : ActiveDecorators)
+	{
+		if (Active.Decorator && Active.Decorator->IsA(DecoratorClass)) return true;
+	}
+	return false;
+}
+
 void UBuffComponent::ApplyBuff(TSubclassOf<UPlayerStatsDecorator> DecoratorClass, float Duration, float Magnitude)
 {
+    // Forward to new helper and ignore returned instance
+	ApplyBuffAndReturn(DecoratorClass, Duration, Magnitude);
+}
+
+UPlayerStatsDecorator* UBuffComponent::ApplyBuffAndReturn(TSubclassOf<UPlayerStatsDecorator> DecoratorClass, float Duration, float Magnitude)
+{
 	APlayingPlayer* Player = Cast<APlayingPlayer>(GetOwner());
-	if (!Player || !DecoratorClass) return;
+	if (!Player || !DecoratorClass) return nullptr;
 
 	UPlayerStatsDecorator* NewDecorator = NewObject<UPlayerStatsDecorator>(this, DecoratorClass);
 
@@ -24,11 +50,15 @@ void UBuffComponent::ApplyBuff(TSubclassOf<UPlayerStatsDecorator> DecoratorClass
 
 	FActiveDecorator Active;
 	Active.Decorator = NewDecorator;
-	GetWorld()->GetTimerManager().SetTimer(Active.Timer, [this, NewDecorator]()
-		{
-			RemoveDecorator(NewDecorator);
-		}, Duration, false);
+	if (Duration > 0.f)
+	{
+		GetWorld()->GetTimerManager().SetTimer(Active.Timer, [this, NewDecorator]()
+			{
+				RemoveDecorator(NewDecorator);
+			}, Duration, false);
+	}
 	ActiveDecorators.Add(Active);
+	return NewDecorator;
 }
 
 void UBuffComponent::RemoveDecorator(UPlayerStatsDecorator* Decorator)

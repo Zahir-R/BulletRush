@@ -1,12 +1,13 @@
-#include "../../Public/Combat/AttackPatterns.h"
-#include "../../Public/Components/BulletSpawnerComponent.h"
+ï»¿#include "Combat/AttackPatterns.h"
 #include "Kismet/GameplayStatics.h"
+#include "GameFramework/Actor.h"
+#include "Components/BulletSpawnerComponent.h"
 
 void FCircleAttack::Execute(UBulletSpawnerComponent* Spawner, const FAttackParams& Params)
 {
 	if (Params.Count <= 0 || !Spawner) return;
 
-    for (int32 i = 0; i < Params.Count; ++i)
+	for (int32 i = 0; i < Params.Count; ++i)
 	{
 		float Angle = PI * 2.0f / Params.Count * i;
 		FVector Direction(FMath::Cos(Angle), FMath::Sin(Angle), 0.0f);
@@ -20,7 +21,7 @@ void FSpiralAttack::Execute(UBulletSpawnerComponent* Spawner, const FAttackParam
 {
 	if (Params.Count <= 0 || !Spawner) return;
 
-    for (int32 i = 0; i < Params.Count; ++i)
+	for (int32 i = 0; i < Params.Count; ++i)
 	{
 		float Angle = (PI * 2.0f / Params.Count) * i + FMath::DegreesToRadians(Params.SpecialParam);
 		FVector Direction(FMath::Cos(Angle), FMath::Sin(Angle), 0.0f);
@@ -37,7 +38,7 @@ void FSphereAttack::Execute(UBulletSpawnerComponent* Spawner, const FAttackParam
 {
 	if (Params.Count <= 0 || !Spawner) return;
 
-	// Esfera de Fibonacci para distribución casi uniforme en la superficie de la esfera
+	// Esfera de Fibonacci para distribuciï¿½n casi uniforme en la superficie de la esfera
 	const float GoldenAngle = PI * (3.0f - FMath::Sqrt(5.0f));
 
 	for (int32 i = 0; i < Params.Count; ++i)
@@ -59,18 +60,18 @@ void FSphereAttack::Execute(UBulletSpawnerComponent* Spawner, const FAttackParam
 
 void FBurstAttack::Execute(UBulletSpawnerComponent* Spawner, const FAttackParams& Params)
 {
-    if (Params.Count <= 0 || !Spawner || !Spawner->GetOwner()) return;
+	if (Params.Count <= 0 || !Spawner || !Spawner->GetOwner()) return;
 
-    struct FBurstData { int32 Remaining; FAttackParams Config; };
-    TSharedPtr<FBurstData> BurstData = MakeShared<FBurstData>(FBurstData{ Params.Count, Params });
+	struct FBurstData { int32 Remaining; FAttackParams Config; };
+	TSharedPtr<FBurstData> BurstData = MakeShared<FBurstData>(FBurstData{ Params.Count, Params });
 
     FTimerDelegate TimerDel;
-    FTimerHandle TempHandle;
+	TSharedPtr<FTimerHandle> TimerHandlePtr = MakeShared<FTimerHandle>();
 
-    TWeakObjectPtr<UBulletSpawnerComponent> SpawnerPtr(Spawner);
+	TWeakObjectPtr<UBulletSpawnerComponent> SpawnerPtr(Spawner);
 
-    TimerDel.BindLambda([SpawnerPtr, BurstData, TempHandle]() mutable
-        {
+	TimerDel.BindLambda([SpawnerPtr, BurstData, TimerHandlePtr]() mutable
+		{
 			if (SpawnerPtr.IsValid() && BurstData->Remaining > 0)
 			{
 				UWorld* World = SpawnerPtr->GetWorld();
@@ -92,9 +93,12 @@ void FBurstAttack::Execute(UBulletSpawnerComponent* Spawner, const FAttackParams
 			}
 			else if (SpawnerPtr.IsValid())
 			{
-				SpawnerPtr->GetWorld()->GetTimerManager().ClearTimer(TempHandle);
+				if (TimerHandlePtr.IsValid())
+				{
+					SpawnerPtr->GetWorld()->GetTimerManager().ClearTimer(*TimerHandlePtr);
+				}
 			}
-        });
+		});
 
-    Spawner->GetWorld()->GetTimerManager().SetTimer(TempHandle, TimerDel, Params.SpecialParam, true);
+	Spawner->GetWorld()->GetTimerManager().SetTimer(*TimerHandlePtr, TimerDel, Params.SpecialParam, true);
 }
