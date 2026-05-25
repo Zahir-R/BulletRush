@@ -17,6 +17,14 @@ ABulletBase::ABulletBase()
 		BulletMesh->SetStaticMesh(BulletMeshAsset.Object);
 		BulletMesh->SetWorldScale3D(FVector(0.4f)); // Escalamos la esfera para que parezca una bala
 	}
+
+	// Bullets should not simulate physics or block other actors. Movement and
+	// collision detection is handled by the ProjectilesSubsystem using traces.
+	BulletMesh->SetSimulatePhysics(false);
+	BulletMesh->SetEnableGravity(false);
+	BulletMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+ BulletMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+
 	DesactivateBullet();
 	
 

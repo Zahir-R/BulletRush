@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "../Components/BulletSpawnerComponent.h"
+#include "Components/BulletSpawnerComponent.h"
 #include "Components/HealthComponent.h"
 #include "Components/BuffComponent.h"
 #include "PlayerStatsInterface.h"
@@ -52,6 +52,9 @@ public:
 
 	void OnFirePressed();
 	void OnFireReleased();
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
+	void OnPlayerDeath();
 
 	TArray<UWeaponBaseComponent*> EquippedWeapons;
 	UWeaponBaseComponent* TestWeapon;
