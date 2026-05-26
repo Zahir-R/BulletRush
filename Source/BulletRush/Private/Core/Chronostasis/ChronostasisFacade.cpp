@@ -8,6 +8,7 @@
 #include "TimerManager.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/HealthComponent.h"
 
 AChronostasisFacade::AChronostasisFacade()
 {
@@ -42,6 +43,18 @@ void AChronostasisFacade::StartGame()
 {
     CurrentWaveIndex = 0;
     SlowTriggerCount = 0;
+    bPlayerTookDamage = false;
+    // Observe player health changes (Observer pattern)
+    APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+    if (PlayerPawn)
+    {
+        UHealthComponent* HealthComp = PlayerPawn->FindComponentByClass<UHealthComponent>();
+        if (HealthComp)
+        {
+            PlayerHealthComp = HealthComp;
+            HealthComp->OnHealthChanged.AddDynamic(this, &AChronostasisFacade::OnPlayerHealthChanged);
+        }
+    }
     StartSlowTimer();
     StartWave(0);
 }
@@ -71,6 +84,8 @@ void AChronostasisFacade::OnSlowTimerExpired()
         }
     }
     StartSlowTimer();
+    // Notify observers that a time stop happened
+    OnTimeStop.Broadcast();
 }
 
 void AChronostasisFacade::StartWave(int32 Index)
@@ -184,19 +199,27 @@ void AChronostasisFacade::OnAllWavesComplete()
 {
     if (OwningGameMode)
     {
-        if (SlowTriggerCount >= 3)
+        bool bSecretUnlocked = (SlowTriggerCount >= 3) && !bPlayerTookDamage;
+        AGameModeChronostasis* GM = Cast<AGameModeChronostasis>(OwningGameMode);
+        if (GM)
         {
-            // TODO: OwningGameMode implementa ActivatePortalToSecret
-            AGameModeChronostasis* GM = Cast<AGameModeChronostasis>(OwningGameMode);
-            if (GM) GM->ActivateSecretPortal();
-        }
-        else
-        {
-            AGameModeChronostasis* GM = Cast<AGameModeChronostasis>(OwningGameMode);
-            if (GM) GM->ActivateBossPortal();
+            if (bSecretUnlocked) GM->ActivateSecretPortal();
+            else GM->ActivateBossPortal();
         }
     }
     GetWorldTimerManager().ClearTimer(SlowTimerHandle);
+}
+
+void AChronostasisFacade::OnPlayerHealthChanged(float NewHealth)
+{
+    if (!PlayerHealthComp.IsValid()) return;
+    // If health decreased below max, consider player took damage
+    if (NewHealth < PlayerHealthComp->MaxHealth)
+    {
+        bPlayerTookDamage = true;
+        // Optionally unbind to avoid further calls
+        PlayerHealthComp->OnHealthChanged.RemoveDynamic(this, &AChronostasisFacade::OnPlayerHealthChanged);
+    }
 }
 
 void AChronostasisFacade::ActivatePortalToSecret()

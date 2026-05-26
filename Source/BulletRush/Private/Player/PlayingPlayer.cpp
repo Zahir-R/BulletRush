@@ -39,7 +39,7 @@ APlayingPlayer::APlayingPlayer()
 
 	CameraBoom->TargetArmLength = 400.0f; // Distancia a la que se colocará la cámara
 	CameraBoom->bUsePawnControlRotation = true; // Cámara rota con los controles
-	CameraBoom->SocketOffset = FVector(0.0f, 50.0f, 50.0f);
+	CameraBoom->SocketOffset = FVector(0.0f, 0.0f, 50.0f);
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);

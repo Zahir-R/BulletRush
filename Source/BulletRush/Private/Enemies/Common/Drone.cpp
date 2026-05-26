@@ -54,16 +54,40 @@ void ADrone::StartAttack()
 
 void ADrone::ApplySpeedBuff(float Duration, float FireRateMult, float ProjectileSpeedMult)
 {
+    // Command/Timer pattern: apply buff and schedule restoration after Duration
+    OriginalAttackInterval = AttackInterval;
+    OriginalProjectileSpeedMultiplier = CurrentProjectileSpeedMultiplier;
+
     AttackInterval = AttackInterval / FireRateMult;
     CurrentProjectileSpeedMultiplier *= ProjectileSpeedMult;
     StopAttackLoop();
     BeginAttackLoop();
+
+    // Use a weak pointer in the timer lambda to avoid dangling references
+    TWeakObjectPtr<ADrone> WeakThis(this);
+    if (GetWorld())
+    {
+        GetWorldTimerManager().ClearTimer(SpeedBuffRestoreTimerHandle);
+        FTimerDelegate Del = FTimerDelegate::CreateLambda([WeakThis]() {
+            if (WeakThis.IsValid())
+            {
+                WeakThis->RemoveSpeedBuff();
+            }
+        });
+        GetWorldTimerManager().SetTimer(SpeedBuffRestoreTimerHandle, Del, Duration, false);
+    }
 }
 
 void ADrone::RemoveSpeedBuff()
 {
-    AttackInterval = 0.5f;
-    CurrentProjectileSpeedMultiplier = 1.f;
+    // Restore original values if they were saved
+    AttackInterval = (OriginalAttackInterval > 0.f) ? OriginalAttackInterval : AttackInterval;
+    CurrentProjectileSpeedMultiplier = (OriginalProjectileSpeedMultiplier > 0.f) ? OriginalProjectileSpeedMultiplier : CurrentProjectileSpeedMultiplier;
     StopAttackLoop();
     BeginAttackLoop();
+    // Clear timer
+    if (GetWorld())
+    {
+        GetWorldTimerManager().ClearTimer(SpeedBuffRestoreTimerHandle);
+    }
 }

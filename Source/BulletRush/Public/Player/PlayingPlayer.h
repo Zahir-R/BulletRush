@@ -69,6 +69,7 @@ public:
 	float GetTotalSpeedMultiplier() const { return CurrentStats->GetSpeedMultiplier(); }
 	float GetTotalMaxHealthBonus() const { return CurrentStats->GetMaxHealthBonus(); }
 	TScriptInterface<IPlayerStatsInterface> GetCurrentStats() const { return CurrentStats; }
+	float GetTotalProjectileSpeedMultiplier() const { return CurrentStats->GetProjectileSpeedMultiplier(); }
 
 	void UpdateMovementSpeed();
 	void RemoveDecorator(UPlayerStatsDecorator* Decorator);

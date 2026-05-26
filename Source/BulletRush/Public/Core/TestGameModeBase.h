@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "Core/Requirements/RequirementManager.h"
 #include "TestGameModeBase.generated.h"
 
 class ATestFacade;
@@ -23,4 +24,8 @@ public:
 	virtual void BeginPlay() override;
 
 	ATestFacade* Arquitect;
+
+	URequirementManager* RequirementManager;
+	void InitializeRequirements();
+	void SpawnCollectibles(const TArray<FVector>& Locations);
 };

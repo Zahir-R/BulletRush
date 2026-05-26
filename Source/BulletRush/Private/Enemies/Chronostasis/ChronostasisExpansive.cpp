@@ -32,15 +32,8 @@ void AChronostasisExpansive::TriggerPulse()
     {
         if (AChronostasisDrone* Drone = Cast<AChronostasisDrone>(A))
         {
-            Drone->ApplySpeedBuff(5.0f, 5.0f, 5.0f);
-            FTimerHandle LocalHandle;
-            FTimerDelegate Del = FTimerDelegate::CreateLambda([Drone]() {
-                if (Drone && !Drone->IsPendingKill())
-                {
-                    Drone->RemoveSpeedBuff();
-                }
-            });
-            Drone->GetWorldTimerManager().SetTimer(LocalHandle, Del, 2.0f, false);
+            // Let the Drone manage restoration; apply a shorter, moderate buff
+            Drone->ApplySpeedBuff(2.0f, 2.0f, 1.5f);
         }
     }
 

@@ -1,6 +1,7 @@
 #include "Core/Chronostasis/GameModeChronostasis.h"
 #include "Kismet/GameplayStatics.h"
 #include "Core/Chronostasis/ChronostasisFacade.h"
+#include "Map/PortalTrigger.h"
 
 void AGameModeChronostasis::BeginPlay()
 {
@@ -41,11 +42,26 @@ void AGameModeChronostasis::BeginPlay()
 
 void AGameModeChronostasis::ActivateSecretPortal()
 {
-    // Placeholder - actual portal activation implemented elsewhere
+    if (SecretPortal)
+    {
+        SecretPortal->bIsActive = true;
+    }
+    if (BossPortal)
+    {
+        BossPortal->bIsActive = false;
+    }
     UE_LOG(LogTemp, Log, TEXT("ActivateSecretPortal called"));
 }
 
 void AGameModeChronostasis::ActivateBossPortal()
 {
+    if (BossPortal)
+    {
+        BossPortal->bIsActive = true;
+    }
+    if (SecretPortal)
+    {
+        SecretPortal->bIsActive = false;
+    }
     UE_LOG(LogTemp, Log, TEXT("ActivateBossPortal called"));
 }

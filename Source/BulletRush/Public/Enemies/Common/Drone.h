@@ -23,4 +23,8 @@ protected:
     float ProjectileSpeed;
     float Damage;
     float CurrentProjectileSpeedMultiplier;
+    // Members for speed buff restoration
+    float OriginalAttackInterval;
+    float OriginalProjectileSpeedMultiplier;
+    FTimerHandle SpeedBuffRestoreTimerHandle;
 };
