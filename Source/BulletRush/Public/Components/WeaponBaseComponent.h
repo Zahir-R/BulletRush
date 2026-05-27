@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Weapons/Weaponsinterface.h"
 #include "Components/SceneComponent.h"
 #include "WeaponBaseComponent.generated.h"
 
@@ -24,14 +25,20 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	TScriptInterface<IWeaponsInterface> FireStrategy;
+
 	virtual void StartFiring();
 	virtual void StopFiring();
 
-	float FireRate;
+	float FireRate = .1f;
 
 	FTimerHandle FiringTimer;
 
-	virtual void ExecuteFire();
-		
 	float BaseDamage = 20.0f;
+
+	float BaseProjectileSpeed = 7500.f;
+	
+	void SetFireStrategy(
+		TScriptInterface<IWeaponsInterface> NewStrategy
+	);
 };

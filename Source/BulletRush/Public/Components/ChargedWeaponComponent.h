@@ -24,5 +24,5 @@ protected:
 	float Damage = 10.0f;
 	float MaxDamage = 160.0f;
 
-	void ExecuteFire() override;
+	/*void ExecuteFire(); */
 };
