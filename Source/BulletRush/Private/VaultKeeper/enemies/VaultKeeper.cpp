@@ -2,6 +2,7 @@
 #include "Components/WeakPointComponent.h"
 #include "Components/HealthComponent.h"
 #include "Components/BulletSpawnerComponent.h"
+#include "Enemies/BossState.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 
@@ -40,7 +41,7 @@ AVaultKeeper::AVaultKeeper()
 
 void AVaultKeeper::BeginPlay()
 {
-    Super::BeginPlay();
+    Super::BeginPlay(); // BossBase crea los estados y llama ChangeState(IntroState)
 
     GetComponents<UWeakPointComponent>(CachedWeakPoints);
     CachedPlayer = UGameplayStatics::GetPlayerPawn(this, 0);
@@ -52,6 +53,9 @@ void AVaultKeeper::BeginPlay()
         if (WP) WP->SetGenerateOverlapEvents(false);
 }
 
+// ---------------------------------------------------------
+// TICK
+// ---------------------------------------------------------
 void AVaultKeeper::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
@@ -60,18 +64,15 @@ void AVaultKeeper::Tick(float DeltaTime)
 
     if (!bIsStunned)
     {
-        // Flotacion
         float TargetZ = HomeZ + FMath::Sin(GetWorld()->GetTimeSeconds() * HoverFrequency) * HoverAmplitude;
         CurrentZ = FMath::FInterpTo(CurrentZ, TargetZ, DeltaTime, 3.0f);
 
-        // Rotacion constante sobre Z
         FRotator NewRot = GetActorRotation();
         NewRot.Yaw += RotationRate * DeltaTime;
         SetActorRotation(NewRot);
     }
     else
     {
-        // Stunned: cae levemente
         float StunnedZ = HomeZ - 50.0f;
         CurrentZ = FMath::FInterpTo(CurrentZ, StunnedZ, DeltaTime, 2.0f);
     }
@@ -80,34 +81,42 @@ void AVaultKeeper::Tick(float DeltaTime)
 }
 
 // ---------------------------------------------------------
-// ESTADO
+// CHANGESTATE: intercepta los estados y ejecuta lógica propia
 // ---------------------------------------------------------
-void AVaultKeeper::SetBossState(EBossState NewState)
+void AVaultKeeper::ChangeState(UBossState* NewState)
 {
-    Super::SetBossState(NewState);
+    Super::ChangeState(NewState);
 
-    if (NewState == EBossState::Idle)
+    if (!NewState) return;
+
+    FName StateName = NewState->GetStateTagName();
+
+    if (StateName == "Idle")
     {
         Close();
     }
-    else if (NewState == EBossState::Stunned)
-    {
-        bIsStunned = true;
-        GetWorld()->GetTimerManager().ClearTimer(CycleTimer);
-        GetWorld()->GetTimerManager().ClearTimer(HealTimer);
-        GetWorld()->GetTimerManager().ClearTimer(AttackLoopTimer);
-    }
-    else if (NewState == EBossState::Attacking)
+    else if (StateName == "Attacking")
     {
         bIsStunned = false;
         RegenerateWeakPoints();
         Close();
     }
-    else if (NewState == EBossState::PhaseTransition)
+    else if (StateName == "Stunned")
     {
-        // Fase critica: más agresivo
+        bIsStunned = true;
+        ClearAllTimers();
+    }
+    else if (StateName == "PhaseTransition")
+    {
+        // Fase critica: mas agresivo
         ClosedDuration = 2.0f;
         OpenDuration = 3.0f;
+        ClearAllTimers();
+    }
+    else if (StateName == "Dead")
+    {
+        bIsStunned = true;
+        ClearAllTimers();
     }
 }
 
@@ -128,7 +137,7 @@ void AVaultKeeper::Open()
         if (WP && !WP->IsDestroyed())
             WP->SetGenerateOverlapEvents(true);
 
-    // Curación pasiva
+    // Curacion pasiva
     GetWorld()->GetTimerManager().SetTimer(
         HealTimer, this, &AVaultKeeper::ApplyPassiveHeal, 1.0f, true);
 
@@ -163,7 +172,7 @@ void AVaultKeeper::Close()
     GetWorld()->GetTimerManager().ClearTimer(HealTimer);
     GetWorld()->GetTimerManager().ClearTimer(AttackLoopTimer);
 
-    // Ataque inmediato al cerrarse
+    // Ataque inmediato
     Attack();
 
     // Loop de ataque cerrado
@@ -176,6 +185,16 @@ void AVaultKeeper::Close()
 }
 
 // ---------------------------------------------------------
+// CLEAR TIMERS
+// ---------------------------------------------------------
+void AVaultKeeper::ClearAllTimers()
+{
+    GetWorld()->GetTimerManager().ClearTimer(CycleTimer);
+    GetWorld()->GetTimerManager().ClearTimer(HealTimer);
+    GetWorld()->GetTimerManager().ClearTimer(AttackLoopTimer);
+}
+
+// ---------------------------------------------------------
 // ATAQUE
 // ---------------------------------------------------------
 void AVaultKeeper::Attack()
@@ -184,22 +203,19 @@ void AVaultKeeper::Attack()
 
     if (!bIsOpen)
     {
-        // 3 patrones cerrado rotando con AttackIdentifier
         switch (AttackIdentifier % 3)
         {
         case 0:
         {
-            // Circulo + espiral doble
-            TArray<FAttackStep> Combo1;
-            Combo1.Add(FAttackStep(EAttackType::Circle, 24, 400.0f, 0.3f));
-            Combo1.Add(FAttackStep(EAttackType::Spiral, 16, 350.0f, 0.5f, 15.0f));
-            Combo1.Add(FAttackStep(EAttackType::Spiral, 16, 350.0f, 0.5f, -15.0f));
-            BulletSpawner->StartSequence(Combo1);
+            TArray<FAttackStep> VK_Closed0;
+            VK_Closed0.Add(FAttackStep(EAttackType::Circle, 24, 400.0f, 0.3f));
+            VK_Closed0.Add(FAttackStep(EAttackType::Spiral, 16, 350.0f, 0.5f, 15.0f));
+            VK_Closed0.Add(FAttackStep(EAttackType::Spiral, 16, 350.0f, 0.5f, -15.0f));
+            BulletSpawner->StartSequence(VK_Closed0);
             break;
         }
         case 1:
         {
-            // 3 bursts rapidos hacia el jugador
             if (!CachedPlayer)
                 CachedPlayer = UGameplayStatics::GetPlayerPawn(this, 0);
             if (!CachedPlayer) break;
@@ -207,20 +223,19 @@ void AVaultKeeper::Attack()
             FVector Dir = (CachedPlayer->GetActorLocation() - GetActorLocation()).GetSafeNormal();
             FVector Origin = GetActorLocation() + Dir * 150.0f;
 
-            TArray<FAttackStep> Combo21;
-            Combo21.Add(FAttackStep(EAttackType::Burst, 6, 700.0f, 0.1f, Origin));
-            Combo21.Add(FAttackStep(EAttackType::Burst, 6, 700.0f, 0.1f, Origin));
-            Combo21.Add(FAttackStep(EAttackType::Burst, 6, 700.0f, 0.1f, Origin));
-            BulletSpawner->StartSequence(Combo21);
+            TArray<FAttackStep> VK_Closed1;
+            VK_Closed1.Add(FAttackStep(EAttackType::Burst, 6, 700.0f, 0.1f, Origin));
+            VK_Closed1.Add(FAttackStep(EAttackType::Burst, 6, 700.0f, 0.1f, Origin));
+            VK_Closed1.Add(FAttackStep(EAttackType::Burst, 6, 700.0f, 0.1f, Origin));
+            BulletSpawner->StartSequence(VK_Closed1);
             break;
         }
         case 2:
         {
-            // Esfera lenta + circulo rapido encima
-            TArray<FAttackStep> Combo3;
-            Combo3.Add(FAttackStep(EAttackType::Sphere, 200, 250.0f, 0.4f, 0.1f));
-            Combo3.Add(FAttackStep(EAttackType::Circle, 20, 600.0f, 0.3f));
-            BulletSpawner->StartSequence(Combo3);
+            TArray<FAttackStep> VK_Closed2;
+            VK_Closed2.Add(FAttackStep(EAttackType::Sphere, 200, 250.0f, 0.4f, 0.1f));
+            VK_Closed2.Add(FAttackStep(EAttackType::Circle, 20, 600.0f, 0.3f));
+            BulletSpawner->StartSequence(VK_Closed2);
             break;
         }
         }
@@ -228,7 +243,6 @@ void AVaultKeeper::Attack()
     }
     else
     {
-        // 2 patrones abierto alternando
         if (!CachedPlayer)
             CachedPlayer = UGameplayStatics::GetPlayerPawn(this, 0);
         if (!CachedPlayer) return;
@@ -239,20 +253,18 @@ void AVaultKeeper::Attack()
         {
         case 0:
         {
-            // Burst guiado rapido
             FVector Origin = GetActorLocation() + Dir * 150.0f;
-            TArray<FAttackStep> Combo4;
-            Combo4.Add(FAttackStep(EAttackType::Burst, 8, 650.0f, 0.12f, Origin));
-            BulletSpawner->StartSequence(Combo4);
+            TArray<FAttackStep> VK_Open0;
+            VK_Open0.Add(FAttackStep(EAttackType::Burst, 8, 650.0f, 0.12f, Origin));
+            BulletSpawner->StartSequence(VK_Open0);
             break;
         }
         case 1:
         {
-            // Espiral desde posicion del jugador
-            //FVector PlayerPos = CachedPlayer->GetActorLocation();
-            //TArray<FAttackStep> Combo5;
-            //Combo5.Add(FAttackStep(EAttackType::Spiral, 20, 400.0f, 0.3f, PlayerPos, 12.0f));
-            //BulletSpawner->StartSequence(Combo5);
+            FVector PlayerPos = CachedPlayer->GetActorLocation();
+            TArray<FAttackStep> VK_Open1;
+            VK_Open1.Add(FAttackStep(EAttackType::Spiral, 20, 400.0f, 0.3f, PlayerPos, 12.0f));
+            BulletSpawner->StartSequence(VK_Open1);
             break;
         }
         }
@@ -268,28 +280,28 @@ void AVaultKeeper::HandleWeakPointDestroyed()
     ActiveWeakPoints--;
     UE_LOG(LogTemp, Warning, TEXT("[VaultKeeper] WeakPoint destruido. Quedan: %d"), ActiveWeakPoints);
 
-    // Ataque de rabia inmediato
     RageAttack();
 
     if (ActiveWeakPoints <= 0)
     {
-        GetWorld()->GetTimerManager().ClearTimer(CycleTimer);
-        GetWorld()->GetTimerManager().ClearTimer(HealTimer);
-        GetWorld()->GetTimerManager().ClearTimer(AttackLoopTimer);
-        SetBossState(EBossState::Stunned);
+        ClearAllTimers();
+        ChangeState(StunnedState); // Usa el objeto de estado del BossBase
     }
 }
 
+// ---------------------------------------------------------
+// RAGE ATTACK
+// ---------------------------------------------------------
 void AVaultKeeper::RageAttack()
 {
     if (!BulletSpawner) return;
-    TArray<FAttackStep> Rage;
-    Rage.Add(FAttackStep(EAttackType::Sphere, 200, 500.0f, 0.2f, 0.1f));
-    BulletSpawner->StartSequence(Rage);
+    TArray<FAttackStep> VK_Rage;
+    VK_Rage.Add(FAttackStep(EAttackType::Sphere, 200, 500.0f, 0.2f, 0.1f));
+    BulletSpawner->StartSequence(VK_Rage);
 }
 
 // ---------------------------------------------------------
-// CURACIÓN PASIVA
+// CURACION PASIVA
 // ---------------------------------------------------------
 void AVaultKeeper::ApplyPassiveHeal()
 {
@@ -319,10 +331,8 @@ void AVaultKeeper::UpdateWeakPointMaterials(bool bOpen)
 {
     UMaterialInterface* Mat = bOpen ? WPOpenMaterial : WPClosedMaterial;
     for (UWeakPointComponent* WP : CachedWeakPoints)
-    {
         if (WP && !WP->IsDestroyed())
             WP->SetVisualMaterial(Mat);
-    }
 }
 
 // ---------------------------------------------------------
@@ -331,8 +341,6 @@ void AVaultKeeper::UpdateWeakPointMaterials(bool bOpen)
 void AVaultKeeper::Die()
 {
     bIsStunned = true;
-    GetWorld()->GetTimerManager().ClearTimer(CycleTimer);
-    GetWorld()->GetTimerManager().ClearTimer(HealTimer);
-    GetWorld()->GetTimerManager().ClearTimer(AttackLoopTimer);
-    Super::Die();
+    ClearAllTimers();
+    Super::Die(); // BossBase llama ChangeState(DeadState)
 }

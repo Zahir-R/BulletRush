@@ -64,12 +64,14 @@ protected:
 
     void Open();
     void Close();
+    void ClearAllTimers();
     void RegenerateWeakPoints();
     void ApplyPassiveHeal();
-    void RageAttack(); // Al destruirse un WeakPoint
+    void RageAttack();
     void UpdateWeakPointMaterials(bool bOpen);
 
-    virtual void SetBossState(EBossState NewState) override;
+    // Overrides
+    virtual void ChangeState(UBossState* NewState) override;
     virtual void HandleWeakPointDestroyed() override;
     virtual void Attack() override;
     virtual void Die() override;
