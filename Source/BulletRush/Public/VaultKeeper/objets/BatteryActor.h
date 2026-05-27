@@ -36,7 +36,11 @@ public:
     UPROPERTY(EditDefaultsOnly, Category = "Battery")
     float HealRate = 20.0f;
 
+<<<<<<< HEAD
     UBulletSpawnerComponent* BulletSpawner;
+=======
+	UBulletSpawnerComponent* BulletSpawner;
+>>>>>>> 7a2395018da892658d5bc51ec64deb89816a554d
 
 private:
     ADronMecha* LinkedDrone = nullptr;
