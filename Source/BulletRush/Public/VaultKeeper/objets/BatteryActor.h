@@ -24,7 +24,7 @@ public:
     virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
         class AController* EventInstigator, AActor* DamageCauser) override;
 
-    // Vincula un drone a esta batería
+    // Vincula un drone a esta bater?a
     void LinkDrone(ADronMecha* Drone);
 
     UPROPERTY(VisibleAnywhere, Category = "Components")
@@ -36,11 +36,14 @@ public:
     UPROPERTY(EditDefaultsOnly, Category = "Battery")
     float HealRate = 20.0f;
 
+    UBulletSpawnerComponent* BulletSpawner;
+
 private:
     ADronMecha* LinkedDrone = nullptr;
     FTimerHandle HealLoop;
 
-    void ApplyHeal();
+    UFUNCTION()
     void OnDeath();
+    void ApplyHeal();
     void Dead();
 };

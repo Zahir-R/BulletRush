@@ -19,12 +19,13 @@ ABatteryActor::ABatteryActor()
     {
         BatteryMesh->SetStaticMesh(MeshAsset.Object);
     }
-
+    BatteryMesh->SetGenerateOverlapEvents(true);
 
     HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
     HealthComp->MaxHealth = 150.0f;
 
-    Tags.Add(FName("Enemy"));
+    Tags.Add(FName("Enemigo"));
+    BulletSpawner = CreateDefaultSubobject<UBulletSpawnerComponent>(TEXT("BulletSpawner"));
 }
 
 void ABatteryActor::BeginPlay()
@@ -34,12 +35,12 @@ void ABatteryActor::BeginPlay()
     HealthComp->OnDeath.AddDynamic(this, &ABatteryActor::OnDeath);
 
 
-    // Curación cada segundo
+    // Curacion cada 2 segundo
     GetWorld()->GetTimerManager().SetTimer(
         HealLoop,
         this,
         &ABatteryActor::ApplyHeal,
-        1.0f,
+        2.0f,
         true
     );
 }
@@ -75,10 +76,10 @@ void ABatteryActor::Dead()
 {
     UBulletSpawnerComponent* Spawner = FindComponentByClass<UBulletSpawnerComponent>();
     if (!Spawner) return;
-    // Detenemos curación
+    // Detenemos curaci?n
     GetWorld()->GetTimerManager().ClearTimer(HealLoop);
 
-    // Notificamos al drone que perdió su batería
+    // Notificamos al drone que perdi? su bater?a
     NotifySubscribers();
 
     UE_LOG(LogTemp, Warning, TEXT("[BatteryActor] Destruida, drone sin curacion"));
@@ -89,4 +90,3 @@ void ABatteryActor::Dead()
 
     Destroy();
 }
-

@@ -14,9 +14,9 @@ ADronMecha::ADronMecha()
     PrimaryActorTick.bCanEverTick = true;
     CurrentDroneState = EDroneState::Closed;
 
-    AttackInterval = 0.0f;    // Desactivamos el loop heredado de ADrone
-    bAutoStartAttack = false; // El ciclo lo manejamos nosotros
-	// asignamos los materiales aqui para evitar que el editor los reseteé al compilar
+    AttackInterval = 0.0f;    
+    bAutoStartAttack = false; 
+	// asignamos los materiales 
     static ConstructorHelpers::FObjectFinder<UMaterialInterface> OpenMat(TEXT("Material'/Game/StarterContent/Materials/M_Tech_Hex_Tile_Pulse.M_Tech_Hex_Tile_Pulse'"));
     if (OpenMat.Succeeded())
         OpenMaterial = OpenMat.Object;
@@ -123,20 +123,19 @@ void ADronMecha::StartAttack()
     }
     else
     {
-        // Guiado al jugador
         
         if (CurrentDroneState == EDroneState::Open)
         {
             APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
             if (!PlayerPawn) return;
             FVector Dir = (PlayerPawn->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-        // Use BulletSpawner if present
+   
 		    if (Spawner)
             {
             float EffectiveSpeed = ProjectileSpeed * CurrentProjectileSpeedMultiplier;
             Spawner->InternalSpawn(GetActorLocation(), Dir, EffectiveSpeed, Damage);
             }  
-            // --- EFECTO RETROCESO ---
+            // EFECTO RETROCESO
             FVector BackwardDirection = -GetActorForwardVector();
             AddActorWorldOffset(BackwardDirection * 100.0f, true);
         }
