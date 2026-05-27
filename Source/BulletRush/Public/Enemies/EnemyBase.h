@@ -20,17 +20,18 @@ public:
 	// Sets default values for this character's properties
 	AEnemyBase();
 
+
 public:
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UHealthComponent* HealthComp;
 
 	float MaxHealth;
 	float CurrentHealth;
 	bool bIsInvulnerable;
-
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UHealthComponent* HealthComp;
 
 	UPROPERTY(EditAnywhere, Category = "Enemy")
 	FName TeamTag;
@@ -45,8 +46,6 @@ public:
 
 	UFUNCTION()
 	virtual void OnHealthDeath();
-
-public:	
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
 		class AController* EventInstigator, AActor* DamageCauser) override;
