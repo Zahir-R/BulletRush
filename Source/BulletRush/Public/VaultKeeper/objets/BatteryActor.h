@@ -36,11 +36,14 @@ public:
     UPROPERTY(EditDefaultsOnly, Category = "Battery")
     float HealRate = 20.0f;
 
+	UBulletSpawnerComponent* BulletSpawner;
+
 private:
     ADronMecha* LinkedDrone = nullptr;
     FTimerHandle HealLoop;
 
-    void ApplyHeal();
+    UFUNCTION()
     void OnDeath();
+    void ApplyHeal();
     void Dead();
 };

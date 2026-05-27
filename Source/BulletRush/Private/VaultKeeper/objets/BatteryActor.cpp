@@ -19,12 +19,13 @@ ABatteryActor::ABatteryActor()
     {
         BatteryMesh->SetStaticMesh(MeshAsset.Object);
     }
-
+	BatteryMesh->SetGenerateOverlapEvents(true);
 
     HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
     HealthComp->MaxHealth = 150.0f;
 
-    Tags.Add(FName("Enemy"));
+    Tags.Add(FName("Enemigo"));
+    BulletSpawner = CreateDefaultSubobject<UBulletSpawnerComponent>(TEXT("BulletSpawner"));
 }
 
 void ABatteryActor::BeginPlay()
