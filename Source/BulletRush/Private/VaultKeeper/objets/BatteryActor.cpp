@@ -19,11 +19,8 @@ ABatteryActor::ABatteryActor()
     {
         BatteryMesh->SetStaticMesh(MeshAsset.Object);
     }
-<<<<<<< HEAD
-    BatteryMesh->SetGenerateOverlapEvents(true);
-=======
+
 	BatteryMesh->SetGenerateOverlapEvents(true);
->>>>>>> 7a2395018da892658d5bc51ec64deb89816a554d
 
     HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
     HealthComp->MaxHealth = 150.0f;
