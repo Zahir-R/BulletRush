@@ -4,7 +4,7 @@
 #include "Combat/MovementStrategy/MovementStrat.h"
 #include "ChronostasisExpansive.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class AChronostasisExpansive : public AEnemyBase
 {
     GENERATED_BODY()

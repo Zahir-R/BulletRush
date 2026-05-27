@@ -22,7 +22,7 @@ struct FBulletData
 	FBulletData() : Direction(FVector::ZeroVector), SpawnLocation(FVector::ZeroVector), Damage(0.f), Speed(0.f), bIsActive(false), bIsPlayerBullet(false), OwnerActor(nullptr) {}
 };
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API ABulletBase : public AActor
 {
 	GENERATED_BODY()

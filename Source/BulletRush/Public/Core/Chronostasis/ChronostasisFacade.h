@@ -1,11 +1,13 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Core/Chronostasis/ChronostasisEnemyFactory.h"
+#include "Core/Chronostasis/ChronostasisFactoryEnemy.h"
+#include "UObject/Interface.h"
 #include "ChronostasisFacade.generated.h"
 
 class AEnemyBase;
 class ABulletRushGameModeBase;
+class UChronostasisFactoryEnemy;
 
 USTRUCT()
 struct FWaveConfig
@@ -36,7 +38,6 @@ public:
     void ActivatePortalToSecret();
     void ActivatePortalToBoss();
 
-    // Observer pattern: broadcast when a time stop occurs
     FSimpleMulticastDelegate OnTimeStop;
 
 protected:
@@ -53,7 +54,8 @@ protected:
     // Weak pointer to the player's health component for damage observation
     TWeakObjectPtr<class UHealthComponent> PlayerHealthComp;
 
-    TUniquePtr<IChronostasisEnemyFactory> Factory;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Factory")
+	UChronostasisFactoryEnemy* EnemyFactory;
 
     FTimerHandle SlowTimerHandle;
     void StartSlowTimer();

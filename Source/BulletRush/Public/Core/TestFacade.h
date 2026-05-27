@@ -8,7 +8,7 @@
 
 class APlayingPlayer;
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API ATestFacade : public AActor
 {
 	GENERATED_BODY()

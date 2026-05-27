@@ -8,7 +8,7 @@ class USphereComponent;
 class UBuffComponent;
 class UPlayerStatsDecorator;
 
-UCLASS()
+UCLASS(Blueprintable)
 class AChronostasisMass : public AEnemyBase
 {
     GENERATED_BODY()

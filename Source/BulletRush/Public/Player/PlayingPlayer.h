@@ -14,7 +14,7 @@ class UStaticMeshComponent;
 class UWeaponBaseComponent;
 class UPlayerStatsBase;
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API APlayingPlayer : public ACharacter
 {
 	GENERATED_BODY()

@@ -5,7 +5,7 @@
 #include "Combat/MovementStrategy/MovementStrat.h"
 #include "Drone.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API ADrone : public AEnemyBase
 {
     GENERATED_BODY()

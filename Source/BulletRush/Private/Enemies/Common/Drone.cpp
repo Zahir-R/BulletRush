@@ -14,14 +14,14 @@ ADrone::ADrone()
     ProjectileSpeed = 2000.f;
     Damage = 10.f;
     CurrentProjectileSpeedMultiplier = 1.f;
+    MovementStrategy = CreateDefaultSubobject<USinusoidalSeekMovement>(TEXT("SinusoidalMovement"));
 }
 
 void ADrone::BeginPlay()
 {
     Super::BeginPlay();
-    MovementStrategy = CreateDefaultSubobject<USinusoidalSeekMovement>(TEXT("SinusoidalMovement"));
     USinusoidalSeekMovement* SinMovement = Cast<USinusoidalSeekMovement>(MovementStrategy);
-    if (SinMovement) SinMovement->Amplitude = 200.f; SinMovement->Frequency = 2.f; SinMovement->StopDistance = 500.f;
+    if (SinMovement) { SinMovement->Amplitude = 200.f; SinMovement->Frequency = 2.f; SinMovement->StopDistance = 500.f; }
     BeginAttackLoop();
 }
 

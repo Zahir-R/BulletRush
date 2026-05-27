@@ -3,7 +3,7 @@
 #include "Enemies/Common/Drone.h"
 #include "ChronostasisDrone.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API AChronostasisDrone : public ADrone
 {
     GENERATED_BODY()

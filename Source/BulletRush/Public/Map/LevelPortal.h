@@ -11,7 +11,7 @@ class UBoxComponent;
 class UStaticMeshComponent;
 class ULevelRoutingSubsystem;
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API ALevelPortal : public AActor, public ISubscriber
 {
 	GENERATED_BODY()

@@ -4,7 +4,7 @@
 #include "Buffs/PowerUpBase.h"
 #include "DamagePowerUp.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API ADamagePowerUp : public APowerUpBase
 {
 	GENERATED_BODY()

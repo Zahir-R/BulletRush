@@ -7,7 +7,7 @@
 class USphereComponent;
 class UStaticMeshComponent;
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API ACollectible : public AActor
 {
 	GENERATED_BODY()

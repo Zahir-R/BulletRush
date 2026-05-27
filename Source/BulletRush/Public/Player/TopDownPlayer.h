@@ -10,7 +10,7 @@
 class USpringArmComponent;
 class UCameraComponent;
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API ATopDownPlayer : public ACharacter
 {
 	GENERATED_BODY()

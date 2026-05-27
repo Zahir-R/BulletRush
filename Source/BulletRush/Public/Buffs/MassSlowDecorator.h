@@ -3,7 +3,7 @@
 #include "PlayerStatsDecorator.h"
 #include "MassSlowDecorator.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class UMassSlowDecorator : public UPlayerStatsDecorator
 {
     GENERATED_BODY()

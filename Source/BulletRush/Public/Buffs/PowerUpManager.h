@@ -7,7 +7,7 @@
 class UBoxComponent;
 class APowerUpBase;
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API APowerUpManager : public AActor
 {
 	GENERATED_BODY()

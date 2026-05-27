@@ -4,7 +4,7 @@
 #include "Player/PlayerStatsBase.h"
 #include "PlayerStatsDecorator.generated.h"
 
-UCLASS(Abstract)
+UCLASS(Abstract, Blueprintable, BlueprintType)
 class BULLETRUSH_API UPlayerStatsDecorator : public UPlayerStatsBase
 {
 	GENERATED_BODY()

@@ -12,7 +12,7 @@ class UProjectilesSubsystem;
 /**
  * 
  */
-UCLASS()
+UCLASS(meta=(BlueprintSpawnableComponent))
 class BULLETRUSH_API UWeakPointComponent : public USphereComponent
 {
 	GENERATED_BODY()

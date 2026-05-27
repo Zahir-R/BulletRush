@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API UBulletRushGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
@@ -36,7 +36,7 @@ public:
     UFUNCTION()
 	void HandlePlayerDeath(UObject* WorldContextObject);
 
-	// Funcinn rapida para consultar si un mapa ya se pasó
+	// Funcinn rapida para consultar si un mapa ya se pasï¿½
 	UFUNCTION()
 	bool IsMapaCompletado(FName NombreMapa);
 

@@ -7,7 +7,7 @@
 
 #include "ProjectilesSubsystem.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API UProjectilesSubsystem : public UGameInstanceSubsystem, public FTickableGameObject
 {
 	GENERATED_BODY()

@@ -7,7 +7,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API USpeedBoost : public UPlayerStatsDecorator
 {
 	GENERATED_BODY()

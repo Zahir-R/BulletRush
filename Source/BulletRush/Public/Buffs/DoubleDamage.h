@@ -4,7 +4,7 @@
 #include "Buffs/PlayerStatsDecorator.h"
 #include "DoubleDamage.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API UDoubleDamage : public UPlayerStatsDecorator
 {
 	GENERATED_BODY()

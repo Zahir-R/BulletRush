@@ -2,7 +2,7 @@
 #include "Player/PlayingPlayer.h"
 #include "Player/TopDownPlayer.h"
 #include "Engine/World.h"
-#include "Core/Chronostasis/ChronostasisEnemyFactory.h"
+#include "Core/Chronostasis/ChronostasisFactoryEnemy.h"
 #include "Enemies/EnemyBase.h"
 #include "Map/LevelPortal.h"
 #include "Map/PortalManager.h"

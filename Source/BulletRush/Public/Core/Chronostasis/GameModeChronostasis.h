@@ -3,7 +3,7 @@
 #include "Core/BulletRushGameModeBase.h"
 #include "GameModeChronostasis.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API AGameModeChronostasis : public ABulletRushGameModeBase
 {
     GENERATED_BODY()
