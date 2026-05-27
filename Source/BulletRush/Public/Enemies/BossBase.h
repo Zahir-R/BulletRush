@@ -13,18 +13,13 @@
 class UShapeComponent;
 class UBulletSpawnerComponent;
 class UWeakPointComponent;
-
-UENUM(BlueprintType)
-enum class EBossState : uint8
-{
-	// Jefe invulnerable, ejecuta "animación" de entrada
-	Intro UMETA(DisplayName = "Introduccion"),
-	Attacking UMETA(DisplayName = "Ejecutando Patrón"),
-	Idle UMETA(DisplayName = "Moviendose / Esperando"),
-	Stunned UMETA(DisplayName = "Indefenso"),
-	PhaseTransition UMETA(DisplayName = "Cambio de Fase"),
-	Dead UMETA(DisplayName = "Derrotado/Muerto")
-};
+class UBossState;
+class UBossStateIntro;
+class UBossStateIdle;
+class UBossStateAttacking;
+class UBossStateStunned;
+class UBossStatePhaseTransition;
+class UBossStateDead;
 
 UCLASS()
 class BULLETRUSH_API ABossBase : public AEnemyBase
@@ -38,20 +33,10 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	UPROPERTY(VisibleAnywhere, Category = "Boss Logic")
-	EBossState CurrentState;
+	int32 ActiveWeakPoints;
 
-	// ya existe en el componente health UPROPERTY(VisibleAnywhere, Category = "Boss Logic")
-	// ya existe en el componente health bool bIsInvulnerable;
-
-	int32 AttackIdentifier = 0; // Define que patrón de ataque utilizar
-
-	// Cuántos puntos débiles le quedan vivos
-    int32 ActiveWeakPoints;
-
-    // Función que se ejecutará cuando un punto débil grite
-    UFUNCTION()
-    virtual void HandleWeakPointDestroyed();
+	UFUNCTION()
+	virtual void HandleWeakPointDestroyed();
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -62,26 +47,26 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	virtual void SetBossState(EBossState NewState);
+	void ChangeState(UBossState* NewState);
+
+	UFUNCTION()
+	void OnTestWeakDestroyed();
+
+	UFUNCTION(BlueprintCallable, Category = "Boss")
+	FName GetCurrentBossStateName() const;
 
 	virtual void Attack();
 
-	// Mesh para la nave, cada hijo puede usarla
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* BossMesh;
 
-	// La HitBox se usará en caso de que la mesh no tenga colisiones bien definidas
-	//UPROPERTY(VisibleAnywhere, Category = "Components")
-	//UShapeComponent* Hitbox; // Hitbox estática, no se como aplicar la hitbox para un gusano de multiples partes :)
-
-	// ya existe en el componente health float MaxHealth = 4000.0f;
-	// ya existe en el componente health float CurrentHealthh = 4000.0f;
-	
 	FTimerHandle IntroTimer;
 	FTimerHandle StunnedTimer;
 	FTimerHandle PhaseTransitionTimer;
 
 	void SetInvulnerable(bool newstate);
+
+	int32 AttackIdentifier = 0;
 
 	UBulletSpawnerComponent* BulletSpawner;
 	FTimerHandle AttackLoopTimer;
@@ -90,6 +75,29 @@ public:
 
 	TArray<FAttackStep> Combo;
 	TArray<FAttackStep> Combo2;
+
+	bool bHasTransitioned = false;
+
+	UPROPERTY()
+	UBossState* CurrentStateObject;
+
+	UPROPERTY()
+	UBossStateIntro* IntroState;
+
+	UPROPERTY()
+	UBossStateIdle* IdleState;
+
+	UPROPERTY()
+	UBossStateAttacking* AttackingState;
+
+	UPROPERTY()
+	UBossStateStunned* StunnedState;
+
+	UPROPERTY()
+	UBossStatePhaseTransition* PhaseTransitionState;
+
+	UPROPERTY()
+	UBossStateDead* DeadState;
 
 	void Die() override;
 };
