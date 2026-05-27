@@ -11,7 +11,6 @@
 
 ATestGameModeBase::ATestGameModeBase()
 {
-	Arquitect = CreateDefaultSubobject<ATestFacade>(TEXT("Arquitect"));
 	DefaultPawnClass = APlayingPlayer::StaticClass();
 }
 
@@ -29,8 +28,14 @@ void ATestGameModeBase::BeginPlay()
 	FTimerHandle InitTimer;
 	GetWorldTimerManager().SetTimer(InitTimer, this, &ATestGameModeBase::InitializeRequirements, 0.1f, false);
 
-	Arquitect->SummonBoss(FVector(300.0f, 0.0f, 25.0f));
-	Arquitect->SummonEnemies(FVector(800.0f, -400.0f, 25.0f), 2);
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	Arquitect = GetWorld()->SpawnActor<ATestFacade>(ATestFacade::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+	if (Arquitect)
+	{
+		Arquitect->SummonBoss(FVector(300.0f, 0.0f, 25.0f));
+		Arquitect->SummonEnemies(FVector(800.0f, -400.0f, 25.0f), 2);
+	}
 
 	TArray<FVector> CollectibleLocs;
 	CollectibleLocs.Add(FVector(500.0f, 0.0f, 50.0f));

@@ -4,6 +4,7 @@
 #include "Components/BuffComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Pawn.h"
+#include "Combat/MovementStrategy/SeekMovement.h"
 
 AChronostasisMass::AChronostasisMass()
 {
@@ -12,7 +13,9 @@ AChronostasisMass::AChronostasisMass()
     SlowZone->InitSphereRadius(400.f);
     SlowZone->SetupAttachment(RootComponent);
     AppliedDecorator = nullptr;
-    MovementStrategy = MakeShareable(new FSeekMovement(200.f));
+    MovementStrategy = CreateDefaultSubobject<USeekMovement>(TEXT("SeekMovement"));
+    USeekMovement* SeekMov = Cast<USeekMovement>(MovementStrategy);
+    if (SeekMov) SeekMov->Speed = 200.f;
 }
 
 void AChronostasisMass::BeginPlay()
@@ -28,7 +31,7 @@ void AChronostasisMass::BeginPlay()
 void AChronostasisMass::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
-    if (MovementStrategy.IsValid())
+    if (MovementStrategy)
     {
         APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
         if (PlayerPawn)

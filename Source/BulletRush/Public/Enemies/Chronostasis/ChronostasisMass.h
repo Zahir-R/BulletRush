@@ -1,7 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Enemies/EnemyBase.h"
-#include "Combat/MovementStrategy.h"
+#include "Combat/MovementStrategy/MovementStrat.h"
 #include "ChronostasisMass.generated.h"
 
 class USphereComponent;
@@ -21,7 +21,8 @@ public:
 protected:
     UPROPERTY()
     USphereComponent* SlowZone;
-    TSharedPtr<IMovementStrategy> MovementStrategy;
+    UPROPERTY()
+    UMovementStrat* MovementStrategy;
     UPlayerStatsDecorator* AppliedDecorator;
 
     UFUNCTION()

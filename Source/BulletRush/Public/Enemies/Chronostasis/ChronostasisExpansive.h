@@ -1,7 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Enemies/EnemyBase.h"
-#include "Combat/MovementStrategy.h"
+#include "Combat/MovementStrategy/MovementStrat.h"
 #include "ChronostasisExpansive.generated.h"
 
 UCLASS()

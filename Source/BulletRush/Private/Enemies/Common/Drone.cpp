@@ -1,5 +1,7 @@
 #include "Enemies/Common/Drone.h"
-#include "Combat/AttackPatterns.h"
+#include "Combat/AttackPatterns/AttackStrategy.h"
+#include "Combat/AttackPatterns/BurstAttack.h"
+#include "Combat/MovementStrategy/SinusoidalSeekMovement.h"
 #include "Components/BulletSpawnerComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
@@ -17,14 +19,16 @@ ADrone::ADrone()
 void ADrone::BeginPlay()
 {
     Super::BeginPlay();
-    MovementStrategy = MakeShareable(new FSinusoidalSeekMovement(200.f, 2.f, 500.f));
+    MovementStrategy = CreateDefaultSubobject<USinusoidalSeekMovement>(TEXT("SinusoidalMovement"));
+    USinusoidalSeekMovement* SinMovement = Cast<USinusoidalSeekMovement>(MovementStrategy);
+    if (SinMovement) SinMovement->Amplitude = 200.f; SinMovement->Frequency = 2.f; SinMovement->StopDistance = 500.f;
     BeginAttackLoop();
 }
 
 void ADrone::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
-    if (MovementStrategy.IsValid())
+    if (MovementStrategy)
     {
         APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
         if (PlayerPawn)
@@ -49,7 +53,7 @@ void ADrone::StartAttack()
     Params.Count = 3;
     Params.SpecialParam = FMath::RandRange(0.1f, 0.3f);
 
-    FBurstAttack().Execute(Spawner, Params);
+    UBurstAttack().Execute(Spawner, Params);
 }
 
 void ADrone::ApplySpeedBuff(float Duration, float FireRateMult, float ProjectileSpeedMult)

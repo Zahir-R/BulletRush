@@ -20,9 +20,13 @@ class BULLETRUSH_API UWeakPointComponent : public USphereComponent
 public:
 	UWeakPointComponent();
 
-	// La batiseñal que el jefe escuchará
+	// La batiseï¿½al que el jefe escucharï¿½
 	UPROPERTY(BlueprintAssignable, Category = "Weak Point")
 	FOnWeakPointDestroyed OnDestroyedEvent;
+
+	float CurrentHealth;
+
+	void TakeDamageFromHit(float DamageAmount);
 
 protected:
     virtual void BeginPlay() override;
@@ -30,9 +34,7 @@ protected:
     UPROPERTY(EditAnywhere, Category = "Weak Point")
     float MaxHealth = 100.0f;
 
-    float CurrentHealth;
-
-    //----Zona de Test, borralo o modificalo si no quieres que tu Unreal crasheé sin querer----
+    //----Zona de Test, borralo o modificalo si no quieres que tu Unreal crasheï¿½ sin querer----
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "VisualMesh")
     class UStaticMeshComponent* VisualMesh;
     //-----------------------------------------------------------------------------------------
@@ -40,7 +42,7 @@ protected:
     UPROPERTY()
     UProjectilesSubsystem* PoolCache;
 
-    // El punto débil detecta sus propias colisiones
+    // El punto dï¿½bil detecta sus propias colisiones
     UFUNCTION()
     void OnWeakPointOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
         UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,

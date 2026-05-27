@@ -19,7 +19,7 @@ struct FBulletData
 	AActor* OwnerActor;
 
 	// Inicializador por defecto
-	FBulletData() : Direction(FVector::ZeroVector), Speed(0.f), bIsActive(false), bIsPlayerBullet(false), Damage(0.f), SpawnLocation(FVector::ZeroVector), OwnerActor(nullptr) {}
+	FBulletData() : Direction(FVector::ZeroVector), SpawnLocation(FVector::ZeroVector), Damage(0.f), Speed(0.f), bIsActive(false), bIsPlayerBullet(false), OwnerActor(nullptr) {}
 };
 
 UCLASS()
@@ -30,13 +30,13 @@ class BULLETRUSH_API ABulletBase : public AActor
 public:
 	ABulletBase();
 
-	// El Subsystem usará esto para "despertar" la bala
+	// El Subsystem usarï¿½ esto para "despertar" la bala
 	void ActivateBullet(FVector Position, FVector Direction, float Speed, bool bIsPlayerBullet, float Damage, FVector SpawnLocation, AActor* OwnerAct);
 
 	// Para "dormir" la bala cuando choque o salga de rango
 	void DesactivateBullet();
 
-	// Datos actuales de la bala (lo que usará el manager para moverla)
+	// Datos actuales de la bala (lo que usarï¿½ el manager para moverla)
 	FBulletData BulletData;
 
 protected:

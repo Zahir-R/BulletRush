@@ -28,6 +28,4 @@ public:
 	void SummonBoss(FVector Location);
 	void SummonEnemies(FVector Center,int NoEnemies);
 
-	UWorld* World;
-
 };

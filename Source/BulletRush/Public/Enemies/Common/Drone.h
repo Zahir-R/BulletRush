@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Enemies/EnemyBase.h"
-#include "Combat/MovementStrategy.h"
+#include "Combat/MovementStrategy/MovementStrat.h"
 #include "Drone.generated.h"
 
 UCLASS()
@@ -19,7 +19,8 @@ public:
     void RemoveSpeedBuff();
 
 protected:
-    TSharedPtr<IMovementStrategy> MovementStrategy;
+    UPROPERTY()
+    UMovementStrat* MovementStrategy;
     float ProjectileSpeed;
     float Damage;
     float CurrentProjectileSpeedMultiplier;
