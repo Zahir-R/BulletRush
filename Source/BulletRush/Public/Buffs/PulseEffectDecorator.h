@@ -3,7 +3,7 @@
 #include "PlayerStatsDecorator.h"
 #include "PulseEffectDecorator.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class UPulseEffectDecorator : public UPlayerStatsDecorator
 {
     GENERATED_BODY()

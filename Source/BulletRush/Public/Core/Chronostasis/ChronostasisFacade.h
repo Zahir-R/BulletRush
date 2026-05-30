@@ -1,11 +1,13 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Core/Chronostasis/ChronostasisEnemyFactory.h"
+#include "Core/Chronostasis/ChronostasisFactoryEnemy.h"
+#include "UObject/Interface.h"
 #include "ChronostasisFacade.generated.h"
 
 class AEnemyBase;
 class ABulletRushGameModeBase;
+class UChronostasisFactoryEnemy;
 
 USTRUCT()
 struct FWaveConfig
@@ -36,6 +38,8 @@ public:
     void ActivatePortalToSecret();
     void ActivatePortalToBoss();
 
+    FSimpleMulticastDelegate OnTimeStop;
+
 protected:
     UPROPERTY(EditAnywhere)
     TArray<FWaveConfig> Waves;
@@ -44,11 +48,20 @@ protected:
     int32 RemainingEnemiesInWave;
     int32 SlowTriggerCount;
 
-    TUniquePtr<IChronostasisEnemyFactory> Factory;
+    // Whether the player took damage during the session - used for secret unlock condition
+    bool bPlayerTookDamage = false;
+
+    // Weak pointer to the player's health component for damage observation
+    TWeakObjectPtr<class UHealthComponent> PlayerHealthComp;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Factory")
+	UChronostasisFactoryEnemy* EnemyFactory;
 
     FTimerHandle SlowTimerHandle;
     void StartSlowTimer();
     void OnSlowTimerExpired();
+    UFUNCTION()
+    void OnPlayerHealthChanged(float NewHealth);
 
     void StartWave(int32 Index);
     void OnAllWavesComplete();

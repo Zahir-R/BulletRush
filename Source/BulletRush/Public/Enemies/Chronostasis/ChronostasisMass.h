@@ -1,14 +1,14 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Enemies/EnemyBase.h"
-#include "Combat/MovementStrategy.h"
+#include "Combat/MovementStrategy/MovementStrat.h"
 #include "ChronostasisMass.generated.h"
 
 class USphereComponent;
 class UBuffComponent;
 class UPlayerStatsDecorator;
 
-UCLASS()
+UCLASS(Blueprintable)
 class AChronostasisMass : public AEnemyBase
 {
     GENERATED_BODY()
@@ -21,7 +21,8 @@ public:
 protected:
     UPROPERTY()
     USphereComponent* SlowZone;
-    TSharedPtr<IMovementStrategy> MovementStrategy;
+    UPROPERTY()
+    UMovementStrat* MovementStrategy;
     UPlayerStatsDecorator* AppliedDecorator;
 
     UFUNCTION()

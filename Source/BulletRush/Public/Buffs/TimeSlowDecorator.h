@@ -3,7 +3,7 @@
 #include "PlayerStatsDecorator.h"
 #include "TimeSlowDecorator.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class UTimeSlowDecorator : public UPlayerStatsDecorator
 {
     GENERATED_BODY()

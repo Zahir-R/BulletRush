@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API ATopDownGameMode : public AGameModeBase
 {
 	GENERATED_BODY()

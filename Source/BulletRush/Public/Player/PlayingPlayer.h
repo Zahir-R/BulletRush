@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "../Components/BulletSpawnerComponent.h"
+#include "Components/BulletSpawnerComponent.h"
 #include "Components/HealthComponent.h"
 #include "Components/BuffComponent.h"
 #include "PlayerStatsInterface.h"
@@ -14,7 +14,7 @@ class UStaticMeshComponent;
 class UWeaponBaseComponent;
 class UPlayerStatsBase;
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API APlayingPlayer : public ACharacter
 {
 	GENERATED_BODY()
@@ -52,6 +52,9 @@ public:
 
 	void OnFirePressed();
 	void OnFireReleased();
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
+	void OnPlayerDeath();
 
 	TArray<UWeaponBaseComponent*> EquippedWeapons;
 	UWeaponBaseComponent* TestWeapon;
@@ -66,6 +69,7 @@ public:
 	float GetTotalSpeedMultiplier() const { return CurrentStats->GetSpeedMultiplier(); }
 	float GetTotalMaxHealthBonus() const { return CurrentStats->GetMaxHealthBonus(); }
 	TScriptInterface<IPlayerStatsInterface> GetCurrentStats() const { return CurrentStats; }
+	float GetTotalProjectileSpeedMultiplier() const { return CurrentStats->GetProjectileSpeedMultiplier(); }
 
 	void UpdateMovementSpeed();
 	void RemoveDecorator(UPlayerStatsDecorator* Decorator);

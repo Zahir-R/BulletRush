@@ -4,7 +4,7 @@
 #include "Buffs/PlayerStatsDecorator.h"
 #include "HealthBonus.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API UHealthBonus : public UPlayerStatsDecorator
 {
 	GENERATED_BODY()

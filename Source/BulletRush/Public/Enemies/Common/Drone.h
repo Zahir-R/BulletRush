@@ -2,10 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "Enemies/EnemyBase.h"
-#include "Combat/MovementStrategy.h"
+#include "Combat/MovementStrategy/MovementStrat.h"
 #include "Drone.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API ADrone : public AEnemyBase
 {
     GENERATED_BODY()
@@ -19,8 +19,13 @@ public:
     void RemoveSpeedBuff();
 
 protected:
-    TSharedPtr<IMovementStrategy> MovementStrategy;
+    UPROPERTY()
+    UMovementStrat* MovementStrategy;
     float ProjectileSpeed;
     float Damage;
     float CurrentProjectileSpeedMultiplier;
+    // Members for speed buff restoration
+    float OriginalAttackInterval;
+    float OriginalProjectileSpeedMultiplier;
+    FTimerHandle SpeedBuffRestoreTimerHandle;
 };

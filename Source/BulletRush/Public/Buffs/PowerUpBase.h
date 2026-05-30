@@ -16,7 +16,7 @@ enum class EPowerUpType : uint8
 	// TODO: ADD ULT TYPE
 };
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API APowerUpBase : public AActor
 {
 	GENERATED_BODY()

@@ -8,7 +8,7 @@
 
 class APlayingPlayer;
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API ATestFacade : public AActor
 {
 	GENERATED_BODY()
@@ -27,7 +27,5 @@ public:
 
 	void SummonBoss(FVector Location);
 	void SummonEnemies(FVector Center,int NoEnemies);
-
-	UWorld* World;
 
 };

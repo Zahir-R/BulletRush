@@ -4,7 +4,7 @@
 #include "Player/PlayerStatsBase.h"
 #include "PlayerStatsDecorator.generated.h"
 
-UCLASS(Abstract)
+UCLASS(Abstract, Blueprintable, BlueprintType)
 class BULLETRUSH_API UPlayerStatsDecorator : public UPlayerStatsBase
 {
 	GENERATED_BODY()
@@ -33,5 +33,9 @@ public:
 	virtual float GetHealthRestore() const override 
 	{
 		return InnerStats ? InnerStats->GetHealthRestore() : 0.0f;
+	}
+  virtual float GetProjectileSpeedMultiplier() const override 
+	{
+		return InnerStats ? InnerStats->GetProjectileSpeedMultiplier() : 1.0f;
 	}
 };

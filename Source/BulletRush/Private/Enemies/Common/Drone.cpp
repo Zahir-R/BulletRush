@@ -1,5 +1,7 @@
 #include "Enemies/Common/Drone.h"
-#include "Combat/AttackPatterns.h"
+#include "Combat/AttackPatterns/AttackStrategy.h"
+#include "Combat/AttackPatterns/BurstAttack.h"
+#include "Combat/MovementStrategy/SinusoidalSeekMovement.h"
 #include "Components/BulletSpawnerComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
@@ -12,19 +14,21 @@ ADrone::ADrone()
     ProjectileSpeed = 2000.f;
     Damage = 10.f;
     CurrentProjectileSpeedMultiplier = 1.f;
+    MovementStrategy = CreateDefaultSubobject<USinusoidalSeekMovement>(TEXT("SinusoidalMovement"));
 }
 
 void ADrone::BeginPlay()
 {
     Super::BeginPlay();
-    MovementStrategy = MakeShareable(new FSinusoidalSeekMovement(200.f, 2.f, 500.f));
+    USinusoidalSeekMovement* SinMovement = Cast<USinusoidalSeekMovement>(MovementStrategy);
+    if (SinMovement) { SinMovement->Amplitude = 200.f; SinMovement->Frequency = 2.f; SinMovement->StopDistance = 500.f; }
     BeginAttackLoop();
 }
 
 void ADrone::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
-    if (MovementStrategy.IsValid())
+    if (MovementStrategy)
     {
         APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
         if (PlayerPawn)
@@ -49,21 +53,45 @@ void ADrone::StartAttack()
     Params.Count = 3;
     Params.SpecialParam = FMath::RandRange(0.1f, 0.3f);
 
-    FBurstAttack().Execute(Spawner, Params);
+    UBurstAttack().Execute(Spawner, Params);
 }
 
 void ADrone::ApplySpeedBuff(float Duration, float FireRateMult, float ProjectileSpeedMult)
 {
+    // Command/Timer pattern: apply buff and schedule restoration after Duration
+    OriginalAttackInterval = AttackInterval;
+    OriginalProjectileSpeedMultiplier = CurrentProjectileSpeedMultiplier;
+
     AttackInterval = AttackInterval / FireRateMult;
     CurrentProjectileSpeedMultiplier *= ProjectileSpeedMult;
     StopAttackLoop();
     BeginAttackLoop();
+
+    // Use a weak pointer in the timer lambda to avoid dangling references
+    TWeakObjectPtr<ADrone> WeakThis(this);
+    if (GetWorld())
+    {
+        GetWorldTimerManager().ClearTimer(SpeedBuffRestoreTimerHandle);
+        FTimerDelegate Del = FTimerDelegate::CreateLambda([WeakThis]() {
+            if (WeakThis.IsValid())
+            {
+                WeakThis->RemoveSpeedBuff();
+            }
+        });
+        GetWorldTimerManager().SetTimer(SpeedBuffRestoreTimerHandle, Del, Duration, false);
+    }
 }
 
 void ADrone::RemoveSpeedBuff()
 {
-    AttackInterval = 0.5f;
-    CurrentProjectileSpeedMultiplier = 1.f;
+    // Restore original values if they were saved
+    AttackInterval = (OriginalAttackInterval > 0.f) ? OriginalAttackInterval : AttackInterval;
+    CurrentProjectileSpeedMultiplier = (OriginalProjectileSpeedMultiplier > 0.f) ? OriginalProjectileSpeedMultiplier : CurrentProjectileSpeedMultiplier;
     StopAttackLoop();
     BeginAttackLoop();
+    // Clear timer
+    if (GetWorld())
+    {
+        GetWorldTimerManager().ClearTimer(SpeedBuffRestoreTimerHandle);
+    }
 }

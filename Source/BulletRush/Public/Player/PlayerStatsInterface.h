@@ -3,7 +3,7 @@
 #include "UObject/Interface.h"
 #include "PlayerStatsInterface.generated.h"
 
-UINTERFACE(MinimalAPI)
+UINTERFACE(Blueprintable, MinimalAPI)
 class UPlayerStatsInterface : public UInterface
 {
     GENERATED_BODY()

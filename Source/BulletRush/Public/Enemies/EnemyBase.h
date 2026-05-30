@@ -11,7 +11,7 @@ class UShapeComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyDeath, AEnemyBase*, DeadEnemy);
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API AEnemyBase : public APawn
 {
 	GENERATED_BODY()

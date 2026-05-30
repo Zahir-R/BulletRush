@@ -3,7 +3,7 @@
 #include "Core/BulletRushGameModeBase.h"
 #include "GameModeChronostasis.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API AGameModeChronostasis : public ABulletRushGameModeBase
 {
     GENERATED_BODY()
@@ -15,4 +15,11 @@ public:
 
     UFUNCTION()
     void ActivateBossPortal();
+
+    // Local portal actors that can be activated by the game mode
+    UPROPERTY(EditAnywhere, Category="Portals")
+    class APortalTrigger* SecretPortal;
+
+    UPROPERTY(EditAnywhere, Category="Portals")
+    class APortalTrigger* BossPortal;
 };

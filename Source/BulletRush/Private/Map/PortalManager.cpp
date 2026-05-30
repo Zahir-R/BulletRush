@@ -4,7 +4,7 @@
 #include "Map/PortalManager.h"
 #include "Map/LevelPortal.h"
 #include "Core/BulletRushGameModeBase.h"
-#include "Core/Chronostasis/ChronostasisEnemyFactory.h"
+#include "Core/Chronostasis/ChronostasisFactoryEnemy.h"
 #include "Engine/World.h"
 
 // Sets default values

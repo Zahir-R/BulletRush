@@ -21,7 +21,7 @@ class UBossStateStunned;
 class UBossStatePhaseTransition;
 class UBossStateDead;
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API ABossBase : public AEnemyBase
 {
 	GENERATED_BODY()

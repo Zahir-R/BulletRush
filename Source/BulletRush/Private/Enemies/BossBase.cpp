@@ -140,6 +140,18 @@ void ABossBase::HandleWeakPointDestroyed()
 
 float ABossBase::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
 {
+	TArray<UWeakPointComponent*> WeakPoints;
+	GetComponents<UWeakPointComponent>(WeakPoints);
+
+	for (UWeakPointComponent* WP : WeakPoints)
+	{
+		if (WP->CurrentHealth > 0.0f)
+		{
+			WP->TakeDamageFromHit(DamageAmount);
+			return DamageAmount;
+		}
+	}
+
 	float RealDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 	if (RealDamage <= 0.0f) return 0.0f;

@@ -20,7 +20,7 @@ public:
 	virtual FName GetStateTagName() const;
 };
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API UBossStateIntro : public UBossState
 {
 	GENERATED_BODY()
@@ -32,7 +32,7 @@ public:
 	virtual FName GetStateTagName() const override;
 };
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API UBossStateIdle : public UBossState
 {
 	GENERATED_BODY()
@@ -45,7 +45,7 @@ public:
 	virtual FName GetStateTagName() const override;
 };
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API UBossStateAttacking : public UBossState
 {
 	GENERATED_BODY()
@@ -58,7 +58,7 @@ public:
 	virtual FName GetStateTagName() const override;
 };
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API UBossStateStunned : public UBossState
 {
 	GENERATED_BODY()
@@ -70,7 +70,7 @@ public:
 	virtual FName GetStateTagName() const override;
 };
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API UBossStatePhaseTransition : public UBossState
 {
 	GENERATED_BODY()
@@ -82,7 +82,7 @@ public:
 	virtual FName GetStateTagName() const override;
 };
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API UBossStateDead : public UBossState
 {
 	GENERATED_BODY()

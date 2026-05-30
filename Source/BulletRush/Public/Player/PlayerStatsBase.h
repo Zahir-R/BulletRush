@@ -5,7 +5,7 @@
 #include "PlayerStatsInterface.h"
 #include "PlayerStatsBase.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable, BlueprintType)
 class BULLETRUSH_API UPlayerStatsBase : public UObject, public IPlayerStatsInterface
 {
 	GENERATED_BODY()

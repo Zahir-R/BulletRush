@@ -9,7 +9,7 @@
 class AEnemyBase;
 class UStaticMesh;
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API AEnemyDecorator : public AActor
 {
 	GENERATED_BODY()
