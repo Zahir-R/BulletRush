@@ -55,7 +55,8 @@ public:
 	
 	virtual void StartAttack();
 	virtual void Die();
-
+	UFUNCTION()
+	virtual void Attack();
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* MeshEnemy;
 	UPROPERTY(VisibleAnywhere)
