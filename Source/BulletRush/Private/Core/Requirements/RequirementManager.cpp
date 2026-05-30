@@ -33,6 +33,7 @@ void URequirementManager::InitializeRequirements(APlayerController* Player)
 
 bool URequirementManager::AreSecretRequirementsMet() const
 {
+    if (SecretRequirements.Num() == 0) return false;
     for (UObject* Obj : SecretRequirements)
     {
         if (!Obj) continue;

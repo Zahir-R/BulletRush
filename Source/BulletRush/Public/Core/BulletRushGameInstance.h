@@ -43,4 +43,8 @@ public:
 	// Funcion para registrar jefe completado
 	UFUNCTION()
 	void MarcarMapaCompletado(FName NombreMapa);
+
+	// Reward multiplier for power-up cooldowns (set after secret level completion)
+	UPROPERTY()
+	float PowerUpCooldownMultiplier = 1.0f;
 };

@@ -1,7 +1,11 @@
 #include "Core/Chronostasis/ChronostasisFacade.h"
 #include "Core/Chronostasis/GameModeChronostasis.h"
 #include "Core/Chronostasis/ChronostasisFactoryEnemy.h"
-#include "Core/Chronostasis/DefChronostasisEnemyFactory.h"
+#include "Core/Chronostasis/DroneFactory.h"
+#include "Core/Chronostasis/MassFactory.h"
+#include "Core/Chronostasis/ExpansiveFactory.h"
+#include "Core/Chronostasis/ChargerFactory.h"
+#include "Core/Chronostasis/LinkerFactory.h"
 #include "Core/BulletRushGameModeBase.h"
 #include "Enemies/EnemyBase.h"
 #include "Components/BuffComponent.h"
@@ -10,6 +14,15 @@
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/HealthComponent.h"
+#include "Core/BulletRushHUD.h"
+#include "Core/Requirements/RequirementManager.h"
+#include "Subsystems/ProjectilesSubsystem.h"
+
+ABulletRushHUD* AChronostasisFacade::GetHUD() const
+{
+	APlayerController* PC = OwningGameMode ? UGameplayStatics::GetPlayerController(OwningGameMode->GetWorld(), 0) : nullptr;
+	return PC ? Cast<ABulletRushHUD>(PC->GetHUD()) : nullptr;
+}
 
 AChronostasisFacade::AChronostasisFacade()
 {
@@ -26,13 +39,17 @@ AChronostasisFacade::~AChronostasisFacade()
 void AChronostasisFacade::BeginPlay()
 {
     Super::BeginPlay();
-    EnemyFactory = NewObject<UDefChronostasisEnemyFactory>(this);
+    DroneFactory = NewObject<UDroneFactory>(this);
+    MassFactory = NewObject<UMassFactory>(this);
+    ExpansiveFactory = NewObject<UExpansiveFactory>(this);
+    ChargerFactory = NewObject<UChargerFactory>(this);
+    LinkerFactory = NewObject<ULinkerFactory>(this);
 
     // Waves hardcodeadas waos
     if (Waves.Num() == 0)
     {
-        FWaveConfig W1; W1.DroneCount = 3; W1.SpawnPoints = { FVector(1000,0,0), FVector(-1000,0,0), FVector(0,1000,0) };
-        FWaveConfig W2; W2.DroneCount = 2; W2.MassCount = 1; W2.SpawnPoints = { FVector(200,0,0), FVector(-200,0,0), FVector(0,200,0) };
+        FWaveConfig W1; W1.DroneCount = 1; W1.SpawnPoints = { FVector(1000,0,0), FVector(-1000,0,0), FVector(0,1000,0) };
+        FWaveConfig W2; W2.DroneCount = 1; W2.MassCount = 1; W2.SpawnPoints = { FVector(200,0,0), FVector(-200,0,0), FVector(0,200,0) };
         FWaveConfig W3; W3.DroneCount = 1; W3.MassCount = 1; W3.ExpansiveCount = 1; W3.SpawnPoints = { FVector(300,0,0), FVector(-300,0,0), FVector(0,300,0) };
         Waves = { W1, W2, W3 };
     }
@@ -76,12 +93,9 @@ void AChronostasisFacade::OnSlowTimerExpired()
         UBuffComponent* BuffComp = PlayerPawn->FindComponentByClass<UBuffComponent>();
         if (BuffComp)
         {
-            // TimeSlowDecorator no acumulativo
-            if (!BuffComp->HasDecoratorOfClass(UTimeSlowDecorator::StaticClass()))
-            {
-                UE_LOG(LogTemp, Warning, TEXT("Aplicando TimeSlowDecorator al jugador"));
-                BuffComp->ApplyBuff(UTimeSlowDecorator::StaticClass(), -1.0f, 0.0f);
-            }
+            // TimeSlowDecorator acumulativo
+            UE_LOG(LogTemp, Warning, TEXT("Aplicando TimeSlowDecorator al jugador"));
+            BuffComp->ApplyBuff(UTimeSlowDecorator::StaticClass(), -1.0f, 0.0f);
         }
     }
     StartSlowTimer();
@@ -92,11 +106,6 @@ void AChronostasisFacade::OnSlowTimerExpired()
 void AChronostasisFacade::StartWave(int32 Index)
 {
     UE_LOG(LogTemp, Warning, TEXT("Intentando iniciar oleada %d"), Index);
-    if (!EnemyFactory)
-    {
-        UE_LOG(LogTemp, Error, TEXT("Factory es nulo"));
-        return;
-    }
     if (!Waves.IsValidIndex(Index))
     {
         UE_LOG(LogTemp, Error, TEXT("Indice de oleada %d invalido. Total oleadas: %d"), Index, Waves.Num());
@@ -105,7 +114,6 @@ void AChronostasisFacade::StartWave(int32 Index)
 
     CurrentWaveIndex = Index;
     const FWaveConfig& Cfg = Waves[Index];
-    RemainingEnemiesInWave = Cfg.DroneCount + Cfg.MassCount + Cfg.ExpansiveCount;
     UE_LOG(LogTemp, Warning, TEXT("Iniciando oleada %d con Drones: %d, Mass: %d, Expansive: %d"), 
         Index, Cfg.DroneCount, Cfg.MassCount, Cfg.ExpansiveCount);
 
@@ -115,18 +123,19 @@ void AChronostasisFacade::StartWave(int32 Index)
         UE_LOG(LogTemp, Error, TEXT("World es nulo"));
         return;
     }
+    int32 SpawnedCount = 0;
     int32 SpawnIndex = 0;
     for (int32 i=0;i<Cfg.DroneCount;i++)
     {
-        FVector Loc = /*Cfg.SpawnPoints.IsValidIndex(SpawnIndex) ? */ Cfg.SpawnPoints[SpawnIndex] /*: GetActorLocation()*/;
+        FVector Loc = Cfg.SpawnPoints[SpawnIndex];
         SpawnIndex++;
         UE_LOG(LogTemp, Warning, TEXT("Spawneando Drone en posicion: %s"), *Loc.ToString());
-        AEnemyBase* E = EnemyFactory->CreateDrone(World, Loc);
+        AEnemyBase* E = DroneFactory->CreateEnemy(World, Loc);
         if (E)
         {
             UE_LOG(LogTemp, Warning, TEXT("Drone spawneado con exito"));
-            // Suscribir a EnemyDeath
             E->OnEnemyDeath.AddDynamic(this, &AChronostasisFacade::OnEnemyKilled);
+            SpawnedCount++;
         }
         else
         {
@@ -135,14 +144,15 @@ void AChronostasisFacade::StartWave(int32 Index)
     }
     for (int32 i=0;i<Cfg.MassCount;i++)
     {
-        FVector Loc = /*Cfg.SpawnPoints.IsValidIndex(SpawnIndex) ?*/ Cfg.SpawnPoints[SpawnIndex] /*: GetActorLocation()*/;
+        FVector Loc = Cfg.SpawnPoints[SpawnIndex];
         SpawnIndex++;
         UE_LOG(LogTemp, Warning, TEXT("Spawneando Mass en posicion: %s"), *Loc.ToString());
-        AEnemyBase* E = EnemyFactory->CreateMass(World, Loc);
+        AEnemyBase* E = MassFactory->CreateEnemy(World, Loc);
         if (E)
         {
             UE_LOG(LogTemp, Warning, TEXT("Mass spawneado con exito"));
             E->OnEnemyDeath.AddDynamic(this, &AChronostasisFacade::OnEnemyKilled);
+            SpawnedCount++;
         }
         else
         {
@@ -151,25 +161,60 @@ void AChronostasisFacade::StartWave(int32 Index)
     }
     for (int32 i=0;i<Cfg.ExpansiveCount;i++)
     {
-        FVector Loc = /*Cfg.SpawnPoints.IsValidIndex(SpawnIndex) ?*/ Cfg.SpawnPoints[SpawnIndex] /*: GetActorLocation()*/;
+        FVector Loc = Cfg.SpawnPoints[SpawnIndex];
         SpawnIndex++;
         UE_LOG(LogTemp, Warning, TEXT("Spawneando Expansive en posicion: %s"), *Loc.ToString());
-        AEnemyBase* E = EnemyFactory->CreateExpansive(World, Loc);
+        AEnemyBase* E = ExpansiveFactory->CreateEnemy(World, Loc);
         if (E)
         {
             UE_LOG(LogTemp, Warning, TEXT("Expansive spawneado con exito"));
             E->OnEnemyDeath.AddDynamic(this, &AChronostasisFacade::OnEnemyKilled);
+            SpawnedCount++;
         }
         else
         {
             UE_LOG(LogTemp, Error, TEXT("Error al spawnear Expansive"));
         }
     }
+    for (int32 i=0;i<Cfg.ChargerCount;i++)
+    {
+        FVector Loc = Cfg.SpawnPoints[SpawnIndex];
+        SpawnIndex++;
+        UE_LOG(LogTemp, Warning, TEXT("Spawneando Charger en posicion: %s"), *Loc.ToString());
+        AEnemyBase* E = ChargerFactory->CreateEnemy(World, Loc);
+        if (E)
+        {
+            E->OnEnemyDeath.AddDynamic(this, &AChronostasisFacade::OnEnemyKilled);
+            SpawnedCount++;
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("Error al spawnear Charger"));
+        }
+    }
+    for (int32 i=0;i<Cfg.LinkerCount;i++)
+    {
+        FVector Loc = Cfg.SpawnPoints[SpawnIndex];
+        SpawnIndex++;
+        UE_LOG(LogTemp, Warning, TEXT("Spawneando Linker en posicion: %s"), *Loc.ToString());
+        AEnemyBase* E = LinkerFactory->CreateEnemy(World, Loc);
+        if (E)
+        {
+            E->OnEnemyDeath.AddDynamic(this, &AChronostasisFacade::OnEnemyKilled);
+            SpawnedCount++;
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("Error al spawnear Linker"));
+        }
+    }
+    RemainingEnemiesInWave = SpawnedCount;
 }
 
 void AChronostasisFacade::OnEnemyKilled(AEnemyBase* Enemy)
 {
-    RemainingEnemiesInWave = FMath::Max(0, RemainingEnemiesInWave - 1);
+    if (RemainingEnemiesInWave <= 0) return;
+    RemainingEnemiesInWave--;
     // Reset SlowTimer y eliminar decorador
     GetWorldTimerManager().ClearTimer(SlowTimerHandle);
     StartSlowTimer();
@@ -198,9 +243,37 @@ void AChronostasisFacade::OnEnemyKilled(AEnemyBase* Enemy)
 
 void AChronostasisFacade::OnAllWavesComplete()
 {
+    GetWorldTimerManager().ClearTimer(SlowTimerHandle);
+    GetWorldTimerManager().ClearTimer(SecretCountdownTimerHandle);
+    GetWorldTimerManager().ClearTimer(SecretTeleportDelayHandle);
+    bSecretTimerPaused = false;
+
+    if (bIsSecretLevel)
+    {
+        bIsSecretLevel = false;
+        if (OwningGameMode)
+        {
+            UProjectilesSubsystem* ProjSys = GetWorld()->GetGameInstance()->GetSubsystem<UProjectilesSubsystem>();
+            if (ProjSys) ProjSys->SetSecretLevel(false);
+
+            AGameModeChronostasis* GM = Cast<AGameModeChronostasis>(OwningGameMode);
+            if (GM) GM->OnSecretLevelCompleted();
+        }
+        return;
+    }
+
     if (OwningGameMode)
     {
-        bool bSecretUnlocked = (SlowTriggerCount >= 3) && !bPlayerTookDamage;
+        bool bSecretUnlocked = false;
+        if (RequirementManagerRef.IsValid() && RequirementManagerRef->HasRequirements())
+        {
+            bSecretUnlocked = RequirementManagerRef->AreSecretRequirementsMet();
+        }
+        else
+        {
+            bSecretUnlocked = (SlowTriggerCount >= 3) && !bPlayerTookDamage;
+        }
+
         AGameModeChronostasis* GM = Cast<AGameModeChronostasis>(OwningGameMode);
         if (GM)
         {
@@ -208,7 +281,6 @@ void AChronostasisFacade::OnAllWavesComplete()
             else GM->ActivateBossPortal();
         }
     }
-    GetWorldTimerManager().ClearTimer(SlowTimerHandle);
 }
 
 void AChronostasisFacade::OnPlayerHealthChanged(float NewHealth)
@@ -238,5 +310,72 @@ void AChronostasisFacade::ActivatePortalToBoss()
     {
         AGameModeChronostasis* GM = Cast<AGameModeChronostasis>(OwningGameMode);
         if (GM) GM->ActivateBossPortal();
+    }
+}
+
+void AChronostasisFacade::SetRequirementManager(URequirementManager* Manager)
+{
+    RequirementManagerRef = Manager;
+}
+
+void AChronostasisFacade::StartSecretWaves(const TArray<FWaveConfig>& NewWaves)
+{
+    bIsSecretLevel = true;
+    Waves = NewWaves;
+    CurrentWaveIndex = 0;
+
+    UProjectilesSubsystem* ProjSys = GetWorld()->GetGameInstance()->GetSubsystem<UProjectilesSubsystem>();
+    if (ProjSys) ProjSys->SetSecretLevel(true);
+
+    SecretLevelTimeRemaining = 120.f;
+    bSecretTimerPaused = false;
+
+    GetWorldTimerManager().SetTimer(SecretCountdownTimerHandle, this, &AChronostasisFacade::OnSecretCountdownTick, 1.f, true);
+
+    StartWave(0);
+
+    ABulletRushHUD* HUD = GetHUD();
+    if (HUD)
+    {
+        HUD->ShowMessage("SECRET LEVEL", 3.f);
+    }
+}
+
+void AChronostasisFacade::OnSecretCountdownTick()
+{
+    if (bSecretTimerPaused) return;
+
+    SecretLevelTimeRemaining -= 1.f;
+    ABulletRushHUD* HUD = GetHUD();
+    if (HUD)
+    {
+        HUD->SetCountdown(SecretLevelTimeRemaining);
+    }
+
+    if (SecretLevelTimeRemaining <= 0.f)
+    {
+        GetWorldTimerManager().ClearTimer(SecretCountdownTimerHandle);
+        bSecretTimerPaused = true;
+
+        ABulletRushHUD* HUD2 = GetHUD();
+        if (HUD2)
+        {
+            HUD2->ShowMessage("TIME'S UP! Teleporting...", 3.f);
+        }
+
+        GetWorldTimerManager().SetTimer(SecretTeleportDelayHandle, this, &AChronostasisFacade::OnSecretTimeUpTeleport, 3.f, false);
+    }
+}
+
+void AChronostasisFacade::OnSecretTimeUpTeleport()
+{
+    bIsSecretLevel = false;
+    UProjectilesSubsystem* ProjSys = GetWorld()->GetGameInstance()->GetSubsystem<UProjectilesSubsystem>();
+    if (ProjSys) ProjSys->SetSecretLevel(false);
+
+    if (OwningGameMode)
+    {
+        AGameModeChronostasis* GM = Cast<AGameModeChronostasis>(OwningGameMode);
+        if (GM) GM->OnSecretLevelCompleted();
     }
 }

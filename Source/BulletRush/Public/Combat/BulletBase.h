@@ -18,6 +18,8 @@ struct FBulletData
 
 	AActor* OwnerActor;
 
+	float RemainingLifetime = -1.f;
+
 	// Inicializador por defecto
 	FBulletData() : Direction(FVector::ZeroVector), SpawnLocation(FVector::ZeroVector), Damage(0.f), Speed(0.f), bIsActive(false), bIsPlayerBullet(false), OwnerActor(nullptr) {}
 };

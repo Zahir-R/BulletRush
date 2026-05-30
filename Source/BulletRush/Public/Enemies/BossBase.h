@@ -100,4 +100,6 @@ public:
 	UBossStateDead* DeadState;
 
 	void Die() override;
+
+	bool HasActiveWeakPoints() const { return ActiveWeakPoints > 0; }
 };

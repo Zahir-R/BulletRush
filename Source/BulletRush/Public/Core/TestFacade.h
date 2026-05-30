@@ -27,5 +27,5 @@ public:
 
 	void SummonBoss(FVector Location);
 	void SummonEnemies(FVector Center,int NoEnemies);
-
+	void SummonLinker(FVector Location);
 };

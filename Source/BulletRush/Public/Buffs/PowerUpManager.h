@@ -39,6 +39,9 @@ protected:
 	UPROPERTY()
 	TArray<APowerUpBase*> SpawnedPowerUps;
 
+	UPROPERTY()
+	TMap<APowerUpBase*, FTimerHandle> LifecycleTimers;
+
 	UPROPERTY(VisibleAnywhere)
 	UBoxComponent* SpawnArea;
 

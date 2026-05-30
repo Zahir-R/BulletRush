@@ -18,12 +18,13 @@ ABulletBase::ABulletBase()
 		BulletMesh->SetWorldScale3D(FVector(0.4f)); // Escalamos la esfera para que parezca una bala
 	}
 
-	// Bullets should not simulate physics or block other actors. Movement and
-	// collision detection is handled by the ProjectilesSubsystem using traces.
+	// Bullet uses QueryOnly collision with Overlap responses so that
+	// WeakPointComponent can detect overlaps via OnComponentBeginOverlap.
 	BulletMesh->SetSimulatePhysics(false);
 	BulletMesh->SetEnableGravity(false);
-	BulletMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
- BulletMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	BulletMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	BulletMesh->SetCollisionResponseToAllChannels(ECR_Overlap);
+	BulletMesh->SetGenerateOverlapEvents(true);
 
 	DesactivateBullet();
 	
@@ -48,6 +49,8 @@ void ABulletBase::ActivateBullet(FVector position, FVector Direction, float Spee
 	BulletData.Damage = Damage;
 	BulletData.SpawnLocation = SpawnLocation;
 	BulletData.OwnerActor = OwnerAct;
+
+	BulletData.RemainingLifetime = -1.f;
 
 	SetActorHiddenInGame(false);
 	SetActorEnableCollision(true);

@@ -1,13 +1,26 @@
 #include "Core/Chronostasis/GameModeChronostasis.h"
 #include "Kismet/GameplayStatics.h"
 #include "Core/Chronostasis/ChronostasisFacade.h"
+#include "Core/Requirements/RequirementManager.h"
+#include "Core/BulletRushHUD.h"
+#include "Core/BulletRushGameInstance.h"
 #include "Map/PortalTrigger.h"
+
+AGameModeChronostasis::AGameModeChronostasis()
+{
+    HUDClass = ABulletRushHUD::StaticClass();
+
+    // Define secret level waves
+    FWaveConfig SW1; SW1.DroneCount = 4; SW1.ChargerCount = 2; SW1.SpawnPoints = { FVector(500,0,0), FVector(-500,0,0), FVector(0,500,0), FVector(0,-500,0), FVector(700,300,0), FVector(-700,-300,0) };
+    FWaveConfig SW2; SW2.MassCount = 2; SW2.LinkerCount = 1; SW2.SpawnPoints = { FVector(300,300,0), FVector(-300,-300,0), FVector(400,-400,0) };
+    FWaveConfig SW3; SW3.DroneCount = 3; SW3.MassCount = 1; SW3.ChargerCount = 2; SW3.LinkerCount = 1; SW3.SpawnPoints = { FVector(200,0,0), FVector(-200,0,0), FVector(0,200,0), FVector(0,-200,0), FVector(400,0,0), FVector(-400,0,0), FVector(300,-300,0) };
+    SecretWaves = { SW1, SW2, SW3 };
+}
 
 void AGameModeChronostasis::BeginPlay()
 {
     UE_LOG(LogTemp, Warning, TEXT("AGameModeChronostasis::BeginPlay: Iniciando GameMode"));
     Super::BeginPlay();
-    // Find or spawn the facade actor
     UWorld* World = GetWorld();
     if (!World)
     {
@@ -32,6 +45,26 @@ void AGameModeChronostasis::BeginPlay()
     if (Facade)
     {
         UE_LOG(LogTemp, Warning, TEXT("AGameModeChronostasis::BeginPlay: Llamando a Facade->StartGame()"));
+
+        // Find RequirementManager on the player pawn or spawn one
+        URequirementManager* ReqMgr = nullptr;
+        APlayerController* PC = UGameplayStatics::GetPlayerController(World, 0);
+        if (PC)
+        {
+            APawn* Pawn = PC->GetPawn();
+            if (Pawn)
+            {
+                ReqMgr = Pawn->FindComponentByClass<URequirementManager>();
+            }
+            if (!ReqMgr)
+            {
+                ReqMgr = NewObject<URequirementManager>(PC);
+                ReqMgr->RegisterComponent();
+            }
+            ReqMgr->InitializeRequirements(PC);
+        }
+        Facade->SetRequirementManager(ReqMgr);
+        CachedFacade = Facade;
         Facade->StartGame();
     }
     else
@@ -42,15 +75,62 @@ void AGameModeChronostasis::BeginPlay()
 
 void AGameModeChronostasis::ActivateSecretPortal()
 {
-    if (SecretPortal)
+    UWorld* World = GetWorld();
+    if (!World) return;
+
+    FActorSpawnParameters Params;
+    Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+    UClass* PortalClass = SecretPortalClass ? SecretPortalClass.Get() : APortalTrigger::StaticClass();
+    APortalTrigger* Portal = World->SpawnActor<APortalTrigger>(PortalClass, SecretPortalSpawnLocation, FRotator::ZeroRotator, Params);
+    if (Portal)
     {
-        SecretPortal->bIsActive = true;
+        Portal->bIsActive = true;
+        Portal->OnPortalTriggered.AddUObject(this, &AGameModeChronostasis::OnSecretPortalTriggered);
+        SpawnedSecretPortal = Portal;
+
+        UE_LOG(LogTemp, Log, TEXT("ActivateSecretPortal: Secret portal spawned at %s"), *SecretPortalSpawnLocation.ToString());
     }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("ActivateSecretPortal: Failed to spawn secret portal!"));
+    }
+
     if (BossPortal)
     {
         BossPortal->bIsActive = false;
     }
-    UE_LOG(LogTemp, Log, TEXT("ActivateSecretPortal called"));
+}
+
+void AGameModeChronostasis::OnSecretPortalTriggered()
+{
+    if (bSecretLevelTriggered) return;
+    bSecretLevelTriggered = true;
+
+    UE_LOG(LogTemp, Log, TEXT("OnSecretPortalTriggered: Player entered secret portal! Starting secret level."));
+
+    // Deactivate portal immediately to prevent re-triggering
+    if (SpawnedSecretPortal)
+    {
+        SpawnedSecretPortal->bIsActive = false;
+    }
+
+    URequirementManager* ReqMgr = nullptr;
+    APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+    if (PC)
+    {
+        APawn* Pawn = PC->GetPawn();
+        if (Pawn) ReqMgr = Pawn->FindComponentByClass<URequirementManager>();
+    }
+
+    StartSecretLevel(ReqMgr);
+
+    // Destroy portal after use
+    if (SpawnedSecretPortal)
+    {
+        SpawnedSecretPortal->Destroy();
+        SpawnedSecretPortal = nullptr;
+    }
 }
 
 void AGameModeChronostasis::ActivateBossPortal()
@@ -59,9 +139,54 @@ void AGameModeChronostasis::ActivateBossPortal()
     {
         BossPortal->bIsActive = true;
     }
-    if (SecretPortal)
-    {
-        SecretPortal->bIsActive = false;
-    }
     UE_LOG(LogTemp, Log, TEXT("ActivateBossPortal called"));
+}
+
+void AGameModeChronostasis::StartSecretLevel(URequirementManager* RequirementManager)
+{
+    if (!CachedFacade)
+    {
+        UE_LOG(LogTemp, Error, TEXT("AGameModeChronostasis::StartSecretLevel: No facade cached!"));
+        return;
+    }
+    CachedFacade->SetRequirementManager(RequirementManager);
+    CachedFacade->StartSecretWaves(SecretWaves);
+}
+
+void AGameModeChronostasis::OnSecretLevelCompleted()
+{
+    bool bWavesCleared = CachedFacade && CachedFacade->AreAllWavesComplete();
+
+    if (!bWavesCleared)
+    {
+        // Time ran out — no reward
+        UE_LOG(LogTemp, Warning, TEXT("Secret level failed (time expired). Teleporting to boss without reward."));
+    }
+    else
+    {
+        // Reward: apply cooldown multiplier to GameInstance
+        UBulletRushGameInstance* GI = GetGameInstance<UBulletRushGameInstance>();
+        if (GI)
+        {
+            GI->PowerUpCooldownMultiplier = 0.5f;
+        }
+        APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+        ABulletRushHUD* HUD = PC ? Cast<ABulletRushHUD>(PC->GetHUD()) : nullptr;
+        if (HUD)
+        {
+            HUD->ShowMessage("REWARD: PowerUp cooldown halved!", 5.f);
+        }
+        UE_LOG(LogTemp, Warning, TEXT("Secret level completed! Reward granted."));
+    }
+
+    // Clean up and teleport to boss
+    ActivateBossPortal();
+
+    if (CachedFacade)
+    {
+        CachedFacade->Destroy();
+        CachedFacade = nullptr;
+    }
+
+    bSecretLevelTriggered = false;
 }

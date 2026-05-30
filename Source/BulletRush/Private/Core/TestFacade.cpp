@@ -5,6 +5,7 @@
 #include "../../Public/Enemies/BossBase.h"
 #include "../../Public/Enemies/EnemyBase.h"
 #include "../../Public/Player/PlayingPlayer.h"
+#include "Enemies/Chronostasis/ChronostasisLinker.h"
 #include "Engine/World.h"
 
 // Sets default values
@@ -44,4 +45,12 @@ void ATestFacade::SummonEnemies(FVector Center, int NoEnemies)
 		World->SpawnActor<AEnemyBase>(AEnemyBase::StaticClass(), NewLocation, FRotator::ZeroRotator);
 	}
 
+}
+
+void ATestFacade::SummonLinker(FVector Location)
+{
+	UWorld* World = GetWorld();
+	if (!World) return;
+	AChronostasisLinker* Linker = World->SpawnActor<AChronostasisLinker>(AChronostasisLinker::StaticClass(), Location, FRotator::ZeroRotator);
+	if (Linker) UE_LOG(LogTemp, Warning, TEXT("Linker spawneado en %s"), *Location.ToString());
 }

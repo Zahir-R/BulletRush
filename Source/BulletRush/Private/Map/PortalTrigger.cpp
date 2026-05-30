@@ -35,5 +35,12 @@ void APortalTrigger::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor*
     if (APlayingPlayer* Player = Cast<APlayingPlayer>(OtherActor))
     {
         Player->SetActorLocation(TeleportTarget);
+        OnPortalTriggered.Broadcast();
     }
+}
+
+void APortalTrigger::OnPortalOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+    // Reserved for future use
 }

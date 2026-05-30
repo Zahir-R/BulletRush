@@ -3,6 +3,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/HealthComponent.h"
 #include "Components/BulletSpawnerComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AEnemyBase::AEnemyBase()
@@ -53,7 +54,7 @@ float AEnemyBase::TakeDamage(float DamageAmount, struct FDamageEvent const& Dama
 
 	if (HealthComp)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[%s] Recibió daño: %f"), *GetName(), DamageAmount);
+		UE_LOG(LogTemp, Warning, TEXT("[%s] Recibiï¿½ daï¿½o: %f"), *GetName(), DamageAmount);
 		return HealthComp->TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	}
 	return 0.0f;
@@ -73,10 +74,11 @@ void AEnemyBase::OnHealthDeath()
 }
 
 void AEnemyBase::Die() {
-	//sujeto a cambios
+	if (bIsDead) return;
+	bIsDead = true;
 	StopAttackLoop();
 	OnEnemyDeath.Broadcast(this);
-	//UE_LOG(LogTemp, Warning, TEXT("[%s] Murió."), *GetName());
+	// UE_LOG(LogTemp, Warning, TEXT("[%s] Muriï¿½."), *GetName());
 	Destroy();
 }
 
@@ -98,6 +100,30 @@ void AEnemyBase::StartAttack()
 //	UE_LOG(LogTemp, Log, TEXT("[%s] Ejecutando disparo de prueba."), *GetName());
 
 
+}
+
+FVector AEnemyBase::ApplyEnemySeparation(const FVector& DesiredLocation) const
+{
+	FVector Adjusted = DesiredLocation;
+	UWorld* World = GetWorld();
+	if (!World) return Adjusted;
+
+	TArray<AActor*> Enemies;
+	UGameplayStatics::GetAllActorsOfClass(World, AEnemyBase::StaticClass(), Enemies);
+
+	for (AActor* Other : Enemies)
+	{
+		if (Other == this || !Other || !IsValid(Other)) continue;
+		FVector Delta = Adjusted - Other->GetActorLocation();
+		float Dist = Delta.Size();
+		if (Dist < SeparationDistance && Dist > KINDA_SMALL_NUMBER)
+		{
+			FVector PushDir = Delta.GetSafeNormal();
+			float PushAmount = (SeparationDistance - Dist) * 0.5f;
+			Adjusted += PushDir * PushAmount;
+		}
+	}
+	return Adjusted;
 }
 
 void AEnemyBase::BeginAttackLoop()

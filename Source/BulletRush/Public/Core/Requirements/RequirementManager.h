@@ -26,8 +26,11 @@ public:
     // Initialize all registered requirements
     void InitializeRequirements(APlayerController* Player);
 
-    // Check whether all secret requirements are met
-    bool AreSecretRequirementsMet() const;
+	// Check whether all secret requirements are met
+	bool AreSecretRequirementsMet() const;
+
+	// Whether any requirements have been configured
+	bool HasRequirements() const { return SecretRequirements.Num() > 0; }
 
 protected:
     virtual void BeginPlay() override;

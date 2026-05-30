@@ -85,7 +85,9 @@ void APowerUpManager::SpawnRandomPowerUp()
 						OnPowerUpCollected(NewPowerUp);
 						NewPowerUp->Destroy();
 					}
+					LifecycleTimers.Remove(NewPowerUp);
 				}, PowerUpLifetime, false);
+			LifecycleTimers.Add(NewPowerUp, LifeTimer);
 		}
 	}
 
@@ -101,11 +103,21 @@ void APowerUpManager::ScheduleNextSpawn()
 void APowerUpManager::OnPowerUpCollected(APowerUpBase* PowerUp)
 {
 	if (!PowerUp) return;
+	if (FTimerHandle* Handle = LifecycleTimers.Find(PowerUp))
+	{
+		GetWorldTimerManager().ClearTimer(*Handle);
+		LifecycleTimers.Remove(PowerUp);
+	}
 	SpawnedPowerUps.Remove(PowerUp);
 }
 
 void APowerUpManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	for (auto& Pair : LifecycleTimers)
+	{
+		GetWorldTimerManager().ClearTimer(Pair.Value);
+	}
+	LifecycleTimers.Empty();
 	GetWorldTimerManager().ClearTimer(SpawnTimer);
 	Super::EndPlay(EndPlayReason);
 }

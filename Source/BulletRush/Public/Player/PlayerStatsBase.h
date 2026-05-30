@@ -15,4 +15,5 @@ public:
 	virtual float GetSpeedMultiplier() const { return 1.0f; }
 	virtual float GetMaxHealthBonus() const { return 0.0f; }
 	virtual float GetHealthRestore() const { return 0.0f; }	
+	virtual void ChangeMesh() const { return;  }
 };

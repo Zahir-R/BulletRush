@@ -7,6 +7,7 @@
 
 class AEnemyBase;
 class ABulletRushGameModeBase;
+class ABulletRushHUD;
 class UChronostasisFactoryEnemy;
 
 USTRUCT()
@@ -19,6 +20,10 @@ struct FWaveConfig
     int32 MassCount = 0;
     UPROPERTY()
     int32 ExpansiveCount = 0;
+    UPROPERTY()
+    int32 ChargerCount = 0;
+    UPROPERTY()
+    int32 LinkerCount = 0;
     UPROPERTY()
     TArray<FVector> SpawnPoints;
 };
@@ -38,6 +43,11 @@ public:
     void ActivatePortalToSecret();
     void ActivatePortalToBoss();
 
+    void SetRequirementManager(class URequirementManager* Manager);
+    void StartSecretWaves(const TArray<FWaveConfig>& NewWaves);
+
+    bool AreAllWavesComplete() const { return RemainingEnemiesInWave <= 0 && CurrentWaveIndex >= Waves.Num() - 1; }
+
     FSimpleMulticastDelegate OnTimeStop;
 
 protected:
@@ -54,10 +64,24 @@ protected:
     // Weak pointer to the player's health component for damage observation
     TWeakObjectPtr<class UHealthComponent> PlayerHealthComp;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Factory")
-	UChronostasisFactoryEnemy* EnemyFactory;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Factory")
+	UChronostasisFactoryEnemy* DroneFactory;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Factory")
+	UChronostasisFactoryEnemy* MassFactory;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Factory")
+	UChronostasisFactoryEnemy* ExpansiveFactory;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Factory")
+	UChronostasisFactoryEnemy* ChargerFactory;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Factory")
+	UChronostasisFactoryEnemy* LinkerFactory;
 
     FTimerHandle SlowTimerHandle;
+    ABulletRushHUD* GetHUD() const;
+
     void StartSlowTimer();
     void OnSlowTimerExpired();
     UFUNCTION()
@@ -65,6 +89,19 @@ protected:
 
     void StartWave(int32 Index);
     void OnAllWavesComplete();
+
+    // Secret level support
+    bool bIsSecretLevel = false;
+    float SecretLevelTimeRemaining = 120.f;
+    bool bSecretTimerPaused = false;
+    FTimerHandle SecretCountdownTimerHandle;
+    FTimerHandle SecretTeleportDelayHandle;
+
+    void OnSecretCountdownTick();
+    void OnSecretTimeUpTeleport();
+
+    UPROPERTY()
+    TWeakObjectPtr<class URequirementManager> RequirementManagerRef;
 
     ABulletRushGameModeBase* OwningGameMode;
 };

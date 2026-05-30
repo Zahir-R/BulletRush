@@ -34,6 +34,10 @@ public:
 
 	float GlobalSpeedMultiplier = 1.0f; // El jefe deber� poder cambiar esto
 
+	bool bSecretLevelActive = false;
+
+	void SetSecretLevel(bool bActive);
+
 	UMaterialParameterCollection* RhythmMPC;
 
 	void HandleBeatHit(bool bIsStrongBeat);
