@@ -19,7 +19,7 @@ struct FPortalData
 	FPortalData(FName InLevelName, FVector InLocation) : LevelName(InLevelName), SpawnLocation(InLocation) {}
 };
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API APortalManager : public AActor
 {
 	GENERATED_BODY()

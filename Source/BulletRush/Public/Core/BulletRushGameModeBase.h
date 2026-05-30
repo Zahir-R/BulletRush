@@ -9,20 +9,20 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API ABulletRushGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 	
-	ABulletRushGameModeBase();
 public:
+	ABulletRushGameModeBase();
 	virtual void BeginPlay() override;
 
 	UFUNCTION(Exec)
 	void DealDamageToTarget(float Damage);
 
 	/*
-	// Esta función permite decidir qué Pawn usar dinámicamente
+	// Esta funciï¿½n permite decidir quï¿½ Pawn usar dinï¿½micamente
 	virtual UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
 	*/
 };

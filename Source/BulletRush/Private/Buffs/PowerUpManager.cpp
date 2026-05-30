@@ -16,23 +16,43 @@ APowerUpManager::APowerUpManager()
 void APowerUpManager::BeginPlay()
 {
 	Super::BeginPlay();
+    UE_LOG(LogTemp, Warning, TEXT("APowerUpManager::BeginPlay: Actor %s in level %s. PowerUpClasses=%d"), *GetName(), *GetWorld()->GetMapName(), PowerUpClasses.Num());
 	float FirstDelay = FMath::RandRange(MinSpawnTime, MaxSpawnTime);
 	GetWorldTimerManager().SetTimer(SpawnTimer, this, &APowerUpManager::SpawnRandomPowerUp, FirstDelay, false);
 }
 
 void APowerUpManager::SpawnRandomPowerUp()
 {
-	if (!GetWorld() || !GetWorld()->IsGameWorld()) {
+    // Only verify we have a world. Previously this also checked IsGameWorld which
+	// caused powerups to only spawn on a specific test map in this project setup.
+	// Remove that restriction so powerups can spawn on any level played in-game.
+	if (!GetWorld()) {
 		ScheduleNextSpawn();
 		return;
 	}
+    UE_LOG(LogTemp, Verbose, TEXT("APowerUpManager::SpawnRandomPowerUp called on %s"), *GetName());
 	SpawnedPowerUps.RemoveAll([](APowerUpBase* P)
 		{
 			return !IsValid(P);
 		});
 
-	if (!SpawnArea || PowerUpClasses.Num() == 0 || SpawnedPowerUps.Num() >= MaxPowerUps)
+	if (!SpawnArea)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("APowerUpManager: No SpawnArea configured on %s"), *GetName());
+		ScheduleNextSpawn();
+		return;
+	}
+
+	if (PowerUpClasses.Num() == 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("APowerUpManager: No PowerUpClasses configured on %s"), *GetName());
+		ScheduleNextSpawn();
+		return;
+	}
+
+	if (SpawnedPowerUps.Num() >= MaxPowerUps)
+	{
+        UE_LOG(LogTemp, Verbose, TEXT("APowerUpManager: MaxPowerUps reached on %s"), *GetName());
 		ScheduleNextSpawn();
 		return;
 	}
@@ -43,6 +63,9 @@ void APowerUpManager::SpawnRandomPowerUp()
 
 	FBoxSphereBounds Bounds = SpawnArea->Bounds;
 	FVector SpawnLoc = Bounds.Origin + FMath::RandPointInBox(FBox(-Bounds.BoxExtent, Bounds.BoxExtent));
+
+	// TODO while (estaOtroObjeto)
+		// FVector SpawnLoc = Bounds.Origin + FMath::RandPointInBox(FBox(-Bounds.BoxExtent, Bounds.BoxExtent));
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;

@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API UBulletRushGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
@@ -20,7 +20,23 @@ public:
 	UPROPERTY()
 	TMap<FName, bool> MapasCompletados;
 
-	// Funcinn rapida para consultar si un mapa ya se pasó
+	// Vidas por nivel (inicialmente 3 por nivel)
+	UPROPERTY()
+	TMap<FName, int32> VidasPorNivel;
+
+	// Obtiene las vidas restantes para un nivel (inicializa a 3 si no existe)
+	UFUNCTION()
+	int32 GetVidasRestantes(FName NombreMapa);
+
+	// Decrementa una vida para el nivel y devuelve las vidas restantes
+	UFUNCTION()
+	int32 DecrementarVida(FName NombreMapa);
+
+	// Maneja la muerte del jugador: si quedan vidas reinicia el nivel; si no, vuelve al mapa CupHead
+    UFUNCTION()
+	void HandlePlayerDeath(UObject* WorldContextObject);
+
+	// Funcinn rapida para consultar si un mapa ya se pasï¿½
 	UFUNCTION()
 	bool IsMapaCompletado(FName NombreMapa);
 

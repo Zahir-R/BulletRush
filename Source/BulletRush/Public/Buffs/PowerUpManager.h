@@ -7,7 +7,7 @@
 class UBoxComponent;
 class APowerUpBase;
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API APowerUpManager : public AActor
 {
 	GENERATED_BODY()
@@ -25,10 +25,10 @@ protected:
 	TArray<TSubclassOf<class APowerUpBase>> PowerUpClasses;
 
 	UPROPERTY(EditAnywhere, Category = "Spawning")
-	float MinSpawnTime = 5.0f;
+	float MinSpawnTime = 3.0f;
 	
 	UPROPERTY(EditAnywhere, Category = "Spawning")
-	float MaxSpawnTime = 10.0f;
+	float MaxSpawnTime = 6.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Spawning")
 	int32 MaxPowerUps = 5;

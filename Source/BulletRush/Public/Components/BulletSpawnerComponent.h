@@ -2,8 +2,9 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "../Subsystems/ProjectilesSubsystem.h"
-#include "../Combat/AttackPatterns.h"
+#include "Subsystems/ProjectilesSubsystem.h"
+#include "Combat/AttackPatterns/AttackStrategy.h"
+#include "UObject/StrongObjectPtr.h"
 #include "BulletSpawnerComponent.generated.h"
 
 class IAttackStrategy;
@@ -13,7 +14,7 @@ enum class EAttackType : uint8
 	Circle,
 	Sphere,
 	Spiral,
-	Burst
+	Burst,
 	// otros tipos de ataque
 };
 
@@ -29,8 +30,8 @@ struct FAttackStep
 	float Damage;
 
 	/**
-	* Constructor por defecto, genera un ataque circular con 10 balas, velocidad 500, delay de 1 segundo, sin parámetros especiales y origen en el boss. Esto es solo para facilitar la creación de ataques simples, se pueden usar los otros constructores para más control.
-	* Los parámetros, en orden, son Tipo de ataque, Cantidad de balas, Velocidad, Delay después del ataque, Parámetro especial (dependiendo del tipo de ataque), Si usa la ubicación del boss o no, y la ubicación personalizada si no se usa la del boss.
+	* Constructor por defecto, genera un ataque circular con 10 balas, velocidad 500, delay de 1 segundo, sin parï¿½metros especiales y origen en el boss. Esto es solo para facilitar la creaciï¿½n de ataques simples, se pueden usar los otros constructores para mï¿½s control.
+	* Los parï¿½metros, en orden, son Tipo de ataque, Cantidad de balas, Velocidad, Delay despuï¿½s del ataque, Parï¿½metro especial (dependiendo del tipo de ataque), Si usa la ubicaciï¿½n del boss o no, y la ubicaciï¿½n personalizada si no se usa la del boss.
 	*/
 	FAttackStep() : Type(EAttackType::Circle), BulletCount(10), Speed(500.0f), DelayAfter(1.0f), SpecialParam(0.0f), bUseBossLocation(true), CustomOrigin(FVector::ZeroVector), Damage(10.0f) {}
 
@@ -38,7 +39,7 @@ struct FAttackStep
 	FAttackStep(EAttackType InType, int32 InCount, float InSpeed, float InDelay, float InSpecial = 0.0f, float InDamage = 10.0f) 
 		: Type(InType), BulletCount(InCount), Speed(InSpeed), DelayAfter(InDelay), SpecialParam(InSpecial), bUseBossLocation(true), CustomOrigin(FVector::ZeroVector), Damage(InDamage) {}
 
-	// * Constructor para ataques en ubicación específica, donde el origen es diferente del boss
+	// * Constructor para ataques en ubicaciï¿½n especï¿½fica, donde el origen es diferente del boss
 	FAttackStep(EAttackType InType, int32 InCount, float InSpeed, float InDelay, FVector InOrigin, float InSpecial = 0.0f, float InDamage = 10.0f)
 		: Type(InType), BulletCount(InCount), Speed(InSpeed), DelayAfter(InDelay), SpecialParam(InSpecial), bUseBossLocation(false), CustomOrigin(InOrigin), Damage(InDamage) {}
 };
@@ -51,11 +52,11 @@ class BULLETRUSH_API UBulletSpawnerComponent : public UActorComponent
 public:	
 	UBulletSpawnerComponent();
 	/**
-	* Empieza una secuencia de ataques, cada uno definido por un FAttackStep. El componente se encargará de ejecutar cada paso en orden, respetando los tiempos de delay y utilizando las estrategias de ataque correspondientes al tipo de ataque definido en cada paso.
+	* Empieza una secuencia de ataques, cada uno definido por un FAttackStep. El componente se encargarï¿½ de ejecutar cada paso en orden, respetando los tiempos de delay y utilizando las estrategias de ataque correspondientes al tipo de ataque definido en cada paso.
 	*/
 	void StartSequence(const TArray<FAttackStep>& NewSequence);
 	/**
-	* Genera las balas en el mundo. Esta función es llamada por las estrategias de ataque para crear las balas con la dirección y velocidad adecuadas. El origen puede ser el jefe o una ubicación específica, dependiendo de los parámetros del ataque.
+	* Genera las balas en el mundo. Esta funciï¿½n es llamada por las estrategias de ataque para crear las balas con la direcciï¿½n y velocidad adecuadas. El origen puede ser el jefe o una ubicaciï¿½n especï¿½fica, dependiendo de los parï¿½metros del ataque.
 	*/
 	void InternalSpawn(FVector Origin, FVector Direction, float Speed, float Damage);
 
@@ -65,7 +66,7 @@ protected:
 	virtual void BeginPlay() override;
 	
 public:	
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override; // Ni idea si usemos esto después, lo dejo por si acaso
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override; // Ni idea si usemos esto despuï¿½s, lo dejo por si acaso
 	
 
 private:
@@ -80,10 +81,10 @@ private:
 	int32 CurrentStepIndex;
 	FTimerHandle SequenceTimerHandle;
 	/**
-	* Ejecuta el siguiente paso en la secuencia de ataques. Esta función es llamada automáticamente después de cada ataque, utilizando el tiempo de delay definido en el paso actual para programar la ejecución del siguiente paso.
+	* Ejecuta el siguiente paso en la secuencia de ataques. Esta funciï¿½n es llamada automï¿½ticamente despuï¿½s de cada ataque, utilizando el tiempo de delay definido en el paso actual para programar la ejecuciï¿½n del siguiente paso.
 	*/
 	void ExecuteNextStep();
-	TMap<EAttackType, TSharedPtr<IAttackStrategy>> AttackRegist;
+	TMap<EAttackType, TStrongObjectPtr<UAttackStrategy>> AttackRegist;
 
 	UProjectilesSubsystem* ProjectilesSubsystem;
 

@@ -13,6 +13,8 @@
 #include "Buffs/DoubleDamage.h"
 #include "Buffs/SpeedBoost.h"
 #include "Buffs/HealthBonus.h"
+#include "Core/BulletRushGameInstance.h"
+#include "Kismet/GameplayStatics.h"
 
 APlayingPlayer::APlayingPlayer()
 {
@@ -37,6 +39,7 @@ APlayingPlayer::APlayingPlayer()
 
 	CameraBoom->TargetArmLength = 400.0f; // Distancia a la que se colocará la cámara
 	CameraBoom->bUsePawnControlRotation = true; // Cámara rota con los controles
+	CameraBoom->SocketOffset = FVector(0.0f, 0.0f, 50.0f);
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
@@ -83,7 +86,7 @@ void APlayingPlayer::BeginPlay()
 
 	BaseStats = NewObject<UPlayerStatsBase>();
 	CurrentStats = BaseStats;
-	
+	if (HealthComp) HealthComp->OnDeath.AddDynamic(this, &APlayingPlayer::OnPlayerDeath);
 }
 
 void APlayingPlayer::Tick(float DeltaTime)
@@ -204,4 +207,50 @@ void APlayingPlayer::RefreshStatsFromChain()
 	if (HealthComp->CurrentHealth > NewMaxHealth) HealthComp->CurrentHealth = NewMaxHealth;
 
 	UE_LOG(LogTemp, Warning, TEXT("STATS: SPEED: %f, MAXHEALTH: %f"), NewSpeed, NewMaxHealth);
+}
+
+void APlayingPlayer::RemoveDecorator(UPlayerStatsDecorator* Decorator)
+{
+	if (!Decorator) return;
+
+	UPlayerStatsDecorator* Current = Cast<UPlayerStatsDecorator>(CurrentStats.GetObject());
+	TScriptInterface<IPlayerStatsInterface> Prev = nullptr;
+
+	while (Current)
+	{
+		if (Current == Decorator)
+		{
+			if (Prev == nullptr) CurrentStats = Current->GetInnerStats();
+			else
+			{
+				UPlayerStatsDecorator* PrevDec = Cast<UPlayerStatsDecorator>(Prev.GetObject());
+				if (PrevDec) PrevDec->SetInner(Current->GetInnerStats());
+			}
+			break;
+		}
+		Prev = Current;
+		Current = Cast<UPlayerStatsDecorator>(Current->GetInnerStats().GetObject());
+	}
+	RefreshStatsFromChain();
+}
+
+float APlayingPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	if (!HealthComp) return 0.0f;
+	if (HealthComp->IsInvulnerable()) return 0.0f;
+
+	float Dmg = HealthComp->TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	if (HealthComp->CurrentHealth <= 0.0f) {
+		Destroy();
+		return 0.0f;
+	}
+
+	HealthComp->SetInvulnerable(true, 1.0f);
+	return Dmg;
+}
+
+void APlayingPlayer::OnPlayerDeath()
+{
+	Destroy();
 }

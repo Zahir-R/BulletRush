@@ -1,5 +1,9 @@
-#include "../../Public/Components/BulletSpawnerComponent.h"
-#include "../../Public/Combat/AttackPatterns.h"
+#include "Components/BulletSpawnerComponent.h"
+#include "Combat/AttackPatterns/AttackStrategy.h"
+#include "Combat/AttackPatterns/BurstAttack.h"
+#include "Combat/AttackPatterns/CircleAttack.h"
+#include "Combat/AttackPatterns/SpiralAttack.h"
+#include "Combat/AttackPatterns/SphereAttack.h"
 
 UBulletSpawnerComponent::UBulletSpawnerComponent()
 {
@@ -16,10 +20,10 @@ void UBulletSpawnerComponent::BeginPlay()
 		ProjectilesSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UProjectilesSubsystem>();
 	}
 	
-    AttackRegist.Add(EAttackType::Circle, MakeShared<FCircleAttack>());
-	AttackRegist.Add(EAttackType::Sphere, MakeShared<FSphereAttack>());
-	AttackRegist.Add(EAttackType::Spiral, MakeShared<FSpiralAttack>());
-	AttackRegist.Add(EAttackType::Burst, MakeShared<FBurstAttack>());
+    AttackRegist.Add(EAttackType::Circle, TStrongObjectPtr<UAttackStrategy>(NewObject<UCircleAttack>(this)));
+	AttackRegist.Add(EAttackType::Sphere, TStrongObjectPtr<UAttackStrategy>(NewObject<USphereAttack>(this)));
+	AttackRegist.Add(EAttackType::Spiral, TStrongObjectPtr<UAttackStrategy>(NewObject<USpiralAttack>(this)));
+	AttackRegist.Add(EAttackType::Burst, TStrongObjectPtr<UAttackStrategy>(NewObject<UBurstAttack>(this)));
 	// Otros patrones
 
 }
@@ -45,11 +49,11 @@ void UBulletSpawnerComponent::InternalSpawn(FVector Origin, FVector Direction, f
 
 	if (Bullet)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Bala disparada desde %s hacia %s"), *Origin.ToString(), *Direction.ToString());
+		//UE_LOG(LogTemp, Log, TEXT("Bala disparada desde %s hacia %s"), *Origin.ToString(), *Direction.ToString());
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No se pudo generar la bala o no hay disponibles en el pool"));
+		//UE_LOG(LogTemp, Warning, TEXT("No se pudo generar la bala o no hay disponibles en el pool"));
 	}
 }
 

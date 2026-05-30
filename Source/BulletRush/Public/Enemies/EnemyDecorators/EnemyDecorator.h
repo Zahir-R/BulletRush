@@ -7,7 +7,9 @@
 #include "EnemyDecorator.generated.h"
 
 class AEnemyBase;
-UCLASS()
+class UStaticMesh;
+
+UCLASS(Blueprintable)
 class BULLETRUSH_API AEnemyDecorator : public AActor
 {
 	GENERATED_BODY()
@@ -15,6 +17,9 @@ class BULLETRUSH_API AEnemyDecorator : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AEnemyDecorator();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Decorator")
+	UStaticMesh* CustomMesh;
 
 	UPROPERTY()
 	AEnemyBase* Enemy;

@@ -4,14 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Core/Subscriber.h"
 #include "LevelPortal.generated.h"
 
 class UBoxComponent;
 class UStaticMeshComponent;
 class ULevelRoutingSubsystem;
 
-UCLASS()
-class BULLETRUSH_API ALevelPortal : public AActor
+UCLASS(Blueprintable)
+class BULLETRUSH_API ALevelPortal : public AActor, public ISubscriber
 {
 	GENERATED_BODY()
 	
@@ -19,7 +20,7 @@ public:
 	// Sets default values for this actor's properties
 	ALevelPortal();
 	// var para el nombre del nivel
-	FName TargetLevelName; 
+	FName TargetLevelName;
 
 protected:
 	// Called when the game starts or when spawned
@@ -42,5 +43,8 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	// ISubscriber implementation
+	virtual void Update(class APublisher* Publisher) override;
 
 };

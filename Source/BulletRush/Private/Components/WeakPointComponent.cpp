@@ -11,15 +11,15 @@
 
 UWeakPointComponent::UWeakPointComponent()
 {
-	/* Definir características del punto debil
+	/* Definir caracterï¿½sticas del punto debil
 	MaxHealth = 50.0f;
-    InitSphereRadius(40.0f); // Tamaño del punto débil
+    InitSphereRadius(40.0f); // Tamaï¿½o del punto dï¿½bil
 	*/
-	// Detecta daño mediante Overlaps, siempre será true
+	// Detecta daï¿½o mediante Overlaps, siempre serï¿½ true
     InitSphereRadius(40.0f);
 	SetGenerateOverlapEvents(true);
 
-    //----Zona de Test, borralo o modificalo si no quieres que tu Unreal crasheé sin querer----
+    //----Zona de Test, borralo o modificalo si no quieres que tu Unreal crasheï¿½ sin querer----
     VisualMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualMesh"));
     VisualMesh->SetupAttachment(this);
 
@@ -48,7 +48,7 @@ void UWeakPointComponent::BeginPlay()
 {
 	CurrentHealth = MaxHealth;
 
-	// Atamos la colisión a nosotros mismos
+	// Atamos la colisiï¿½n a nosotros mismos
 	OnComponentBeginOverlap.AddDynamic(this, &UWeakPointComponent::OnWeakPointOverlap);
 
     if (UWorld* World = GetWorld())
@@ -59,7 +59,7 @@ void UWeakPointComponent::BeginPlay()
             UE_LOG(LogTemp, Warning, TEXT("Pool cacheado correctamente"));
         }
     }
-    //----Zona de Test, borralo o modificalo si no quieres que tu Unreal crasheé sin querer----
+    //----Zona de Test, borralo o modificalo si no quieres que tu Unreal crasheï¿½ sin querer----
     //Hecho con IA, no recomendado usarlo de todos modos xd
     if (VisualMesh && VisualMesh->GetStaticMesh())
     {
@@ -78,31 +78,28 @@ void UWeakPointComponent::BeginPlay()
     //-----------------------------------------------------------------------------------------
 }
 
+void UWeakPointComponent::TakeDamageFromHit(float DamageAmount)
+{
+    CurrentHealth -= DamageAmount;
+    UE_LOG(LogTemp, Warning, TEXT("[%s] Recibio danio: %f, vida restante: %f"), *GetName(), DamageAmount, CurrentHealth);
+
+    if (CurrentHealth <= 0.0f)
+    {
+        SetGenerateOverlapEvents(false);
+        UE_LOG(LogTemp, Warning, TEXT("[%s] fue destruido, ahora el jefe es vulnerable!"), *GetName());
+        VisualMesh->SetVisibility(false);
+        OnDestroyedEvent.Broadcast();
+    }
+}
+
 void UWeakPointComponent::OnWeakPointOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
 	bool bFromSweep, const FHitResult& SweepResult)
 {
-    // Ejemplo de como se haría daño
-	
 	if (OtherActor && OtherActor->ActorHasTag("BalaJugador"))
     {
         ABulletBase* Bullet = Cast<ABulletBase>(OtherActor);
-        CurrentHealth -= Bullet->BulletData.Damage; // O el daño que haga la bala
-        UE_LOG(LogTemp, Warning, TEXT("[%s] Recibió daño: %f, vida restante: %f"), *GetName(), Bullet->BulletData.Damage, CurrentHealth);
-        PoolCache->ReturnBullet(Bullet);  // Retornamos la bala
-
-        if (CurrentHealth <= 0.0f)
-        {
-            // ¡Punto débil destruido!
-            SetGenerateOverlapEvents(false); // Ya no recibe más daño
-            
-            // Opcional: Reproducir explosión o sonido aquí
-            UE_LOG(LogTemp, Warning, TEXT("[%s] fue destruido, ahora el jefe es vulnerable!!"), *GetName());
-
-            VisualMesh->SetVisibility(false);
-
-            // Tocamos el megáfono para avisarle al jefe
-            OnDestroyedEvent.Broadcast(); 
-        }
+        TakeDamageFromHit(Bullet->BulletData.Damage);
+        PoolCache->ReturnBullet(Bullet);
     }
 }

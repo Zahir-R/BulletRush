@@ -11,12 +11,12 @@
  */
 class UBulletRushGameInstance;
 
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API ULevelRoutingSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 public:
-	// Función principal que llamara el Portal fisico ALevelPortal
+	// Funciï¿½n principal que llamara el Portal fisico ALevelPortal
 	UFUNCTION()
 	void SolicitarViajeANivel(FName NombreNivelDestino, const UObject* WorldContextObject);
 
@@ -25,6 +25,6 @@ public:
 	bool PuedeViajarANivel(FName NombreNivelDestino);
 
 private:
-	// Función interna para obtener tu GameInstance casteado de forma limpia
+	// Funciï¿½n interna para obtener tu GameInstance casteado de forma limpia
 	UBulletRushGameInstance* GetBulletRushGameInstance() const;
 };

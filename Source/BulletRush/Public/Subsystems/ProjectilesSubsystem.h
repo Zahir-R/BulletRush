@@ -1,16 +1,13 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-#pragma once
-
+ï»¿#pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "Tickable.h"
-#include "../Combat/BulletBase.h"
+#include "Combat/BulletBase.h"
 #include "Materials/MaterialParameterCollection.h"
+
 #include "ProjectilesSubsystem.generated.h"
 
-
-UCLASS()
+UCLASS(Blueprintable)
 class BULLETRUSH_API UProjectilesSubsystem : public UGameInstanceSubsystem, public FTickableGameObject
 {
 	GENERATED_BODY()
@@ -26,13 +23,16 @@ public:
 
 	void ClearPool();
 	void ReinitializePool();
-
+	float GetPlayerProjectileSpeedMultiplier(AActor* OwnerActor);
 
 	// Funciones para el equipo
 	ABulletBase* RequestBullet(FVector Loc, FVector Dir, float Spd, bool bIsPlayer, float Damage, FVector SpawnLocation, AActor* Owner);
 	void ReturnBullet(ABulletBase* Bullet);
 
-	float GlobalSpeedMultiplier = 1.0f; // El jefe deberá poder cambiar esto
+	// Return all active bullets back to pool (deactivate them)
+	void ReturnAllActiveBullets();
+
+	float GlobalSpeedMultiplier = 1.0f; // El jefe deberï¿½ poder cambiar esto
 
 	UMaterialParameterCollection* RhythmMPC;
 
@@ -45,6 +45,6 @@ private:
 	TArray<ABulletBase*> BulletPool;
 	FDelegateHandle OnMapLoadedHandle;
 
-	int32 PoolSize = 5000;
+	int32 PoolSize = 2500;
 	void InitializePool();
 };

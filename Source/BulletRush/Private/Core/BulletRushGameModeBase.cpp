@@ -1,12 +1,13 @@
-#include "../../Public/Core/BulletRushGameModeBase.h"
-#include "../../Public/Player/PlayingPlayer.h"
-#include "../../Public/Player/TopDownPlayer.h"
+#include "Core/BulletRushGameModeBase.h"
+#include "Player/PlayingPlayer.h"
+#include "Player/TopDownPlayer.h"
 #include "Engine/World.h"
-
-#include "../../Public/Map/PortalManager.h"
+#include "Core/Chronostasis/ChronostasisFactoryEnemy.h"
+#include "Enemies/EnemyBase.h"
+#include "Map/LevelPortal.h"
+#include "Map/PortalManager.h"
 #include <Kismet/GameplayStatics.h>
 
-#include "../../Public/Map/LevelPortal.h"
 
 ABulletRushGameModeBase::ABulletRushGameModeBase()
 {
@@ -18,14 +19,15 @@ void ABulletRushGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
 	//para testeo 
-	if (GetWorld()) {
-		ALevelPortal* NivelRetorno = GetWorld()->SpawnActor<ALevelPortal>(ALevelPortal::StaticClass(), FVector(300.0f, 300.0f, 50.0f), FRotator::ZeroRotator);
+    if (GetWorld()) {
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		FTransform SpawnTransform(FRotator::ZeroRotator, FVector(300.0f, 300.0f, 50.0f));
+		ALevelPortal* NivelRetorno = GetWorld()->SpawnActor<ALevelPortal>(ALevelPortal::StaticClass(), SpawnTransform, SpawnParams);
 		if (NivelRetorno)
 		{
 			NivelRetorno->TargetLevelName = "Map_CupHeadMap";
 		}
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		//spawneamos el nivel para volver al cuphead
 		
 	}

@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(meta=(BlueprintSpawnableComponent))
 class BULLETRUSH_API UChargedWeaponComponent : public UWeaponBaseComponent
 {
 	GENERATED_BODY()
