@@ -9,9 +9,24 @@
 /**
  * 
  */
+
 UCLASS()
 class BULLETRUSH_API AOrchestrator : public ABossBase
 {
 	GENERATED_BODY()
 	
+public:
+	AOrchestrator();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
+	class UCapsuleComponent* CollisionComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
+	class USkeletalMeshComponent* OrchestMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Fisicas")
+	class UPhysicsAsset* PhysicsAsset;
+
+protected:
+	virtual void BeginPlay() override;
 };

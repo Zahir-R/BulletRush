@@ -8,33 +8,20 @@
 
 // Sets default values
 ABossBase::ABossBase()
-{
+{	
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	CurrentState = EBossState::Idle;
 
 	bAutoStartAttack = false;
-	//bIsInvulnerable = false;
 	HealthComp->MaxHealth = 4000.0f;
 
 	BulletSpawner = CreateDefaultSubobject<UBulletSpawnerComponent>(TEXT("BulletSpawnerr"));
 
-
 	Tags.Add("Jefe");
 
-	TestWeak = CreateDefaultSubobject<UWeakPointComponent>(TEXT("TestWeakPoint"));
-	TestWeak->SetupAttachment(RootComponent);
-	TestWeak->SetRelativeLocation(FVector(-50.0f, -250.0f, 100.0f));
-
-	//bIsInvulnerable = true;
 	HealthComp->SetInvulnerable(true);
-	//BossMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BossMesh"));
-	//RootComponent = BossMesh;
-
-	//static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
-
-	//if (MeshAsset.Succeeded()) BossMesh->SetStaticMesh(MeshAsset.Object);
-	//Hitbox->SetGenerateOverlapEvents(true);
+	
 }
 
 /**
