@@ -1,8 +1,6 @@
-
-
+ï»¿
 #include "Enemies/Bloodseeker/BloodseekerBoss.h"
-
-#include "Player/PlayingPlayer.h" 
+#include "Player/PlayingPlayer.h"
 #include "Components/BulletSpawnerComponent.h"
 #include "Components/HealthComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -12,17 +10,24 @@
 
 ABloodseekerBoss::ABloodseekerBoss()
 {
-    
     PrimaryActorTick.bCanEverTick = true;
 
-    // Inicialización de variables de control de movimiento cinemático
-    MovementAmplitude = 350.0f; 
-    MovementFrequency = 1.5f;  
+    // Movimiento sinusoidal
+    MovementAmplitude = 350.0f;
+    MovementFrequency = 1.5f;
 
-    // Inicialización de valores para el ataque especial Rupture
+    // RotaciÃ³n
+    RotationSpeed = 10.0f;
+
+    // Control de fases de ataque
+    CurrentAttackState = EBossAttackState::Idle;
+    TimeBetweenAttacks = 3.0f;
+
+    // Rupture / Malediction
     bIsRuptureActive = false;
-    RuptureDamageMultiplier = 0.15f; 
-    RuptureDuration = 6.0f;          
+    bIsMaledictionActive = false;
+    RuptureDamageMultiplier = 0.15f;
+    RuptureDuration = 6.0f;
     LastPlayerLocation = FVector::ZeroVector;
 
     TargetPlayer = nullptr;
@@ -32,18 +37,21 @@ void ABloodseekerBoss::BeginPlay()
 {
     Super::BeginPlay();
 
-    
     InitialLocation = GetActorLocation();
 
-    // Polimorfismo 
     AActor* FoundPlayer = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
     if (FoundPlayer)
     {
         TargetPlayer = Cast<APlayingPlayer>(FoundPlayer);
     }
 
-   
-    CustomBurstCombo.Add(FAttackStep(EAttackType::Burst, 8, 700.0f, 0.1f, 0.05f));
+    // RÃ¡faga lineal mÃºltiple
+    LinearBurstCombo.Add(FAttackStep(EAttackType::Burst, 8, 700.0f, 0.1f, 0.05f));
+
+    // ExplosiÃ³n radial 360Â°
+    RadialCombo.Add(FAttackStep(EAttackType::Sphere, 1000, 800.0f, 0.5f, 0.1f));
+    // Ultimate: Proyectiles pesados envolventes de la MaldiciÃ³n
+    //UltimateCombo.Add(FAttackStep(EAttackType::Burst, 12, 500.0f, 0.2f, 0.1f)); // Ajustable segÃºn diseÃ±o
 }
 
 void ABloodseekerBoss::Tick(float DeltaTime)
@@ -52,103 +60,211 @@ void ABloodseekerBoss::Tick(float DeltaTime)
 
     if (!TargetPlayer || GetCurrentBossStateName() == "Dead") return;
 
-    //ROTACIÓN EN SU PROPIO EJE 
-    FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), TargetPlayer->GetActorLocation());
-   
-    LookAtRotation.Pitch = 0.0f;
-    LookAtRotation.Roll = 0.0f;
-    SetActorRotation(LookAtRotation);
+    // ------- RotaciÃ³n suave hacia el jugador -------
+    RotateTowardsPlayer(DeltaTime);
 
-   
-    
+    // ------- Movimiento sinusoidal (si no estÃ¡ stuneado) -------
     if (GetCurrentBossStateName() != "Stunned")
     {
         FVector NewLocation = InitialLocation;
         float TimeSecs = GetWorld()->GetTimeSeconds();
-     
-        NewLocation += GetActorRightVector() * FMath::Sin(TimeSecs * MovementFrequency) * MovementAmplitude;
+        NewLocation += GetActorRightVector()
+            * FMath::Sin(TimeSecs * MovementFrequency)
+            * MovementAmplitude;
         SetActorLocation(NewLocation);
     }
 
-  
+    // ------- CÃ¡lculo de sangrado Rupture (3 ejes) -------
     if (bIsRuptureActive)
     {
         FVector CurrentPlayerLocation = TargetPlayer->GetActorLocation();
-
-        // Calculamos la distancia euclidiana
         float DistanceMoved = FVector::Distance(CurrentPlayerLocation, LastPlayerLocation);
 
         if (DistanceMoved > 0.1f)
         {
             float CalculatedDamage = DistanceMoved * RuptureDamageMultiplier;
-
-            
-            UGameplayStatics::ApplyDamage(TargetPlayer, CalculatedDamage, GetController(), this, UDamageType::StaticClass());
-
-            UE_LOG(LogTemp, Warning, TEXT("[BLOODSEEKER] El jugador se movió %f cm. Daño aplicado: %f"), DistanceMoved, CalculatedDamage);
+            UGameplayStatics::ApplyDamage(
+                TargetPlayer,
+                CalculatedDamage,
+                GetController(),
+                this,
+                UDamageType::StaticClass()
+            );
         }
 
-        
         LastPlayerLocation = CurrentPlayerLocation;
     }
+}
+
+void ABloodseekerBoss::RotateTowardsPlayer(float DeltaTime)
+{
+    if (!TargetPlayer) return;
+
+    FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(
+        GetActorLocation(),
+        TargetPlayer->GetActorLocation()
+    );
+    TargetRotation.Pitch = 0.0f;
+    TargetRotation.Roll = 0.0f;
+
+    FRotator CurrentRotation = GetActorRotation();
+    FRotator NewRotation = FMath::RInterpTo(
+        CurrentRotation,
+        TargetRotation,
+        DeltaTime,
+        RotationSpeed
+    );
+    SetActorRotation(NewRotation);
 }
 
 void ABloodseekerBoss::Attack()
 {
     if (!BulletSpawner || !TargetPlayer) return;
 
-  
-    switch (AttackIdentifier)
+    if (CurrentAttackState == EBossAttackState::Idle)
     {
-    case 0:
-        
-        BulletSpawner->StartSequence(CustomBurstCombo);
-        break;
+        CurrentAttackState = EBossAttackState::LinearBurst;
+    }
 
-    case 1:
-        //Invocación del ataque circular masivo
-        BulletSpawner->StartSequence(Combo);
+    switch (CurrentAttackState)
+    {
+    case EBossAttackState::LinearBurst:
+        ExecuteLinearBurst();
         break;
-
-    case 2:
-        //Activación del Ataque Especial Rupture
-        ExecuteRuptureAttack();
+    case EBossAttackState::RadialSphere:
+        ExecuteRadialSphere();
         break;
-
+    case EBossAttackState::UltimateMalediction:
+        ExecuteUltimateMalediction();
+        break;
+    case EBossAttackState::Idle:
     default:
-        // Por Parte de la herencia
-        Super::Attack();
         break;
     }
 }
-
-void ABloodseekerBoss::ExecuteRuptureAttack()
+void ABloodseekerBoss::ExecuteLinearBurst()
 {
-    if (bIsRuptureActive || !TargetPlayer) return;
+    if (!BulletSpawner) return;
+    BulletSpawner->StartSequence(LinearBurstCombo);
 
-    bIsRuptureActive = true;
-    LastPlayerLocation = TargetPlayer->GetActorLocation();
+    GetWorld()->GetTimerManager().SetTimer(
+        AttackCycleTimer,
+        this,
+        &ABloodseekerBoss::CycleNextAttack,
+        TimeBetweenAttacks,
+        false
+    );
+}
 
-    UE_LOG(LogTemp, Error, TEXT("[!!ESPECIAL!!] Bloodseeker activó RUPTURE en el jugador. ¡Moverse causará daño mortal!"));
+void ABloodseekerBoss::ExecuteRadialSphere()
+{
+    if (!BulletSpawner) return;
+    BulletSpawner->StartSequence(RadialCombo);
 
-    BulletSpawner->StartSequence(Combo2);
+    GetWorld()->GetTimerManager().SetTimer(
+        AttackCycleTimer,
+        this,
+        &ABloodseekerBoss::CycleNextAttack,
+        TimeBetweenAttacks,
+        false
+    );
+}
 
-    
+void ABloodseekerBoss::ExecuteUltimateMalediction()
+{
+    ActivateMalediction();
+
+    if (BulletSpawner)
+    {
+        BulletSpawner->StartSequence(Combo2);
+    }
+
     GetWorld()->GetTimerManager().SetTimer(
         RuptureTimerHandle,
         this,
-        &ABloodseekerBoss::DeactivateRupture,
+        &ABloodseekerBoss::DeactivateMalediction,
         RuptureDuration,
         false
     );
 }
 
-void ABloodseekerBoss::DeactivateRupture()
+void ABloodseekerBoss::CycleNextAttack()
 {
-    bIsRuptureActive = false;
-    UE_LOG(LogTemp, Log, TEXT("[BLOODSEEKER] Estado Rupture finalizado. El jugador puede moverse libremente."));
+    GetWorld()->GetTimerManager().ClearTimer(AttackCycleTimer);
 
-    
-    GetWorld()->GetTimerManager().ClearTimer(RuptureTimerHandle);
+  
+    // ValidaciÃ³n segura de porcentaje de salud si el HealthComponent existe
+    float HealthPercent = 1.0f;
+    if (HealthComp && HealthComp->MaxHealth > 0.0f)
+    {
+        HealthPercent = HealthComp->CurrentHealth / HealthComp->MaxHealth;
+    }
+
+    switch (CurrentAttackState)
+    {
+    case EBossAttackState::LinearBurst:
+        CurrentAttackState = EBossAttackState::RadialSphere;
+        break;
+
+    case EBossAttackState::RadialSphere:
+        // Prioridad: si la salud â‰¤ 50%, activamos la Ultimate
+        if (HealthPercent <= 0.5f)
+        {
+            CurrentAttackState = EBossAttackState::UltimateMalediction;
+        }
+        else
+        {
+            CurrentAttackState = EBossAttackState::LinearBurst;
+        }
+        break;
+
+    case EBossAttackState::UltimateMalediction:
+        // DespuÃ©s de la Ultimate, volvemos al ciclo
+        CurrentAttackState = EBossAttackState::LinearBurst;
+        break;
+
+    default:
+        CurrentAttackState = EBossAttackState::LinearBurst;
+        break;
+    }
 }
 
+void ABloodseekerBoss::ActivateMalediction()
+{
+    bIsMaledictionActive = true;
+    bIsRuptureActive = true;
+    LastPlayerLocation = TargetPlayer->GetActorLocation();
+}
+
+void ABloodseekerBoss::DeactivateMalediction()
+{
+    bIsMaledictionActive = false;
+    bIsRuptureActive = false;
+
+    GetWorld()->GetTimerManager().ClearTimer(RuptureTimerHandle);
+
+    // Reanudamos el ciclo de ataques normales
+    GetWorld()->GetTimerManager().SetTimer(
+        AttackCycleTimer,
+        this,
+        &ABloodseekerBoss::CycleNextAttack,
+        TimeBetweenAttacks,
+        false
+    );
+}
+
+void ABloodseekerBoss::Die()
+{
+    // Limpieza obligatoria de timers
+    if (GetWorld())
+    {
+        GetWorld()->GetTimerManager().ClearTimer(RuptureTimerHandle);
+        GetWorld()->GetTimerManager().ClearTimer(AttackCycleTimer);
+    }
+
+    // Apagamos mecÃ¡nicas activas
+    bIsRuptureActive = false;
+    bIsMaledictionActive = false;
+    
+    Super::Die();
+}

@@ -37,7 +37,7 @@ void UBossStateIntro::EnterState(ABossBase* Boss)
 
 	Boss->GetWorld()->GetTimerManager().SetTimer(Boss->IntroTimer, [Boss]()
 	{
-		if (Boss)
+		if (IsValid(Boss))
 		{
 			Boss->ChangeState(Boss->IdleState);
 		}
@@ -104,7 +104,7 @@ void UBossStateAttacking::EnterState(ABossBase* Boss)
 
 	Boss->GetWorld()->GetTimerManager().SetTimer(Boss->AttackLoopTimer, [Boss]()
 	{
-		if (Boss)
+		if (IsValid(Boss))
 		{
 			Boss->Attack();
 		}
@@ -139,7 +139,7 @@ void UBossStateStunned::EnterState(ABossBase* Boss)
 
 	Boss->GetWorld()->GetTimerManager().SetTimer(Boss->StunnedTimer, [Boss]()
 	{
-		if (Boss)
+		if (IsValid(Boss))
 		{
 			Boss->GetWorld()->GetTimerManager().ClearTimer(Boss->AttackLoopTimer);
 			Boss->ChangeState(Boss->AttackingState);
@@ -175,7 +175,7 @@ void UBossStatePhaseTransition::EnterState(ABossBase* Boss)
 
 	Boss->GetWorld()->GetTimerManager().SetTimer(Boss->PhaseTransitionTimer, [Boss]()
 	{
-		if (Boss)
+		if (IsValid(Boss))
 		{
 			Boss->bHasTransitioned = true;
 			Boss->SetInvulnerable(false);
