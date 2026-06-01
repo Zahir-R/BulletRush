@@ -47,7 +47,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void ChangeState(UBossState* NewState);
+	virtual void ChangeState(UBossState* NewState);
 
 	UFUNCTION()
 	void OnTestWeakDestroyed();

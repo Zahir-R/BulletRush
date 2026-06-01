@@ -20,13 +20,17 @@ class BULLETRUSH_API UWeakPointComponent : public USphereComponent
 public:
 	UWeakPointComponent();
 
+    void SetVisualMaterial(UMaterialInterface* NewMat);
+    
 	// La batise�al que el jefe escuchar�
 	UPROPERTY(BlueprintAssignable, Category = "Weak Point")
 	FOnWeakPointDestroyed OnDestroyedEvent;
-
+    
 	float CurrentHealth;
-
+    
 	void TakeDamageFromHit(float DamageAmount);
+    void ResetWeakPoint();
+    bool IsDestroyed() const { return CurrentHealth <= 0.0f; }
 
 protected:
     virtual void BeginPlay() override;
