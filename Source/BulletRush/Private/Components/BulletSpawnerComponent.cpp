@@ -5,6 +5,8 @@
 #include "Combat/AttackPatterns/SpiralAttack.h"
 #include "Combat/AttackPatterns/SphereAttack.h"
 #include "Combat/AttackPatterns/SurroundingBulletsAttack.h"
+#include "Combat/AttackPatterns/FanAttack.h"
+
 
 UBulletSpawnerComponent::UBulletSpawnerComponent()
 {
@@ -26,6 +28,8 @@ void UBulletSpawnerComponent::BeginPlay()
 	AttackRegist.Add(EAttackType::Spiral, TStrongObjectPtr<UAttackStrategy>(NewObject<USpiralAttack>(this)));
 	AttackRegist.Add(EAttackType::Burst, TStrongObjectPtr<UAttackStrategy>(NewObject<UBurstAttack>(this)));
 	AttackRegist.Add(EAttackType::SurroundingBullets, TStrongObjectPtr<UAttackStrategy>(NewObject<USurroundingBulletsAttack>(this)));
+	AttackRegist.Add(EAttackType::Fan, TStrongObjectPtr<UAttackStrategy>(NewObject<UFanAttack>(this)));
+
 
 }
 
@@ -56,6 +60,17 @@ void UBulletSpawnerComponent::InternalSpawn(FVector Origin, FVector Direction, f
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("No se pudo generar la bala o no hay disponibles en el pool"));
 	}
+}
+
+void UBulletSpawnerComponent::InternalSpawnAt(FVector SpawnLocation, FVector Direction, float Speed, float Damage)
+{
+	if (!GetOwner() || !ProjectilesSubsystem) return;
+
+	AActor* OwnerActor = GetOwner();
+
+	ABulletBase* Bullet = ProjectilesSubsystem->RequestBullet(
+		SpawnLocation, Direction, Speed, bIsPlayerSource, Damage, SpawnLocation, OwnerActor
+	);
 }
 
 void UBulletSpawnerComponent::StartSequence(const TArray<FAttackStep>& NewSequence)

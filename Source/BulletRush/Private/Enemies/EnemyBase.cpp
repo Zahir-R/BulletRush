@@ -145,3 +145,6 @@ void AEnemyBase::StopAttackLoop()
 }
 
 
+void AEnemyBase::Attack() {
+	UE_LOG(LogTemp, Warning,TEXT("Ejecutando Ataque"));
+}

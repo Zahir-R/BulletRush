@@ -55,7 +55,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Boss")
 	FName GetCurrentBossStateName() const;
 
-	virtual void Attack();
+	virtual void Attack() override;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* BossMesh;

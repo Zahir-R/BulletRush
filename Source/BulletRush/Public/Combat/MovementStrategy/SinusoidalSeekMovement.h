@@ -19,6 +19,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float StopDistance = 500.f;
 
+public:
+	float InitialPhase = 0.f;
+
 private:
 	float AccumulatedTime = 0.f;
 
