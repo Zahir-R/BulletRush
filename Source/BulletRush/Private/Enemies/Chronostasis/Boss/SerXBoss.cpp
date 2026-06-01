@@ -1,10 +1,7 @@
 #include "Enemies/Chronostasis/Boss/SerXBoss.h"
 #include "Enemies/Chronostasis/Boss/AlteredZone.h"
-#include "Enemies/BossState.h"
+#include "Enemies/State/BossStateDead.h"
 #include "Combat/Commands/AttackCommand.h"
-#include "Combat/Commands/SpawnChargerCommand.h"
-#include "Combat/Commands/SpawnLinkerCommand.h"
-#include "Combat/Commands/ActivateZoneCommand.h"
 #include "Combat/Commands/MoveCommand.h"
 #include "Combat/MovementStrategy/SeekMovement.h"
 #include "Components/BulletSpawnerComponent.h"
@@ -103,8 +100,8 @@ void ASerXBoss::SetupAttackCombos()
 	SpiralCombo.Empty();
 	SpiralCombo.Add(FAttackStep(EAttackType::Spiral, 30, 400.f, 2.0f, 15.f, 18.f));
 
-	SpiralCombo.Empty();
-	SpiralCombo.Add(FAttackStep(EAttackType::SurroundingBullets, 30, 0.f, 2.5f, 0.f, 0));
+	SurroundCombo.Empty();
+	SurroundCombo.Add(FAttackStep(EAttackType::SurroundingBullets, 30, 0.f, 2.5f, 0.f, 0));
 }
 
 void ASerXBoss::SetupPhase2Combos()
@@ -118,8 +115,8 @@ void ASerXBoss::SetupPhase2Combos()
 	SpiralCombo2.Empty();
 	SpiralCombo2.Add(FAttackStep(EAttackType::Spiral, 40, 500.f, 1.5f, 12.f, 15.f));
 
-	SpiralCombo2.Empty();
-	SpiralCombo2.Add(FAttackStep(EAttackType::SurroundingBullets, 40, 0.f, 1.8f, 0.f, 0.f));
+	SurroundCombo2.Empty();
+	SurroundCombo2.Add(FAttackStep(EAttackType::SurroundingBullets, 40, 0.f, 1.8f, 0.f, 0.f));
 }
 
 void ASerXBoss::Attack()
@@ -129,28 +126,8 @@ void ASerXBoss::Attack()
 	AttackCount++;
 	AttacksSinceChargerSpawn++;
 
-	int32 PatternIndex = FMath::RandRange(0, 2);
-
-	if (AttackIdentifier >= 1)
-	{
-		switch (PatternIndex)
-		{
-		case 0: BulletSpawner->StartSequence(CircleCombo2); break;
-		case 1: BulletSpawner->StartSequence(SphereCombo2); break;
-		case 2: BulletSpawner->StartSequence(SpiralCombo2); break;
-		case 3: BulletSpawner->StartSequence(SurroundCombo); break;
-		}
-	}
-	else
-	{
-		switch (PatternIndex)
-		{
-		case 0: BulletSpawner->StartSequence(CircleCombo); break;
-		case 1: BulletSpawner->StartSequence(SphereCombo); break;
-		case 2: BulletSpawner->StartSequence(SpiralCombo); break;
-		case 3: BulletSpawner->StartSequence(SurroundCombo); break;
-		}
-	}
+	int32 PatternIndex = FMath::RandRange(0, 3);
+	ExecuteAttack(PatternIndex);
 
 	if (bIsRecording)
 	{
@@ -177,7 +154,7 @@ void ASerXBoss::ExecuteAttack(int32 PatternIndex)
 		case 0: BulletSpawner->StartSequence(CircleCombo2); break;
 		case 1: BulletSpawner->StartSequence(SphereCombo2); break;
 		case 2: BulletSpawner->StartSequence(SpiralCombo2); break;
-		case 3: BulletSpawner->StartSequence(SurroundCombo); break;
+		case 3: BulletSpawner->StartSequence(SurroundCombo2); break;
 		}
 	}
 	else

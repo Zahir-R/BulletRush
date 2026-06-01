@@ -111,6 +111,15 @@ void APowerUpManager::OnPowerUpCollected(APowerUpBase* PowerUp)
 	SpawnedPowerUps.Remove(PowerUp);
 }
 
+void APowerUpManager::Initialize(const TArray<TSubclassOf<APowerUpBase>>& Classes, const FVector& SpawnAreaExtent)
+{
+	PowerUpClasses = Classes;
+	if (SpawnArea)
+	{
+		SpawnArea->SetBoxExtent(SpawnAreaExtent);
+	}
+}
+
 void APowerUpManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	for (auto& Pair : LifecycleTimers)

@@ -1,7 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Enemies/BossBase.h"
-#include "Enemies/BossState.h"
+#include "Enemies/State/BossStateBase.h"
+#include "Enemies/State/BossStateIntro.h"
+#include "Enemies/State/BossStateIdle.h"
+#include "Enemies/State/BossStateAttacking.h"
+#include "Enemies/State/BossStateStunned.h"
+#include "Enemies/State/BossStatePhaseTransition.h"
+#include "Enemies/State/BossStateDead.h"
 #include "Engine/World.h"
 #include "Components/HealthComponent.h"
 #include "Components/WeakPointComponent.h"

@@ -1,4 +1,8 @@
 #include "Core/BulletRushGameModeBase.h"
+#include "Buffs/PowerUpManager.h"
+#include "Buffs/DamagePowerUp.h"
+#include "Buffs/HealthPowerUp.h"
+#include "Buffs/SpeedPowerUp.h"
 #include "Player/PlayingPlayer.h"
 #include "Player/TopDownPlayer.h"
 #include "Engine/World.h"
@@ -29,8 +33,42 @@ void ABulletRushGameModeBase::BeginPlay()
 			NivelRetorno->TargetLevelName = "Map_CupHeadMap";
 		}
 		//spawneamos el nivel para volver al cuphead
-		
+
+		SpawnPowerUpsForLevel(GetWorld(), FName(GetWorld()->GetMapName()));
 	}
+}
+
+APowerUpManager* ABulletRushGameModeBase::SpawnPowerUpsForLevel(UWorld* World, FName LevelName)
+{
+	if (!World) return nullptr;
+
+	// Exclude hub level
+	if (LevelName.ToString().Contains("CupHead"))
+		return nullptr;
+
+	bool bSpawn = false;
+	TArray<TSubclassOf<APowerUpBase>> Classes;
+
+	if (LevelName.ToString().Contains("Map_01Boss") ||
+		LevelName.ToString().Contains("Map_02Boss") ||
+		LevelName.ToString().Contains("Map_03Boss") ||
+		LevelName.ToString().Contains("Map_04Boss") ||
+		LevelName.ToString().Contains("Map_05Boss"))
+	{
+		bSpawn = true;
+	}
+
+	if (!bSpawn) return nullptr;
+
+	Classes.Add(AHealthPowerUp::StaticClass());
+	Classes.Add(ADamagePowerUp::StaticClass());
+	Classes.Add(ASpeedPowerUp::StaticClass());
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	APowerUpManager* Manager = World->SpawnActor<APowerUpManager>(APowerUpManager::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+	if (Manager) Manager->Initialize(Classes, FVector(1000.0f, 1000.0f, 400.0f));
+	return Manager;
 }
 
 UFUNCTION(Exec)
@@ -39,7 +77,7 @@ void ABulletRushGameModeBase::DealDamageToTarget(float Damage)
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
 	if (!PC)
 	{
-		UE_LOG(LogTemp, Error, TEXT("DealDamageToTarget: No se encontró PlayerController"));
+		UE_LOG(LogTemp, Error, TEXT("DealDamageToTarget: No se encontrï¿½ PlayerController"));
 		return;
 	}
 
@@ -48,7 +86,7 @@ void ABulletRushGameModeBase::DealDamageToTarget(float Damage)
 
 	if (!Hit.bBlockingHit)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("DealDamageToTarget: No se impactó ningún objeto. Apunta a un actor visible con el cursor."));
+		UE_LOG(LogTemp, Warning, TEXT("DealDamageToTarget: No se impactï¿½ ningï¿½n objeto. Apunta a un actor visible con el cursor."));
 		return;
 	}
 
@@ -59,7 +97,7 @@ void ABulletRushGameModeBase::DealDamageToTarget(float Damage)
 		return;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("DealDamageToTarget: Aplicando %.1f de daño a [%s]"), Damage, *HitActor->GetName());
+	UE_LOG(LogTemp, Warning, TEXT("DealDamageToTarget: Aplicando %.1f de daï¿½o a [%s]"), Damage, *HitActor->GetName());
 
 	UGameplayStatics::ApplyDamage(HitActor, Damage, PC, this, UDamageType::StaticClass());
 }
