@@ -12,8 +12,6 @@ UWeaponBaseComponent::UWeaponBaseComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	FireRate = 0.1f;
-
 	// ...
 }
 
@@ -38,61 +36,23 @@ void UWeaponBaseComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 
 void UWeaponBaseComponent::StartFiring()
 {
-    // Disparamos la primera bala inmediatamente
-    ExecuteFire();
-
-    // E iniciamos el temporizador para que siga disparando automáticamente
-    GetWorld()->GetTimerManager().SetTimer(FiringTimer, this, &UWeaponBaseComponent::ExecuteFire, FireRate, true);
+	if (FireStrategy)
+	{
+		FireStrategy->StartFiring(this);
+	}
 }
 
 void UWeaponBaseComponent::StopFiring()
 {
-    // Limpiamos el temporizador cuando el jugador suelta el clic
-    GetWorld()->GetTimerManager().ClearTimer(FiringTimer);
+	if (FireStrategy)
+	{
+		FireStrategy->StopFiring(this);
+	}
 }
 
-void UWeaponBaseComponent::ExecuteFire()
+void UWeaponBaseComponent::SetFireStrategy(
+	TScriptInterface<IWeaponsInterface> NewStrategy)
 {
-    // Lógica por defecto (Un solo disparo recto)
-    // Los hijos sobrescribirán esto, pero es bueno tener una base funcional.
-	// ABulletBase* RequestBullet(FVector Loc, FVector Dir, float Spd, bool bIsPlayer, float Damage, FVector SpawnLocation, AActor* Owner);
-
-	UWorld* World = GetWorld();
-	if (!World)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No World"));
-		return;
-	}
-
-	UGameInstance* GameInstance = World->GetGameInstance();
-	if (!GameInstance)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No GameInstance"));
-		return;
-	}
-
-	UProjectilesSubsystem* PoolSubsystem = World->GetGameInstance()->GetSubsystem<UProjectilesSubsystem>();
-
-	if (!PoolSubsystem)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No se pudo generar la bala o no hay disponibles en el pool"));
-		return;
-	}
-
-	// Player only ?
-	APlayingPlayer* Player = Cast<APlayingPlayer>(GetOwner());
-	if (!Player) return;
-	float DamageMultiplier = Player->GetTotalDamageMultiplier();
-	float FinalDamage = BaseDamage * DamageMultiplier;
-
-	FVector Location = GetComponentLocation();
-	FVector Direction = GetComponentRotation().Vector();
-	ABulletBase* Bullet = PoolSubsystem->RequestBullet(Location, Direction, 1000.0f, true, FinalDamage, Location, GetOwner());
-	if (!Bullet)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No se pudo RequestBullet"));
-		return;
-	}
-	Bullet->Tags.Add("BalaJugador");
-	
+	FireStrategy = NewStrategy;
 }
+
