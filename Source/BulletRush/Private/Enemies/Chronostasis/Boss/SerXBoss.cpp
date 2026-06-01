@@ -28,6 +28,9 @@ ASerXBoss::ASerXBoss()
 	MovementStrategy = CreateDefaultSubobject<USeekMovement>(TEXT("SeekMovement"));
 	USeekMovement* Seek = Cast<USeekMovement>(MovementStrategy);
 	if (Seek) Seek->Speed = 400.f;
+
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cone.Shape_Cone'"));
+	if (MeshAsset.Succeeded()) MeshEnemy->SetStaticMesh(MeshAsset.Object);
 }
 
 void ASerXBoss::BeginPlay()

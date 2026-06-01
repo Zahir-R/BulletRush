@@ -103,15 +103,7 @@ void UBossStateAttacking::EnterState(ABossBase* Boss)
 		Boss->AttackIdentifier = 0;
 	}
 
-	Boss->Attack();
-
-	Boss->GetWorld()->GetTimerManager().SetTimer(Boss->AttackLoopTimer, [Boss]()
-	{
-		if (Boss)
-		{
-			Boss->Attack();
-		}
-	}, Boss->AttackInterval, true);
+	Boss->ScheduleNextAttack();
 }
 
 void UBossStateAttacking::UpdateState(ABossBase* Boss, float DeltaTime)
