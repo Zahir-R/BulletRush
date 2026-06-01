@@ -5,8 +5,9 @@
 #include "VaultKeeper/objets/BatteryActor.h"
 #include "Components/BulletSpawnerComponent.h"
 #include "Components/HealthComponent.h"
-#include "Combat/AttackPatterns.h"
+#include "Combat/AttackPatterns/SpiralAttack.h"
 #include "Kismet/GameplayStatics.h"
+#include "Combat/MovementStrategy/StaticMovement.h"
 #include "Engine/World.h"
 
 ADronMecha::ADronMecha()
@@ -31,7 +32,7 @@ void ADronMecha::BeginPlay()
 
     HomeLocation = GetActorLocation();
     // Usamos movimiento estático, sobreescribimos el sinusoidal de ADrone
-    MovementStrategy = MakeShareable(new FStaticMovement());
+    MovementStrategy = NewObject<UStaticMovement>(this);
 
     // Empezamos cerrado
     Close();
