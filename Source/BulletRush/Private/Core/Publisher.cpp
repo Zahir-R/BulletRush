@@ -1,42 +1,34 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Core/Publisher.h"
 
-// Sets default values
 APublisher::APublisher()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
+	PrimaryActorTick.bCanEverTick = false;
 }
 
-// Called when the game starts or when spawned
-void APublisher::BeginPlay()
+void APublisher::Subscribe(TScriptInterface<ISubscriber> Subscriber)
 {
-	Super::BeginPlay();
-	
+	if (Subscriber.GetObject())
+	{
+		Subscribers.AddUnique(Subscriber);
+	}
 }
 
-// Called every frame
-void APublisher::Tick(float DeltaTime)
+void APublisher::Unsubscribe(TScriptInterface<ISubscriber> Subscriber)
 {
-	Super::Tick(DeltaTime);
-
+	Subscribers.Remove(Subscriber);
 }
 
 void APublisher::NotifySubscribers()
 {
-
+	for (int32 i = Subscribers.Num() - 1; i >= 0; --i)
+	{
+		if (Subscribers[i].GetObject())
+		{
+			Subscribers[i]->Update(this);
+		}
+		else
+		{
+			Subscribers.RemoveAt(i);
+		}
+	}
 }
-
-void APublisher::Subscribe(AActor* Subscriber)
-{
-
-}
-
-void APublisher::Unsubscribe(AActor* Subscriber)
-{
-}
-
-

@@ -28,6 +28,19 @@ void UProjectilesSubsystem::Tick(float DeltaTime)
 		if (Bullet && Bullet->BulletData.bIsActive)
 		{
 			FVector CurrentLoc = Bullet->GetActorLocation();
+
+			if (Bullet->BulletData.ConvergeDelay > 0.f)
+			{
+				Bullet->BulletData.ConvergeDelay -= DeltaTime;
+				if (Bullet->BulletData.ConvergeDelay <= 0.f)
+				{
+					FVector Dir = (Bullet->BulletData.ConvergeCenter - CurrentLoc).GetSafeNormal();
+					Bullet->BulletData.Direction = Dir;
+					Bullet->BulletData.Speed = 600.f;
+				}
+				Bullet->SetActorLocation(CurrentLoc, true);
+				continue;
+			}
 			// FVector NewLoc = CurrentLoc + (Bullet->BulletData.Direction * Bullet->BulletData.Speed * DeltaTime);
 
 			FVector NewLoc = CurrentLoc + (Bullet->BulletData.Direction * Bullet->BulletData.Speed * GlobalSpeedMultiplier * DeltaTime);

@@ -1,6 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "Core/Publisher.h"
 #include "Core/Chronostasis/ChronostasisFactoryEnemy.h"
 #include "UObject/Interface.h"
 #include "ChronostasisFacade.generated.h"
@@ -9,6 +9,7 @@ class AEnemyBase;
 class ABulletRushGameModeBase;
 class ABulletRushHUD;
 class UChronostasisFactoryEnemy;
+class ASerXBoss;
 
 USTRUCT()
 struct FWaveConfig
@@ -29,7 +30,7 @@ struct FWaveConfig
 };
 
 UCLASS()
-class AChronostasisFacade : public AActor
+class AChronostasisFacade : public APublisher
 {
     GENERATED_BODY()
 public:
@@ -48,7 +49,12 @@ public:
 
     bool AreAllWavesComplete() const { return RemainingEnemiesInWave <= 0 && CurrentWaveIndex >= Waves.Num() - 1; }
 
-    FSimpleMulticastDelegate OnTimeStop;
+    void StartBossFight();
+    UFUNCTION()
+    void OnBossKilled(AEnemyBase* Boss);
+
+    UFUNCTION()
+    void OnBossPortalTriggered();
 
 protected:
     UPROPERTY(EditAnywhere)
@@ -79,6 +85,18 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Factory")
 	UChronostasisFactoryEnemy* LinkerFactory;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Factory")
+	UChronostasisFactoryEnemy* BossChargerFactory;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Factory")
+	UChronostasisFactoryEnemy* BossLinkerFactory;
+
+	UPROPERTY(EditAnywhere, Category = "Boss")
+	TSubclassOf<ASerXBoss> SerXBossClass;
+
+	UPROPERTY(EditAnywhere, Category = "Boss")
+	FVector BossArenaSpawnLocation;
+
     FTimerHandle SlowTimerHandle;
     ABulletRushHUD* GetHUD() const;
 
@@ -89,6 +107,9 @@ protected:
 
     void StartWave(int32 Index);
     void OnAllWavesComplete();
+
+    // Boss fight support
+    bool bIsBossFight = false;
 
     // Secret level support
     bool bIsSecretLevel = false;

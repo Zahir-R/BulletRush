@@ -4,6 +4,10 @@
 #include "Core/Requirements/RequirementManager.h"
 #include "Core/BulletRushHUD.h"
 #include "Core/BulletRushGameInstance.h"
+#include "Core/PlayerHealthPublisher.h"
+#include "Core/CollectiblePickupPublisher.h"
+#include "Core/PowerUpUsagePublisher.h"
+#include "Core/PuzzleEventPublisher.h"
 #include "Map/PortalTrigger.h"
 
 AGameModeChronostasis::AGameModeChronostasis()
@@ -46,6 +50,14 @@ void AGameModeChronostasis::BeginPlay()
     {
         UE_LOG(LogTemp, Warning, TEXT("AGameModeChronostasis::BeginPlay: Llamando a Facade->StartGame()"));
 
+        // Spawn publishers for the Observer pattern (plain Observer, not UE4 delegates)
+        FActorSpawnParameters PubParams;
+        PubParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+        World->SpawnActor<APlayerHealthPublisher>(APlayerHealthPublisher::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, PubParams);
+        World->SpawnActor<ACollectiblePickupPublisher>(ACollectiblePickupPublisher::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, PubParams);
+        World->SpawnActor<APowerUpUsagePublisher>(APowerUpUsagePublisher::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, PubParams);
+        World->SpawnActor<APuzzleEventPublisher>(APuzzleEventPublisher::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, PubParams);
+
         // Find RequirementManager on the player pawn or spawn one
         URequirementManager* ReqMgr = nullptr;
         APlayerController* PC = UGameplayStatics::GetPlayerController(World, 0);
@@ -86,6 +98,7 @@ void AGameModeChronostasis::ActivateSecretPortal()
     if (Portal)
     {
         Portal->bIsActive = true;
+        Portal->OnPortalTriggered.Clear();
         Portal->OnPortalTriggered.AddUObject(this, &AGameModeChronostasis::OnSecretPortalTriggered);
         SpawnedSecretPortal = Portal;
 
@@ -96,10 +109,6 @@ void AGameModeChronostasis::ActivateSecretPortal()
         UE_LOG(LogTemp, Error, TEXT("ActivateSecretPortal: Failed to spawn secret portal!"));
     }
 
-    if (BossPortal)
-    {
-        BossPortal->bIsActive = false;
-    }
 }
 
 void AGameModeChronostasis::OnSecretPortalTriggered()
@@ -135,11 +144,56 @@ void AGameModeChronostasis::OnSecretPortalTriggered()
 
 void AGameModeChronostasis::ActivateBossPortal()
 {
-    if (BossPortal)
+    if (SpawnedBossPortal && IsValid(SpawnedBossPortal))
     {
-        BossPortal->bIsActive = true;
+        SpawnedBossPortal->bIsActive = true;
+        UE_LOG(LogTemp, Log, TEXT("ActivateBossPortal: Boss portal already present, reactivated."));
+        return;
     }
-    UE_LOG(LogTemp, Log, TEXT("ActivateBossPortal called"));
+
+    UWorld* World = GetWorld();
+    if (!World) return;
+
+    FActorSpawnParameters Params;
+    Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+    UClass* PortalClass = BossPortalClass ? BossPortalClass.Get() : APortalTrigger::StaticClass();
+    APortalTrigger* Portal = World->SpawnActor<APortalTrigger>(PortalClass, BossPortalSpawnLocation, FRotator::ZeroRotator, Params);
+    if (Portal)
+    {
+        Portal->bIsActive = true;
+        Portal->OnPortalTriggered.Clear();
+        Portal->OnPortalTriggered.AddUObject(this, &AGameModeChronostasis::OnBossPortalTriggered);
+        SpawnedBossPortal = Portal;
+
+        UE_LOG(LogTemp, Log, TEXT("ActivateBossPortal: Boss portal spawned at %s"), *BossPortalSpawnLocation.ToString());
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("ActivateBossPortal: Failed to spawn boss portal!"));
+    }
+}
+
+void AGameModeChronostasis::OnBossPortalTriggered()
+{
+    if (bBossPortalTriggered) return;
+    bBossPortalTriggered = true;
+
+    if (SpawnedBossPortal)
+    {
+        SpawnedBossPortal->bIsActive = false;
+    }
+
+    if (CachedFacade)
+    {
+        CachedFacade->OnBossPortalTriggered();
+    }
+
+    if (SpawnedBossPortal)
+    {
+        SpawnedBossPortal->Destroy();
+        SpawnedBossPortal = nullptr;
+    }
 }
 
 void AGameModeChronostasis::StartSecretLevel(URequirementManager* RequirementManager)
@@ -177,15 +231,6 @@ void AGameModeChronostasis::OnSecretLevelCompleted()
             HUD->ShowMessage("REWARD: PowerUp cooldown halved!", 5.f);
         }
         UE_LOG(LogTemp, Warning, TEXT("Secret level completed! Reward granted."));
-    }
-
-    // Clean up and teleport to boss
-    ActivateBossPortal();
-
-    if (CachedFacade)
-    {
-        CachedFacade->Destroy();
-        CachedFacade = nullptr;
     }
 
     bSecretLevelTriggered = false;

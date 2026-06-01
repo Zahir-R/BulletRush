@@ -14,6 +14,12 @@ APortalTrigger::APortalTrigger()
 
     Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
     Mesh->SetupAttachment(RootComponent);
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> PortalMesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Torus.Shape_Torus'"));
+    if (PortalMesh.Succeeded())
+    {
+        Mesh->SetStaticMesh(PortalMesh.Object);
+        Mesh->SetWorldScale3D(FVector(2.f));
+    }
 }
 
 void APortalTrigger::BeginPlay()

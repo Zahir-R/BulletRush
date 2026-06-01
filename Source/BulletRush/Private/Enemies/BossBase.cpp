@@ -23,9 +23,9 @@ ABossBase::ABossBase()
 
 	Tags.Add("Jefe");
 
-	TestWeak = CreateDefaultSubobject<UWeakPointComponent>(TEXT("TestWeakPoint"));
-	TestWeak->SetupAttachment(RootComponent);
-	TestWeak->SetRelativeLocation(FVector(-50.0f, -250.0f, 100.0f));
+	//TestWeak = CreateDefaultSubobject<UWeakPointComponent>(TEXT("TestWeakPoint"));
+	//TestWeak->SetupAttachment(RootComponent);
+	//TestWeak->SetRelativeLocation(FVector(-50.0f, -250.0f, 100.0f));
 
 	HealthComp->SetInvulnerable(true);
 }

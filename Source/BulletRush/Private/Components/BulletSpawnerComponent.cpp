@@ -4,6 +4,7 @@
 #include "Combat/AttackPatterns/CircleAttack.h"
 #include "Combat/AttackPatterns/SpiralAttack.h"
 #include "Combat/AttackPatterns/SphereAttack.h"
+#include "Combat/AttackPatterns/SurroundingBulletsAttack.h"
 
 UBulletSpawnerComponent::UBulletSpawnerComponent()
 {
@@ -24,7 +25,7 @@ void UBulletSpawnerComponent::BeginPlay()
 	AttackRegist.Add(EAttackType::Sphere, TStrongObjectPtr<UAttackStrategy>(NewObject<USphereAttack>(this)));
 	AttackRegist.Add(EAttackType::Spiral, TStrongObjectPtr<UAttackStrategy>(NewObject<USpiralAttack>(this)));
 	AttackRegist.Add(EAttackType::Burst, TStrongObjectPtr<UAttackStrategy>(NewObject<UBurstAttack>(this)));
-	// Otros patrones
+	AttackRegist.Add(EAttackType::SurroundingBullets, TStrongObjectPtr<UAttackStrategy>(NewObject<USurroundingBulletsAttack>(this)));
 
 }
 

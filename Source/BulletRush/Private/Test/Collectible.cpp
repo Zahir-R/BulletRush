@@ -2,9 +2,7 @@
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Player/PlayingPlayer.h"
-#include "Core/Requirements/RequirementManager.h"
-#include "Core/Requirements/CollectibleRequirement.h"
-#include "Core/TestGameModeBase.h"
+#include "Core/CollectiblePickupPublisher.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -36,18 +34,12 @@ void ACollectible::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 	APlayingPlayer* Player = Cast<APlayingPlayer>(OtherActor);
 	if (!Player) return;
 
-	ATestGameModeBase* GM = Cast<ATestGameModeBase>(GetWorld()->GetAuthGameMode());
-	if (GM && GM->RequirementManager)
+	TArray<AActor*> Found;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACollectiblePickupPublisher::StaticClass(), Found);
+	if (Found.Num() > 0)
 	{
-		for (UObject* Obj : GM->RequirementManager->SecretRequirements)
-		{
-			if (UCollectibleRequirement* Req = Cast<UCollectibleRequirement>(Obj))
-			{
-				Req->RegisterPick();
-				UE_LOG(LogTemp, Warning, TEXT("Coleccionable coleccionado, Count: %d / %d"), Req->PickedCount, Req->RequiredCount);
-				break; // solo uno por test
-			}
-		}
+		ACollectiblePickupPublisher* Pub = Cast<ACollectiblePickupPublisher>(Found[0]);
+		if (Pub) Pub->RegisterPick();
 	}
 	Destroy();
 }

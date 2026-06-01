@@ -60,9 +60,12 @@ UBossStateIdle::UBossStateIdle()
 
 void UBossStateIdle::EnterState(ABossBase* Boss)
 {
-	if (Boss->TestWeak)
+	if (!Boss->HasActiveWeakPoints())
 	{
-		Boss->TestWeak->OnDestroyedEvent.AddDynamic(Boss, &ABossBase::OnTestWeakDestroyed);
+		Boss->GetWorld()->GetTimerManager().SetTimer(Boss->IntroTimer, [Boss]()
+		{
+			if (Boss) Boss->ChangeState(Boss->AttackingState);
+		}, 0.1f, false);
 	}
 }
 
@@ -72,10 +75,10 @@ void UBossStateIdle::UpdateState(ABossBase* Boss, float DeltaTime)
 
 void UBossStateIdle::ExitState(ABossBase* Boss)
 {
-	if (Boss->TestWeak)
-	{
-		Boss->TestWeak->OnDestroyedEvent.RemoveDynamic(Boss, &ABossBase::OnTestWeakDestroyed);
-	}
+	//if (Boss->TestWeak)
+	//{
+		//Boss->TestWeak->OnDestroyedEvent.RemoveDynamic(Boss, &ABossBase::OnTestWeakDestroyed);
+	//}
 }
 
 FName UBossStateIdle::GetStateTagName() const
@@ -108,7 +111,7 @@ void UBossStateAttacking::EnterState(ABossBase* Boss)
 		{
 			Boss->Attack();
 		}
-	}, 3.0f, true);
+	}, Boss->AttackInterval, true);
 }
 
 void UBossStateAttacking::UpdateState(ABossBase* Boss, float DeltaTime)

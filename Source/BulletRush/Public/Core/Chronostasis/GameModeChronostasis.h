@@ -23,13 +23,16 @@ public:
     void StartSecretLevel(URequirementManager* RequirementManager);
     void OnSecretLevelCompleted();
 
-    // Pre-placed boss portal in the level
     UPROPERTY(EditAnywhere, Category="Portals")
-    class APortalTrigger* BossPortal;
+    FVector BossPortalSpawnLocation;
+
+    // Template class for the boss portal
+    UPROPERTY(EditAnywhere, Category="Portals")
+    TSubclassOf<class APortalTrigger> BossPortalClass;
 
     // Location where the secret portal will spawn when requirements are met
     UPROPERTY(EditAnywhere, Category="Portals")
-    FVector SecretPortalSpawnLocation;
+    FVector SecretPortalSpawnLocation = FVector(300.0f, 300.0f, 300.0f);
 
     // Template class for the secret portal, so designers can assign a BP with custom visuals
     UPROPERTY(EditAnywhere, Category="Portals")
@@ -37,6 +40,7 @@ public:
 
 protected:
     void OnSecretPortalTriggered();
+    void OnBossPortalTriggered();
 
     UPROPERTY()
     AChronostasisFacade* CachedFacade;
@@ -44,7 +48,11 @@ protected:
     UPROPERTY()
     class APortalTrigger* SpawnedSecretPortal;
 
+    UPROPERTY()
+    class APortalTrigger* SpawnedBossPortal;
+
     TArray<FWaveConfig> SecretWaves;
 
-    bool bSecretLevelTriggered = false;
+	bool bSecretLevelTriggered = false;
+	bool bBossPortalTriggered = false;
 };

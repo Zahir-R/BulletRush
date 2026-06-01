@@ -3,11 +3,13 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "ILevelRequirement.h"
+#include "Core/Subscriber.h"
 #include "TimeStopRequirement.generated.h"
 
-// Observes ChronostasisFacade's time stop events
+class AChronostasisFacade;
+
 UCLASS(Blueprintable)
-class BULLETRUSH_API UTimeStopRequirement : public UObject, public ILevelRequirement
+class BULLETRUSH_API UTimeStopRequirement : public UObject, public ILevelRequirement, public ISubscriber
 {
     GENERATED_BODY()
 
@@ -17,13 +19,12 @@ public:
     virtual FString GetDescription() const override { return FString::Printf(TEXT("Trigger time stop %d times"), RequiredStops); }
     virtual void Cleanup() override;
 
+    virtual void Update(class APublisher* Publisher) override;
+
     UPROPERTY(EditAnywhere)
     int32 RequiredStops = 3;
 
-    UFUNCTION()
-    void RegisterTimeStop();
-
 protected:
     int32 CurrentStops = 0;
-    TWeakObjectPtr<class AChronostasisFacade> ObservedFacade;
+    TWeakObjectPtr<AChronostasisFacade> CachedPublisher;
 };

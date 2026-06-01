@@ -20,8 +20,10 @@ struct FBulletData
 
 	float RemainingLifetime = -1.f;
 
-	// Inicializador por defecto
-	FBulletData() : Direction(FVector::ZeroVector), SpawnLocation(FVector::ZeroVector), Damage(0.f), Speed(0.f), bIsActive(false), bIsPlayerBullet(false), OwnerActor(nullptr) {}
+	FVector ConvergeCenter;
+	float ConvergeDelay = -1.f;
+
+	FBulletData() : Direction(FVector::ZeroVector), SpawnLocation(FVector::ZeroVector), Damage(0.f), Speed(0.f), bIsActive(false), bIsPlayerBullet(false), OwnerActor(nullptr), ConvergeCenter(FVector::ZeroVector), ConvergeDelay(-1.f) {}
 };
 
 UCLASS(Blueprintable)

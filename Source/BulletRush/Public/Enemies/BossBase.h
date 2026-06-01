@@ -71,7 +71,7 @@ public:
 	UBulletSpawnerComponent* BulletSpawner;
 	FTimerHandle AttackLoopTimer;
 
-	UWeakPointComponent* TestWeak;
+	//UWeakPointComponent* TestWeak;
 
 	TArray<FAttackStep> Combo;
 	TArray<FAttackStep> Combo2;

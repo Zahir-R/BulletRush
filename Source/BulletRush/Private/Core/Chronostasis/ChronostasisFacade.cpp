@@ -8,6 +8,7 @@
 #include "Core/Chronostasis/LinkerFactory.h"
 #include "Core/BulletRushGameModeBase.h"
 #include "Enemies/EnemyBase.h"
+#include "Enemies/Chronostasis/Boss/SerXBoss.h"
 #include "Components/BuffComponent.h"
 #include "Buffs/TimeSlowDecorator.h"
 #include "TimerManager.h"
@@ -44,6 +45,13 @@ void AChronostasisFacade::BeginPlay()
     ExpansiveFactory = NewObject<UExpansiveFactory>(this);
     ChargerFactory = NewObject<UChargerFactory>(this);
     LinkerFactory = NewObject<ULinkerFactory>(this);
+    BossChargerFactory = NewObject<UChargerFactory>(this);
+    BossLinkerFactory = NewObject<ULinkerFactory>(this);
+
+    if (!SerXBossClass)
+    {
+        SerXBossClass = ASerXBoss::StaticClass();
+    }
 
     // Waves hardcodeadas waos
     if (Waves.Num() == 0)
@@ -99,8 +107,7 @@ void AChronostasisFacade::OnSlowTimerExpired()
         }
     }
     StartSlowTimer();
-    // Notify observers that a time stop happened
-    OnTimeStop.Broadcast();
+    NotifySubscribers();
 }
 
 void AChronostasisFacade::StartWave(int32 Index)
@@ -277,8 +284,11 @@ void AChronostasisFacade::OnAllWavesComplete()
         AGameModeChronostasis* GM = Cast<AGameModeChronostasis>(OwningGameMode);
         if (GM)
         {
-            if (bSecretUnlocked) GM->ActivateSecretPortal();
-            else GM->ActivateBossPortal();
+            GM->ActivateBossPortal();
+            if (bSecretUnlocked)
+            {
+                GM->ActivateSecretPortal();
+            }
         }
     }
 }
@@ -378,4 +388,62 @@ void AChronostasisFacade::OnSecretTimeUpTeleport()
         AGameModeChronostasis* GM = Cast<AGameModeChronostasis>(OwningGameMode);
         if (GM) GM->OnSecretLevelCompleted();
     }
+}
+
+void AChronostasisFacade::StartBossFight()
+{
+    bIsBossFight = true;
+
+    GetWorldTimerManager().ClearTimer(SlowTimerHandle);
+    GetWorldTimerManager().ClearTimer(SecretCountdownTimerHandle);
+    GetWorldTimerManager().ClearTimer(SecretTeleportDelayHandle);
+
+    UWorld* World = GetWorld();
+    if (!World || !SerXBossClass)
+    {
+        UE_LOG(LogTemp, Error, TEXT("AChronostasisFacade::StartBossFight: World or SerXBossClass is null"));
+        return;
+    }
+
+    FActorSpawnParameters Params;
+    Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+    ASerXBoss* Boss = World->SpawnActor<ASerXBoss>(SerXBossClass, BossArenaSpawnLocation, FRotator::ZeroRotator, Params);
+    if (Boss)
+    {
+        Boss->OnEnemyDeath.AddDynamic(this, &AChronostasisFacade::OnBossKilled);
+        Boss->SetChargerFactory(BossChargerFactory);
+        Boss->SetLinkerFactory(BossLinkerFactory);
+
+        ABulletRushHUD* HUD = GetHUD();
+        if (HUD)
+        {
+            HUD->ShowMessage(TEXT("BOSS FIGHT"), 3.f);
+        }
+        UE_LOG(LogTemp, Log, TEXT("AChronostasisFacade::StartBossFight: SerXBoss spawned at %s"), *BossArenaSpawnLocation.ToString());
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("AChronostasisFacade::StartBossFight: Failed to spawn SerXBoss"));
+    }
+}
+
+void AChronostasisFacade::OnBossKilled(AEnemyBase* Boss)
+{
+    bIsBossFight = false;
+
+    ABulletRushHUD* HUD = GetHUD();
+    if (HUD)
+    {
+        HUD->ShowMessage(TEXT("VICTORY"), 5.f);
+    }
+
+    UProjectilesSubsystem* ProjSys = GetWorld()->GetGameInstance()->GetSubsystem<UProjectilesSubsystem>();
+    if (ProjSys) ProjSys->ReturnAllActiveBullets();
+
+    UE_LOG(LogTemp, Log, TEXT("AChronostasisFacade::OnBossKilled: Boss defeated!"));
+}
+
+void AChronostasisFacade::OnBossPortalTriggered()
+{
+    StartBossFight();
 }
