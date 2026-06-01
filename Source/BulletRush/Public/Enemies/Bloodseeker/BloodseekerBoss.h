@@ -1,4 +1,3 @@
-// BloodseekerBoss.h
 
 #pragma once
 
@@ -7,6 +6,8 @@
 #include "BloodseekerBoss.generated.h"
 
 class APlayingPlayer;
+class AKamikazeEnemy;
+class ABloodseekerFacade;
 
 
 // Enumerador de fases de ataque del Boss
@@ -36,6 +37,10 @@ public:
     virtual void Attack() override;
     virtual void Die() override;
 
+    // Referencia al Facade para pausar/reanudar boss waves asignada desde GameMode
+    UPROPERTY()
+    ABloodseekerFacade* FacadeRef;
+
 protected:
 
 private:
@@ -45,7 +50,7 @@ private:
     APlayingPlayer* TargetPlayer;
 
   
-    // Rotación matemática hacia el jugador (sin AIController)
+    // Rotacion matematica hacia el jugador 
     void RotateTowardsPlayer(float DeltaTime);
 
     UPROPERTY(EditAnywhere, Category = "Bloodseeker | Rotation", meta = (AllowPrivateAccess = "true"))
@@ -60,6 +65,7 @@ private:
     void ExecuteRadialSphere();
     void ExecuteUltimateMalediction();
     void CycleNextAttack();
+    int32 AttackCycleIndex;
 
     UPROPERTY(EditAnywhere, Category = "Bloodseeker | Combat", meta = (AllowPrivateAccess = "true"))
     float TimeBetweenAttacks;
@@ -67,7 +73,7 @@ private:
     FTimerHandle AttackCycleTimer;
 
 
-    // Mecánica Rupture — daño por movimiento ,3 ejes
+    // Mecanica Rupture  daÃ±o por movimiento ,3 ejes
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Bloodseeker | Rupture", meta = (AllowPrivateAccess = "true"))
     bool bIsRuptureActive;
@@ -85,8 +91,23 @@ private:
 
     FTimerHandle RuptureTimerHandle;
 
+    // Oleadas de Kamikazes
+    void SpawnKamikazeWave(int32 Count, float DelayBetween);
+    FTimerHandle WaveTimerHandle;
+    FTimerHandle WaveTimerHandle2;
+    FTimerHandle KamikazeWaveTimer;
+    FTimerHandle KamikazeWaveTimer2;
+
     void ActivateMalediction();
     void DeactivateMalediction();
+
+    void OnBossHealthChanged(float NewHealth);
+
+    // Ultimate por tiempo
+    int32 UltimateCount;
+    FTimerHandle UltimateTimerHandle;
+    void TryActivateUltimate();
+
     // Movimiento sinusoidal en la arena
  
     FVector InitialLocation;
@@ -97,8 +118,9 @@ private:
     UPROPERTY(EditAnywhere, Category = "Bloodseeker | Movement", meta = (AllowPrivateAccess = "true"))
     float MovementFrequency;
 
-    // Combos de disparo (inyectados al BulletSpawner)
+    // Combos de disparo inyectados al BulletSpawner
 
     TArray<FAttackStep> LinearBurstCombo;
     TArray<FAttackStep> RadialCombo;
+    TArray<FAttackStep> AttackSequence;
 };

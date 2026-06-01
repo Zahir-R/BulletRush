@@ -90,25 +90,8 @@ UBossStateAttacking::UBossStateAttacking()
 void UBossStateAttacking::EnterState(ABossBase* Boss)
 {
 	Boss->HealthComp->SetInvulnerable(false);
-
-	if (Boss->bHasTransitioned)
-	{
-		Boss->AttackIdentifier = 1;
-	}
-	else
-	{
-		Boss->AttackIdentifier = 0;
-	}
-
+	Boss->AttackIdentifier = 0;
 	Boss->Attack();
-
-	Boss->GetWorld()->GetTimerManager().SetTimer(Boss->AttackLoopTimer, [Boss]()
-	{
-		if (IsValid(Boss))
-		{
-			Boss->Attack();
-		}
-	}, 3.0f, true);
 }
 
 void UBossStateAttacking::UpdateState(ABossBase* Boss, float DeltaTime)

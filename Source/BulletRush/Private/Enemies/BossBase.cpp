@@ -34,7 +34,7 @@ void ABossBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	HealthComp->CurrentHealth = 5000.0f;
+	HealthComp->CurrentHealth = 1000.0f;
 
 	IntroState = NewObject<UBossStateIntro>(this);
 	IdleState = NewObject<UBossStateIdle>(this);

@@ -15,7 +15,7 @@ enum class EAttackType : uint8
 	Sphere,
 	Spiral,
 	Burst,
-	// otros tipos de ataque
+	Fan,
 };
 
 struct FAttackStep
@@ -59,6 +59,8 @@ public:
 	* Genera las balas en el mundo. Esta funci�n es llamada por las estrategias de ataque para crear las balas con la direcci�n y velocidad adecuadas. El origen puede ser el jefe o una ubicaci�n espec�fica, dependiendo de los par�metros del ataque.
 	*/
 	void InternalSpawn(FVector Origin, FVector Direction, float Speed, float Damage);
+
+	void InternalSpawnAt(FVector SpawnLocation, FVector Direction, float Speed, float Damage);
 
 	void StopCurrentSequence();
 
