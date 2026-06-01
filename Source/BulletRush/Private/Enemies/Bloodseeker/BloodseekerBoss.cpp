@@ -1,7 +1,7 @@
 ﻿
 #include "Enemies/Bloodseeker/BloodseekerBoss.h"
 #include "Enemies/Bloodseeker/KamikazeEnemy.h"
-#include "Enemies/BossState.h"
+#include "Enemies/State/BossStateAttacking.h"
 #include "Player/PlayingPlayer.h"
 #include "Components/BulletSpawnerComponent.h"
 #include "Components/HealthComponent.h"
