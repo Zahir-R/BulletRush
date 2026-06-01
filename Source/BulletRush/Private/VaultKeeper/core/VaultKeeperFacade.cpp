@@ -1,105 +1,157 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "VaultKeeper/core/VaultKeeperFacade.h"
+#include "VaultKeeper/core/MechaEnemyFactory.h"
+#include "VaultKeeper/enemies/VaultKeeper.h"
 #include "VaultKeeper/enemies/DronMecha.h"
 #include "VaultKeeper/objets/BatteryActor.h"
+#include "Core/BulletRushGameInstance.h"
+#include "Map/LevelPortal.h"
+#include "Components/BoxComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
-#include "TimerManager.h"
 
 AVaultKeeperFacade::AVaultKeeperFacade()
 {
-	PrimaryActorTick.bCanEverTick = false;
-	EnemyFactory = nullptr;
-	FactoryClass = AMechaEnemyFactory::StaticClass();
-	CurrentWaveIndex = 0;
-	TimeRemaining = 180.0f; // 3 minutos de supervivencia
+    PrimaryActorTick.bCanEverTick = false;
+
+    DroneSpawnLocations = {
+        FVector(400.f,  400.f, 100.f),
+        FVector(-400.f, 400.f, 100.f),
+        FVector(400.f, -400.f, 100.f),
+        FVector(-400.f,-400.f, 100.f),
+    };
 }
 
 void AVaultKeeperFacade::BeginPlay()
 {
-	Super::BeginPlay();
-	InitializeLevel();
+    Super::BeginPlay();
+
+    Factory = GetWorld()->SpawnActor<AMechaEnemyFactory>(
+        AMechaEnemyFactory::StaticClass(),
+        FVector::ZeroVector,
+        FRotator::ZeroRotator
+    );
+
+    //StartLevel();
 }
 
-void AVaultKeeperFacade::InitializeLevel()
+void AVaultKeeperFacade::StartLevel()
 {
-	UWorld* World = GetWorld();
-	if (!World) return;
+    SpawnBoss();
 
-	// Spawneamos la factoría como un Actor 
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-	EnemyFactory = World->SpawnActor<AMechaEnemyFactory>(FactoryClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
-
-	if (EnemyFactory)
-	{
-		UE_LOG(LogTemp, Display, TEXT("[Level2Facade] Infraestructura lista: Se instanció la Fábrica de Enemigos."));
-	}
+    // Drones cada 30s
+    GetWorld()->GetTimerManager().SetTimer(
+        DroneSpawnTimer,
+        this,
+        &AVaultKeeperFacade::SpawnDroneWave,
+        DroneSpawnInterval,
+        true
+    );
 }
 
-void AVaultKeeperFacade::StartLevelProgression()
+void AVaultKeeperFacade::SpawnBoss()
 {
-	UWorld* World = GetWorld();
-	if (!World) return;
+    if (!Factory) return;
 
-	UE_LOG(LogTemp, Display, TEXT("[VaultKeeperFacade] ¡Comienza la supervivencia de 3 minutos!"));
+    BossInstance = Cast<AVaultKeeper>(
+        Factory->CreateEnemy(EMechaEnemyType::VaultKeeper,
+            BossSpawnLocation, FRotator::ZeroRotator));
 
-	World->GetTimerManager().SetTimer(GlobalLevelTimer, this, &AVaultKeeperFacade::UpdateLevelClock, 1.0f, true);
+    if (!BossInstance)
+    {
+        UE_LOG(LogTemp, Error, TEXT("[VaultKeeperFacade] No se pudo spawnear el VaultKeeper"));
+        return;
+    }
 
-	SpawnNextWave();
+    // Verificamos recompensa del 2-S
+    
+    UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
+    if (GI && GI->bVaultKeeperWeakened)
+    {
+        BossInstance->DestroyOneWeakPoint();
+        GI->bVaultKeeperWeakened = false; // reseteamos para proxima partida
+        UE_LOG(LogTemp, Warning, TEXT("[VaultKeeperFacade] VaultKeeper debilitado por recompensa 2-S"));
+    }
+
+    // Suscribimos muerte del boss
+    BossInstance->OnEnemyDeath.AddDynamic(this, &AVaultKeeperFacade::OnBossDeath);
+
+    UE_LOG(LogTemp, Warning, TEXT("[VaultKeeperFacade] VaultKeeper spawneado"));
 }
 
-void AVaultKeeperFacade::UpdateLevelClock()
+void AVaultKeeperFacade::SpawnDroneWave()
 {
-	TimeRemaining -= 1.0f;
+    if (!Factory || bLevelComplete) return;
 
-	if (TimeRemaining <= 0.0f)
-	{
-		GetWorld()->GetTimerManager().ClearTimer(GlobalLevelTimer);
-		GetWorld()->GetTimerManager().ClearTimer(WaveSpawnTimer);
+    for (int32 i = 0; i < DronesPerSpawn; i++)
+    {
+        // Rotamos las posiciones disponibles
+        int32 Index = (DroneSpawnCount + i) % DroneSpawnLocations.Num();
+        FVector SpawnLoc = DroneSpawnLocations[Index];
 
-		SpawnBossBattle();
-	}
-	else if (FMath::Fmod(TimeRemaining, 30.0f) == 0.0f)
-	{
-		SpawnNextWave();
-	}
+        ADronMecha* Drone = Cast<ADronMecha>(
+            Factory->CreateEnemy(EMechaEnemyType::DroneMecha,
+                SpawnLoc, FRotator::ZeroRotator));
+
+        if (!Drone) continue;
+
+        // Bateria vinculada
+        FVector BatteryLoc = SpawnLoc + FVector(150.f, 0.f, 0.f);
+        ABatteryActor* Battery = Cast<ABatteryActor>(
+            Factory->CreateEnemy(EMechaEnemyType::BatteryActor,
+                BatteryLoc, FRotator::ZeroRotator));
+
+        if (Battery)
+        {
+            Battery->LinkDrone(Drone);
+            Drone->LinkBattery(Battery);
+        }
+
+        Drone->OnEnemyDeath.AddDynamic(this, &AVaultKeeperFacade::OnDroneKilled);
+        ActiveDrones.Add(Drone);
+    }
+
+    DroneSpawnCount += DronesPerSpawn;
+    UE_LOG(LogTemp, Warning, TEXT("[VaultKeeperFacade] Drones spawneados: %d"), DronesPerSpawn);
 }
 
-void AVaultKeeperFacade::SpawnNextWave()
+void AVaultKeeperFacade::OnBossDeath(AEnemyBase* DeadEnemy)
 {
-	if (!EnemyFactory) return;
+    if (bLevelComplete) return;
+    bLevelComplete = true;
 
-	CurrentWaveIndex++;
-	UE_LOG(LogTemp, Warning, TEXT("[VaultKeeperFacade] Spawneando Oleada Nro: %d"), CurrentWaveIndex);
+    // Detenemos spawn de drones
+    GetWorld()->GetTimerManager().ClearTimer(DroneSpawnTimer);
 
-	FVector DroneLocation = GetActorLocation() + FVector(FMath::FRandRange(-500.f, 500.f), FMath::FRandRange(-500.f, 500.f), 100.f);
-	FVector BatteryLocation = DroneLocation + FVector(200.f, 200.f, 0.f); 
+    // Destruimos drones activos
+    for (ADronMecha* Drone : ActiveDrones)
+        if (Drone && IsValid(Drone))
+            Drone->Destroy();
 
-	AActor* RawDrone = EnemyFactory->CreateEnemy(EMechaEnemyType::DroneMecha, DroneLocation, FRotator::ZeroRotator);
-	AActor* RawBattery = EnemyFactory->CreateEnemy(EMechaEnemyType::BatteryActor, BatteryLocation, FRotator::ZeroRotator);
+    ActiveDrones.Empty();
 
-	ADronMecha* Drone = Cast<ADronMecha>(RawDrone);
-	ABatteryActor* Battery = Cast<ABatteryActor>(RawBattery);
-
-	if (Drone && Battery)
-	{
-		// Vinculamos la batería al dron. Esto añade internamente al dron 
-		// en el TArray de 'Suscribers' y amarra el patrón Observer de golpe.
-		Battery->LinkDrone(Drone);
-		UE_LOG(LogTemp, Display, TEXT("[Level2Facade] Patrón Observer conectado exitosamente en la oleada."));
-	}
+    UE_LOG(LogTemp, Warning, TEXT("[VaultKeeperFacade] Boss derrotado — nivel completo"));
+    OpenPortal();
 }
 
-void AVaultKeeperFacade::SpawnBossBattle()
+void AVaultKeeperFacade::OnDroneKilled(AEnemyBase* DeadEnemy)
 {
-	if (!EnemyFactory) return;
+    ADronMecha* Drone = Cast<ADronMecha>(DeadEnemy);
+    if (Drone) ActiveDrones.Remove(Drone);
+    UE_LOG(LogTemp, Warning, TEXT("[VaultKeeperFacade] Drone eliminado. Activos: %d"),
+        ActiveDrones.Num());
+}
 
-	UE_LOG(LogTemp, Error, TEXT("[VaultKeeperFacade] ¡TIEMPO COMPLETADO! Spawneando al Jefe de la Bóveda: VaultKeeper."));
-	FVector BossLocation = GetActorLocation() + FVector(0.f, 1000.f, 200.f); // Posición central elevada
-
-	// La factoría se encarga de dar vida al jefe final
-	EnemyFactory->CreateEnemy(EMechaEnemyType::VaultKeeper, BossLocation, FRotator::ZeroRotator);
+void AVaultKeeperFacade::OpenPortal()
+{
+    if (PortalToMap)
+    {
+        PortalToMap->TargetLevelName = FName("Map_CupHeadMap");
+        PortalToMap->CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+        PortalToMap->SetActorHiddenInGame(false);
+        UE_LOG(LogTemp, Warning, TEXT("[VaultKeeperFacade] Portal al mapa abierto"));
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("[VaultKeeperFacade] PortalToMap no asignado"));
+    }
 }

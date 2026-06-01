@@ -9,6 +9,13 @@
 /**
  * 
  */
+UENUM()
+enum class ELevelState : uint8
+{
+	Normal,  // 2-1
+	Secret,  // 2-S
+	Boss     // 2-2
+};
 UCLASS()
 class BULLETRUSH_API UBulletRushGameInstance : public UGameInstance
 {
@@ -27,4 +34,10 @@ public:
 	// Funcion para registrar jefe completado
 	UFUNCTION()
 	void MarcarMapaCompletado(FName NombreMapa);
+
+	UPROPERTY()
+	ELevelState Level2State = ELevelState::Normal;
+
+	UPROPERTY()
+	bool bVaultKeeperWeakened = false;
 };

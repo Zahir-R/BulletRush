@@ -53,9 +53,6 @@ void AVaultKeeper::BeginPlay()
         if (WP) WP->SetGenerateOverlapEvents(false);
 }
 
-// ---------------------------------------------------------
-// TICK
-// ---------------------------------------------------------
 void AVaultKeeper::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
@@ -80,9 +77,6 @@ void AVaultKeeper::Tick(float DeltaTime)
     SetActorLocation(FVector(Loc.X, Loc.Y, CurrentZ));
 }
 
-// ---------------------------------------------------------
-// CHANGESTATE: intercepta los estados y ejecuta lógica propia
-// ---------------------------------------------------------
 void AVaultKeeper::ChangeState(UBossState* NewState)
 {
     Super::ChangeState(NewState);
@@ -120,9 +114,6 @@ void AVaultKeeper::ChangeState(UBossState* NewState)
     }
 }
 
-// ---------------------------------------------------------
-// OPEN
-// ---------------------------------------------------------
 void AVaultKeeper::Open()
 {
     bIsOpen = true;
@@ -153,9 +144,6 @@ void AVaultKeeper::Open()
         }, OpenDuration, false);
 }
 
-// ---------------------------------------------------------
-// CLOSE
-// ---------------------------------------------------------
 void AVaultKeeper::Close()
 {
     bIsOpen = false;
@@ -184,9 +172,6 @@ void AVaultKeeper::Close()
         CycleTimer, this, &AVaultKeeper::Open, ClosedDuration, false);
 }
 
-// ---------------------------------------------------------
-// CLEAR TIMERS
-// ---------------------------------------------------------
 void AVaultKeeper::ClearAllTimers()
 {
     GetWorld()->GetTimerManager().ClearTimer(CycleTimer);
@@ -194,9 +179,6 @@ void AVaultKeeper::ClearAllTimers()
     GetWorld()->GetTimerManager().ClearTimer(AttackLoopTimer);
 }
 
-// ---------------------------------------------------------
-// ATAQUE
-// ---------------------------------------------------------
 void AVaultKeeper::Attack()
 {
     if (!BulletSpawner) return;
@@ -272,9 +254,6 @@ void AVaultKeeper::Attack()
     }
 }
 
-// ---------------------------------------------------------
-// WEAKPOINT DESTRUIDO
-// ---------------------------------------------------------
 void AVaultKeeper::HandleWeakPointDestroyed()
 {
     ActiveWeakPoints--;
@@ -289,9 +268,6 @@ void AVaultKeeper::HandleWeakPointDestroyed()
     }
 }
 
-// ---------------------------------------------------------
-// RAGE ATTACK
-// ---------------------------------------------------------
 void AVaultKeeper::RageAttack()
 {
     if (!BulletSpawner) return;
@@ -300,17 +276,11 @@ void AVaultKeeper::RageAttack()
     BulletSpawner->StartSequence(VK_Rage);
 }
 
-// ---------------------------------------------------------
-// CURACION PASIVA
-// ---------------------------------------------------------
 void AVaultKeeper::ApplyPassiveHeal()
 {
     if (HealthComp) HealthComp->Heal(HealRate);
 }
 
-// ---------------------------------------------------------
-// REGENERAR WEAKPOINTS
-// ---------------------------------------------------------
 void AVaultKeeper::RegenerateWeakPoints()
 {
     for (UWeakPointComponent* WP : CachedWeakPoints)
@@ -324,9 +294,6 @@ void AVaultKeeper::RegenerateWeakPoints()
     }
 }
 
-// ---------------------------------------------------------
-// MATERIALES WEAKPOINTS
-// ---------------------------------------------------------
 void AVaultKeeper::UpdateWeakPointMaterials(bool bOpen)
 {
     UMaterialInterface* Mat = bOpen ? WPOpenMaterial : WPClosedMaterial;
@@ -335,12 +302,21 @@ void AVaultKeeper::UpdateWeakPointMaterials(bool bOpen)
             WP->SetVisualMaterial(Mat);
 }
 
-// ---------------------------------------------------------
-// MUERTE
-// ---------------------------------------------------------
 void AVaultKeeper::Die()
 {
     bIsStunned = true;
     ClearAllTimers();
     Super::Die(); // BossBase llama ChangeState(DeadState)
+}
+void AVaultKeeper::DestroyOneWeakPoint()
+{
+    for (UWeakPointComponent* WP : CachedWeakPoints)
+    {
+        if (WP && !WP->IsDestroyed())
+        {
+            WP->ForceDestroy();
+            UE_LOG(LogTemp, Warning, TEXT("[VaultKeeper] WP destruido por recompensa 2-S"));
+            return;
+        }
+    }
 }

@@ -28,6 +28,7 @@ public:
 
     void ResetWeakPoint();
     bool IsDestroyed() const { return CurrentHealth <= 0.0f; }
+    void ForceDestroy();
 
 protected:
     virtual void BeginPlay() override;

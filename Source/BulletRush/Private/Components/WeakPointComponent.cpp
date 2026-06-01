@@ -120,3 +120,11 @@ void UWeakPointComponent::ResetWeakPoint()
     SetGenerateOverlapEvents(false); // Se reactivará en Open()
     if (VisualMesh) VisualMesh->SetVisibility(true);
 }
+
+void UWeakPointComponent::ForceDestroy()
+{
+    CurrentHealth = 0.0f;
+    SetGenerateOverlapEvents(false);
+    if (VisualMesh) VisualMesh->SetVisibility(false);
+    OnDestroyedEvent.Broadcast();
+}

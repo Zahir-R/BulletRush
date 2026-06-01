@@ -1,28 +1,34 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameModeBase.h"
-#include "VaultKeeper/core/VaultKeeperFacade.h"
+#include "GameFramework/GameMode.h"
 #include "Level2GameMode.generated.h"
 
+class ALevel21Facade;
+class ALevel2SFacade;
+class AVaultKeeperFacade;
+
 UCLASS()
-class BULLETRUSH_API ALevel2GameMode : public AGameModeBase
+class BULLETRUSH_API ALevel2GameMode : public AGameMode
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	ALevel2GameMode();
+    ALevel2GameMode();
 
 protected:
-	virtual void BeginPlay() override;
+    virtual void BeginPlay() override;
 
 private:
-	
-	UPROPERTY()
-	AVaultKeeperFacade* LevelFacade;
+    void DetectAndActivateFacade();
 
-	UPROPERTY(EditDefaultsOnly, Category = "Level2|Setup")
-	TSubclassOf<AVaultKeeperFacade> FacadeClass;
+
+    UPROPERTY()
+    ALevel21Facade* Facade21 = nullptr;
+
+    UPROPERTY()
+    ALevel2SFacade* Facade2S = nullptr;
+
+    UPROPERTY()
+    AVaultKeeperFacade* FacadeVK = nullptr;
 };
