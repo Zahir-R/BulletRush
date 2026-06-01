@@ -71,36 +71,6 @@ APowerUpManager* ABulletRushGameModeBase::SpawnPowerUpsForLevel(UWorld* World, F
 	return Manager;
 }
 
-UFUNCTION(Exec)
-void ABulletRushGameModeBase::DealDamageToTarget(float Damage)
-{
-	APlayerController* PC = GetWorld()->GetFirstPlayerController();
-	if (!PC)
-	{
-		UE_LOG(LogTemp, Error, TEXT("DealDamageToTarget: No se encontr� PlayerController"));
-		return;
-	}
-
-	FHitResult Hit;
-	PC->GetHitResultUnderCursor(ECC_Visibility, false, Hit);
-
-	if (!Hit.bBlockingHit)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("DealDamageToTarget: No se impact� ning�n objeto. Apunta a un actor visible con el cursor."));
-		return;
-	}
-
-	AActor* HitActor = Hit.GetActor();
-	if (!HitActor)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("DealDamageToTarget: El impacto no tiene actor asociado"));
-		return;
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("DealDamageToTarget: Aplicando %.1f de da�o a [%s]"), Damage, *HitActor->GetName());
-
-	UGameplayStatics::ApplyDamage(HitActor, Damage, PC, this, UDamageType::StaticClass());
-}
 //para testeo noma aqui
 /*
 UClass* ABulletRushGameModeBase::GetDefaultPawnClassForController_Implementation(AController* InController)
