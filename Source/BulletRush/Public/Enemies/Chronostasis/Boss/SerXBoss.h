@@ -94,4 +94,5 @@ protected:
 	TArray<FAttackStep> CircleCombo2;
 	TArray<FAttackStep> SphereCombo2;
 	TArray<FAttackStep> SpiralCombo2;
+	TArray<FAttackStep> SurroundCombo2;
 };

@@ -1,47 +1,68 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "VaultKeeper/core/MechaEnemyFactory.h"
+#include "Enemies/EnemyBase.h"
 #include "VaultKeeperFacade.generated.h"
+
+class AMechaEnemyFactory;
+class AVaultKeeper;
+class ADronMecha;
+class ABatteryActor;
+class ALevelPortal;
+class UBulletRushGameInstance;
 
 UCLASS()
 class BULLETRUSH_API AVaultKeeperFacade : public AActor
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	AVaultKeeperFacade();
+    AVaultKeeperFacade();
 
 protected:
-	virtual void BeginPlay() override;
+    virtual void BeginPlay() override;
 
 public:
-	
-	UFUNCTION(BlueprintCallable, Category = "Level2|Facade")
-	void InitializeLevel();
+    UPROPERTY(EditAnywhere, Category = "VaultKeeperFacade|Spawn")
+    FVector BossSpawnLocation = FVector(0.f, 0.f, 300.f);
 
-	
-	UFUNCTION(BlueprintCallable, Category = "Level2|Facade")
-	void StartLevelProgression();
+    UPROPERTY(EditAnywhere, Category = "VaultKeeperFacade|Spawn")
+    TArray<FVector> DroneSpawnLocations;
+
+    UPROPERTY(EditDefaultsOnly, Category = "VaultKeeperFacade|Config")
+    float DroneSpawnInterval = 30.0f;
+
+    UPROPERTY(EditDefaultsOnly, Category = "VaultKeeperFacade|Config")
+    int32 DronesPerSpawn = 2;
+
+    UPROPERTY(EditAnywhere, Category = "VaultKeeperFacade|References")
+    ALevelPortal* PortalToMap;
+
+    void StartLevel();
+
+    UFUNCTION()
+    void OnBossDeath(AEnemyBase* DeadEnemy);
+
+    UFUNCTION()
+    void OnDroneKilled(AEnemyBase* DeadEnemy);
 
 private:
-	
-	UPROPERTY()
-	AMechaEnemyFactory* EnemyFactory;
+    UPROPERTY()
+    AMechaEnemyFactory* Factory;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Level2|Setup")
-	TSubclassOf<AMechaEnemyFactory> FactoryClass;
+    UPROPERTY()
+    AVaultKeeper* BossInstance;
 
-	FTimerHandle GlobalLevelTimer;
-	FTimerHandle WaveSpawnTimer;
+    UPROPERTY()
+    TArray<ADronMecha*> ActiveDrones;
 
-	int32 CurrentWaveIndex;
-	float TimeRemaining;
+    int32 DroneSpawnCount = 0;
+    bool bLevelComplete = false;
 
-	void UpdateLevelClock();
-	void SpawnNextWave();
-	void SpawnBossBattle();
+    FTimerHandle DroneSpawnTimer;
+
+    void SpawnBoss();
+    void SpawnDroneWave();
+    void OpenPortal();
 };

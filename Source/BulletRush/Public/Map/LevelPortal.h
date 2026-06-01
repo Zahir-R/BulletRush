@@ -26,9 +26,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	// for detectar overlaps
-	UPROPERTY(VisibleAnywhere, Category = "Componentes")
-	UBoxComponent* CollisionBox;
+
 
 	UPROPERTY(VisibleAnywhere, Category = "Componentes")
 	UStaticMeshComponent* PortalMesh;
@@ -43,7 +41,9 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	// for detectar overlaps
+	UPROPERTY(VisibleAnywhere, Category = "Componentes")
+	UBoxComponent* CollisionBox;
 	// ISubscriber implementation
 	virtual void Update(class APublisher* Publisher) override;
 

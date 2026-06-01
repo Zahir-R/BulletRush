@@ -10,6 +10,7 @@ class BULLETRUSH_API AVaultKeeper : public ABossBase
 
 public:
     AVaultKeeper();
+    void DestroyOneWeakPoint();
 
 protected:
     virtual void BeginPlay() override;
@@ -75,6 +76,8 @@ protected:
     virtual void HandleWeakPointDestroyed() override;
     virtual void Attack() override;
     virtual void Die() override;
+
+
 
 private:
     TArray<UWeakPointComponent*> CachedWeakPoints;

@@ -1,42 +1,61 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Core/Level2GameMode.h"
-#include "Kismet/GameplayStatics.h"
-#include "Player/PlayingPlayer.h"
+#include "Core/BulletRushGameModeBase.h"
+#include "VaultKeeper/core/Level21Facade.h"
+#include "VaultKeeper/core/Level2SFacade.h"
+#include "VaultKeeper/core/VaultKeeperFacade.h"
 #include "Engine/World.h"
+#include "Player/PlayingPlayer.h"
+#include "Kismet/GameplayStatics.h"
+#include "Core/BulletRushGameInstance.h"
 
 ALevel2GameMode::ALevel2GameMode()
 {
-	FacadeClass = AVaultKeeperFacade::StaticClass();
-	LevelFacade = nullptr;
-	DefaultPawnClass = APlayingPlayer::StaticClass();
+    DefaultPawnClass = APlayingPlayer::StaticClass();
 }
 
 void ALevel2GameMode::BeginPlay()
 {
-    UWorld* World = GetWorld();
-    if (!World) return;
-
-    AActor* FoundFacade = UGameplayStatics::GetActorOfClass(World, AVaultKeeperFacade::StaticClass());
-
-    if (FoundFacade)
+    Super::BeginPlay();
+    DetectAndActivateFacade();
+    if (GetWorld())
     {
-        LevelFacade = Cast<AVaultKeeperFacade>(FoundFacade);
-        UE_LOG(LogTemp, Display, TEXT("[Level2GameMode] Se encontró una Fachada existente en el mapa. Usando esa."));
+        ABulletRushGameModeBase::SpawnPowerUpsForLevel(GetWorld(), FName(GetWorld()->GetMapName()));
     }
-    else
-    {
-        FActorSpawnParameters SpawnParams;
-        SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+}
 
-        LevelFacade = World->SpawnActor<AVaultKeeperFacade>(FacadeClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
-        UE_LOG(LogTemp, Display, TEXT("[Level2GameMode] Mapa limpio. Fachada instanciada dinámicamente."));
+void ALevel2GameMode::DetectAndActivateFacade()
+{
+    UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
+    if (!GI)
+    {
+        UE_LOG(LogTemp, Error, TEXT("[Level2GameMode] GameInstance no encontrado"));
+        return;
     }
 
-    // Arrancamos el juego de forma segura sin duplicados
-    if (LevelFacade)
+    switch (GI->Level2State)
     {
-        LevelFacade->StartLevelProgression();
+    case ELevelState::Normal:
+        Facade21 = GetWorld()->SpawnActor<ALevel21Facade>(
+            ALevel21Facade::StaticClass(),
+            FVector::ZeroVector, FRotator::ZeroRotator);
+        if (Facade21) Facade21->StartLevel();
+        UE_LOG(LogTemp, Warning, TEXT("[Level2GameMode] Modo: 2-1 Normal"));
+        break;
+
+    case ELevelState::Secret:
+        Facade2S = GetWorld()->SpawnActor<ALevel2SFacade>(
+            ALevel2SFacade::StaticClass(),
+            FVector::ZeroVector, FRotator::ZeroRotator);
+        if (Facade2S) Facade2S->StartLevel();
+        UE_LOG(LogTemp, Warning, TEXT("[Level2GameMode] Modo: 2-S Secreto"));
+        break;
+
+    case ELevelState::Boss:
+        FacadeVK = GetWorld()->SpawnActor<AVaultKeeperFacade>(
+            AVaultKeeperFacade::StaticClass(),
+            FVector::ZeroVector, FRotator::ZeroRotator);
+        if (FacadeVK) FacadeVK->StartLevel();
+        UE_LOG(LogTemp, Warning, TEXT("[Level2GameMode] Modo: 2-2 Boss"));
+        break;
     }
 }

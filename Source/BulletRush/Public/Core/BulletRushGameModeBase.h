@@ -6,6 +6,8 @@
 #include "GameFramework/GameModeBase.h"
 #include "BulletRushGameModeBase.generated.h"
 
+class APowerUpManager;
+
 /**
  * 
  */
@@ -17,6 +19,8 @@ class BULLETRUSH_API ABulletRushGameModeBase : public AGameModeBase
 public:
 	ABulletRushGameModeBase();
 	virtual void BeginPlay() override;
+
+	static APowerUpManager* SpawnPowerUpsForLevel(UWorld* World, FName LevelName);
 
 	UFUNCTION(Exec)
 	void DealDamageToTarget(float Damage);
