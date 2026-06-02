@@ -5,6 +5,7 @@
 #include "Combat/AttackPatterns/SpiralAttack.h"
 #include "Combat/AttackPatterns/SphereAttack.h"
 #include "Combat/AttackPatterns/SurroundingBulletsAttack.h"
+#include "Combat/AttackPatterns/PentagramAttack.h"
 #include "Combat/AttackPatterns/FanAttack.h"
 
 
@@ -29,6 +30,7 @@ void UBulletSpawnerComponent::BeginPlay()
 	AttackRegist.Add(EAttackType::Burst, TStrongObjectPtr<UAttackStrategy>(NewObject<UBurstAttack>(this)));
 	AttackRegist.Add(EAttackType::SurroundingBullets, TStrongObjectPtr<UAttackStrategy>(NewObject<USurroundingBulletsAttack>(this)));
 	AttackRegist.Add(EAttackType::Fan, TStrongObjectPtr<UAttackStrategy>(NewObject<UFanAttack>(this)));
+	AttackRegist.Add(EAttackType::Pentagram, TStrongObjectPtr<UAttackStrategy>(NewObject<UPentagramAttack>(this)));
 
 
 }

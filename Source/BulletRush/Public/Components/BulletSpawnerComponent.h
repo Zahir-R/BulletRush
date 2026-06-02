@@ -17,6 +17,7 @@ enum class EAttackType : uint8
 	Burst,
 	SurroundingBullets,
 	Fan,
+	Pentagram
 };
 
 struct FAttackStep
