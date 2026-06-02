@@ -30,11 +30,8 @@ void UPlusFireStrategy::StopFiring(
 	{
 		return;
 	}
-
-	if (Weapon->FiringTimer.IsValid())
-	{
-		Weapon->GetWorld()->GetTimerManager().ClearTimer(Weapon->FiringTimer);
-	}
+	Weapon->GetWorld()->GetTimerManager().ClearTimer(Weapon->FiringTimer);
+	
 }
 
 void UPlusFireStrategy::ExecuteFire(
