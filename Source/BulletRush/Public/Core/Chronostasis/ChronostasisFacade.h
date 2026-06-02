@@ -1,13 +1,15 @@
 #pragma once
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "Core/Publisher.h"
 #include "Core/Chronostasis/ChronostasisFactoryEnemy.h"
 #include "UObject/Interface.h"
 #include "ChronostasisFacade.generated.h"
 
 class AEnemyBase;
 class ABulletRushGameModeBase;
+class ABulletRushHUD;
 class UChronostasisFactoryEnemy;
+class ASerXBoss;
 
 USTRUCT()
 struct FWaveConfig
@@ -20,11 +22,15 @@ struct FWaveConfig
     UPROPERTY()
     int32 ExpansiveCount = 0;
     UPROPERTY()
+    int32 ChargerCount = 0;
+    UPROPERTY()
+    int32 LinkerCount = 0;
+    UPROPERTY()
     TArray<FVector> SpawnPoints;
 };
 
 UCLASS()
-class AChronostasisFacade : public AActor
+class AChronostasisFacade : public APublisher
 {
     GENERATED_BODY()
 public:
@@ -38,7 +44,17 @@ public:
     void ActivatePortalToSecret();
     void ActivatePortalToBoss();
 
-    FSimpleMulticastDelegate OnTimeStop;
+    void SetRequirementManager(class URequirementManager* Manager);
+    void StartSecretWaves(const TArray<FWaveConfig>& NewWaves);
+
+    bool AreAllWavesComplete() const { return RemainingEnemiesInWave <= 0 && CurrentWaveIndex >= Waves.Num() - 1; }
+
+    void StartBossFight();
+    UFUNCTION()
+    void OnBossKilled(AEnemyBase* Boss);
+
+    UFUNCTION()
+    void OnBossPortalTriggered();
 
 protected:
     UPROPERTY(EditAnywhere)
@@ -54,10 +70,36 @@ protected:
     // Weak pointer to the player's health component for damage observation
     TWeakObjectPtr<class UHealthComponent> PlayerHealthComp;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Factory")
-	UChronostasisFactoryEnemy* EnemyFactory;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Factory")
+	UChronostasisFactoryEnemy* DroneFactory;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Factory")
+	UChronostasisFactoryEnemy* MassFactory;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Factory")
+	UChronostasisFactoryEnemy* ExpansiveFactory;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Factory")
+	UChronostasisFactoryEnemy* ChargerFactory;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Factory")
+	UChronostasisFactoryEnemy* LinkerFactory;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Factory")
+	UChronostasisFactoryEnemy* BossChargerFactory;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Factory")
+	UChronostasisFactoryEnemy* BossLinkerFactory;
+
+	UPROPERTY(EditAnywhere, Category = "Boss")
+	TSubclassOf<ASerXBoss> SerXBossClass;
+
+	UPROPERTY(EditAnywhere, Category = "Boss")
+	FVector BossArenaSpawnLocation;
 
     FTimerHandle SlowTimerHandle;
+    ABulletRushHUD* GetHUD() const;
+
     void StartSlowTimer();
     void OnSlowTimerExpired();
     UFUNCTION()
@@ -65,6 +107,22 @@ protected:
 
     void StartWave(int32 Index);
     void OnAllWavesComplete();
+
+    // Boss fight support
+    bool bIsBossFight = false;
+
+    // Secret level support
+    bool bIsSecretLevel = false;
+    float SecretLevelTimeRemaining = 120.f;
+    bool bSecretTimerPaused = false;
+    FTimerHandle SecretCountdownTimerHandle;
+    FTimerHandle SecretTeleportDelayHandle;
+
+    void OnSecretCountdownTick();
+    void OnSecretTimeUpTeleport();
+
+    UPROPERTY()
+    TWeakObjectPtr<class URequirementManager> RequirementManagerRef;
 
     ABulletRushGameModeBase* OwningGameMode;
 };

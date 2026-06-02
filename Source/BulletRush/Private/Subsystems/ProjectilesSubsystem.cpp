@@ -1,6 +1,7 @@
 #include "Subsystems/ProjectilesSubsystem.h"
 #include "GameFramework/Actor.h"
 #include "Player/PlayerStatsInterface.h"
+#include "Components/WeakPointComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 #include "Kismet/KismetMaterialLibrary.h"
@@ -27,6 +28,19 @@ void UProjectilesSubsystem::Tick(float DeltaTime)
 		if (Bullet && Bullet->BulletData.bIsActive)
 		{
 			FVector CurrentLoc = Bullet->GetActorLocation();
+
+			if (Bullet->BulletData.ConvergeDelay > 0.f)
+			{
+				Bullet->BulletData.ConvergeDelay -= DeltaTime;
+				if (Bullet->BulletData.ConvergeDelay <= 0.f)
+				{
+					FVector Dir = (Bullet->BulletData.ConvergeCenter - CurrentLoc).GetSafeNormal();
+					Bullet->BulletData.Direction = Dir;
+					Bullet->BulletData.Speed = 600.f;
+				}
+				Bullet->SetActorLocation(CurrentLoc, true);
+				continue;
+			}
 			// FVector NewLoc = CurrentLoc + (Bullet->BulletData.Direction * Bullet->BulletData.Speed * DeltaTime);
 
 			FVector NewLoc = CurrentLoc + (Bullet->BulletData.Direction * Bullet->BulletData.Speed * GlobalSpeedMultiplier * DeltaTime);
@@ -60,19 +74,50 @@ void UProjectilesSubsystem::Tick(float DeltaTime)
 			{
 				AActor* OtherActor = Hit.GetActor();
 
-				if (OtherActor && OtherActor != Bullet) // Verificamos que no sea la propia bala
+				if (OtherActor && OtherActor != Bullet)
 				{
-					// 1. L?GICA DE FACCIONES (Contexto que hablamos)
-					bool bIsEnemy = OtherActor->ActorHasTag("Jefe") || OtherActor->ActorHasTag("Enemigo");
+					bool bIsBoss = OtherActor->ActorHasTag("Jefe");
+					bool bIsEnemy = bIsBoss || OtherActor->ActorHasTag("Enemigo");
 					bool bIsPlayer = OtherActor->ActorHasTag("Player");
 
-					// 2. ?QUI?N LE PEGA A QUI?N?
-					// Si la bala es del jugador y le pega a un enemigo...
+					// Player bullet hits enemy/boss
 					if (Bullet->BulletData.bIsPlayerBullet && bIsEnemy)
 					{
-						UGameplayStatics::ApplyDamage(OtherActor, Bullet->BulletData.Damage, nullptr, Bullet, UDamageType::StaticClass());
-						ReturnBullet(Bullet); // RECICLAMOS, NO DESTRUIMOS
-						continue;
+						if (bIsBoss)
+						{
+							// Check if boss has active weak points
+							bool bHasActiveWeakPoints = false;
+							TArray<UWeakPointComponent*> WPs;
+							OtherActor->GetComponents<UWeakPointComponent>(WPs);
+							for (UWeakPointComponent* WP : WPs)
+							{
+								if (WP->CurrentHealth > 0.0f)
+								{
+									bHasActiveWeakPoints = true;
+									break;
+								}
+							}
+
+							if (bHasActiveWeakPoints)
+							{
+								// Let the WeakPointComponent overlap handler process
+								// damage + return. Don't ApplyDamage or ReturnBullet here.
+								// The sweep movement (SetActorLocation with bSweep=true)
+								// will trigger OnComponentBeginOverlap on the weak point.
+							}
+							else
+							{
+								UGameplayStatics::ApplyDamage(OtherActor, Bullet->BulletData.Damage, nullptr, Bullet, UDamageType::StaticClass());
+								ReturnBullet(Bullet);
+								continue;
+							}
+						}
+						else
+						{
+							UGameplayStatics::ApplyDamage(OtherActor, Bullet->BulletData.Damage, nullptr, Bullet, UDamageType::StaticClass());
+							ReturnBullet(Bullet);
+							continue;
+						}
 					}
 
 					// Si la bala es del jefe y le pega al jugador...
@@ -92,8 +137,19 @@ void UProjectilesSubsystem::Tick(float DeltaTime)
 				}
 			}
 
-			// MOVIMIENTO
-			Bullet->SetActorLocation(NewLoc);
+			// RECICLAJE POR VIDA LIMITADA (Secret Level: player bullets last 1s)
+			if (Bullet->BulletData.RemainingLifetime > 0.f)
+			{
+				Bullet->BulletData.RemainingLifetime -= DeltaTime;
+				if (Bullet->BulletData.RemainingLifetime <= 0.f)
+				{
+					ReturnBullet(Bullet);
+					continue;
+				}
+			}
+
+			// MOVIMIENTO (sweep=true para activar overlap events en WeakPointComponent)
+			Bullet->SetActorLocation(NewLoc, true);
 
 			// RECICLAJE POR DISTANCIA (L?mite de 8000 unidades)
 			if (FVector::Dist(NewLoc, Bullet->BulletData.SpawnLocation) > 8000.f)
@@ -116,17 +172,16 @@ void UProjectilesSubsystem::InitializePool()
 	}
 }
 
-ABulletBase* UProjectilesSubsystem::RequestBullet(FVector Loc, FVector Dir, float Spd, bool bIsPlayer, float Damage, FVector SpawnLocation, AActor* Owner, FVector Scale)
+ABulletBase* UProjectilesSubsystem::RequestBullet(FVector Loc, FVector Dir, float Spd, bool bIsPlayer, float Damage, FVector SpawnLocation, AActor* Owner)
 {
 	for (ABulletBase* Bullet : BulletPool)
 	{
 		if (Bullet && !Bullet->BulletData.bIsActive)
 		{
 			Bullet->ActivateBullet(SpawnLocation, Dir, Spd, bIsPlayer, Damage, SpawnLocation, Owner);
-			if (Scale != FVector(0.4f))
+			if (bSecretLevelActive && bIsPlayer)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Escala ajustada"));
-				Bullet->SetActorRelativeScale3D(Scale);
+				Bullet->BulletData.RemainingLifetime = 1.0f;
 			}
 			return Bullet;
 		}
@@ -191,6 +246,12 @@ void UProjectilesSubsystem::ReinitializePool()
 {
 	InitializePool();
 	UE_LOG(LogTemp, Warning, TEXT("[ProjectilesSubsystem] Pool reinicializado con %d balas."), BulletPool.Num());
+}
+
+void UProjectilesSubsystem::SetSecretLevel(bool bActive)
+{
+	bSecretLevelActive = bActive;
+	ReturnAllActiveBullets();
 }
 
 void UProjectilesSubsystem::ReturnAllActiveBullets()

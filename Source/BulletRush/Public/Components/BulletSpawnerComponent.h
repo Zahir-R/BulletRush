@@ -15,7 +15,7 @@ enum class EAttackType : uint8
 	Sphere,
 	Spiral,
 	Burst,
-	// otros tipos de ataque
+	SurroundingBullets,
 };
 
 struct FAttackStep
@@ -76,6 +76,7 @@ protected:
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override; // Ni idea si usemos esto despu�s, lo dejo por si acaso
 	
+	class UProjectilesSubsystem* GetProjectilesSubsystem() const { return ProjectilesSubsystem; }
 
 private:
 	//float CurrentSpiralAngle = 0.0f;

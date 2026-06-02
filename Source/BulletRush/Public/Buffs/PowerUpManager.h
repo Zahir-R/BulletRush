@@ -18,6 +18,8 @@ public:
 	void OnPowerUpCollected(APowerUpBase* PowerUp);
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
+	void Initialize(const TArray<TSubclassOf<APowerUpBase>>& Classes, const FVector& SpawnAreaExtent);
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -38,6 +40,9 @@ protected:
 
 	UPROPERTY()
 	TArray<APowerUpBase*> SpawnedPowerUps;
+
+	UPROPERTY()
+	TMap<APowerUpBase*, FTimerHandle> LifecycleTimers;
 
 	UPROPERTY(VisibleAnywhere)
 	UBoxComponent* SpawnArea;

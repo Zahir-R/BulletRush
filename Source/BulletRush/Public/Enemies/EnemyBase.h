@@ -20,6 +20,9 @@ public:
 	// Sets default values for this character's properties
 	AEnemyBase();
 
+
+public:
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -56,6 +59,8 @@ public:
 	virtual void StartAttack();
 	virtual void Die();
 
+	bool bIsDead = false;
+
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* MeshEnemy;
 	UPROPERTY(VisibleAnywhere)
@@ -64,4 +69,11 @@ public:
 	UBulletSpawnerComponent* BulletSpawner;
 	
 	FOnEnemyDeath OnEnemyDeath;
+
+	// Minimum distance to keep from other enemies to prevent overlap
+	UPROPERTY(EditAnywhere, Category = "Enemy")
+	float SeparationDistance = 150.0f;
+
+	// Apply repulsion from nearby enemies and return the adjusted location
+	FVector ApplyEnemySeparation(const FVector& DesiredLocation) const;
 };

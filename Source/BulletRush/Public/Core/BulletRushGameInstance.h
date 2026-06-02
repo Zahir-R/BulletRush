@@ -9,7 +9,14 @@
 /**
  * 
  */
-UCLASS(Blueprintable)
+UENUM()
+enum class ELevelState : uint8
+{
+	Normal,  // 2-1
+	Secret,  // 2-S
+	Boss     // 2-2
+};
+UCLASS()
 class BULLETRUSH_API UBulletRushGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
@@ -43,4 +50,13 @@ public:
 	// Funcion para registrar jefe completado
 	UFUNCTION()
 	void MarcarMapaCompletado(FName NombreMapa);
+
+	// Reward multiplier for power-up cooldowns (set after secret level completion)
+	UPROPERTY()
+	float PowerUpCooldownMultiplier = 1.0f;
+	UPROPERTY()
+	ELevelState Level2State = ELevelState::Normal;
+
+	UPROPERTY()
+	bool bVaultKeeperWeakened = false;
 };

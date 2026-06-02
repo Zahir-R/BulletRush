@@ -5,6 +5,7 @@
 void UTimeStopRequirement::Initialize(APlayerController* Player, UWorld* World)
 {
     CurrentStops = 0;
+    CachedPublisher = nullptr;
     if (!World) return;
 
     TArray<AActor*> Found;
@@ -14,21 +15,22 @@ void UTimeStopRequirement::Initialize(APlayerController* Player, UWorld* World)
         AChronostasisFacade* Facade = Cast<AChronostasisFacade>(Found[0]);
         if (Facade)
         {
-            ObservedFacade = Facade;
-            Facade->OnTimeStop.AddUObject(this, &UTimeStopRequirement::RegisterTimeStop);
+            CachedPublisher = Facade;
+            Facade->Subscribe(this);
         }
     }
 }
 
 void UTimeStopRequirement::Cleanup()
 {
-    if (ObservedFacade.IsValid())
+    if (CachedPublisher.IsValid())
     {
-        ObservedFacade->OnTimeStop.RemoveAll(this);
+        CachedPublisher->Unsubscribe(this);
+        CachedPublisher = nullptr;
     }
 }
 
-void UTimeStopRequirement::RegisterTimeStop()
+void UTimeStopRequirement::Update(APublisher* Publisher)
 {
     CurrentStops++;
 }

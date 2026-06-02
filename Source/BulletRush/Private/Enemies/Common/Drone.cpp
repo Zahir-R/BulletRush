@@ -35,6 +35,7 @@ void ADrone::Tick(float DeltaSeconds)
         {
             FVector Target = PlayerPawn->GetActorLocation();
             FVector NewPos = MovementStrategy->GetNextPosition(this, DeltaSeconds, Target);
+            NewPos = ApplyEnemySeparation(NewPos);
             SetActorLocation(NewPos);
         }
     }

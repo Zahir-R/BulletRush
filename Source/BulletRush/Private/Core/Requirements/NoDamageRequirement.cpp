@@ -1,42 +1,42 @@
 #include "Core/Requirements/NoDamageRequirement.h"
+#include "Core/PlayerHealthPublisher.h"
 #include "GameFramework/PlayerController.h"
-#include "Player/PlayingPlayer.h"
-#include "Components/HealthComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 void UNoDamageRequirement::Initialize(APlayerController* Player, UWorld* World)
 {
     bNoDamageTaken = true;
-    if (!Player || !World) return;
-    APawn* Pawn = Player->GetPawn();
-    if (!Pawn) Pawn = UGameplayStatics::GetPlayerPawn(World, 0);
-    if (!Pawn) return;
+    CachedPublisher = nullptr;
+    if (!World) return;
 
-    UHealthComponent* HealthComp = Pawn->FindComponentByClass<UHealthComponent>();
-    if (HealthComp)
+    TArray<AActor*> Found;
+    UGameplayStatics::GetAllActorsOfClass(World, APlayerHealthPublisher::StaticClass(), Found);
+    if (Found.Num() > 0)
     {
-        ObservedHealthComp = HealthComp;
-        InitialHealth = HealthComp->CurrentHealth;
-        // Subscribe to health changed dynamic delegate
-        HealthComp->OnHealthChanged.AddDynamic(this, &UNoDamageRequirement::OnPlayerHealthChanged);
+        APlayerHealthPublisher* Pub = Cast<APlayerHealthPublisher>(Found[0]);
+        if (Pub)
+        {
+            CachedPublisher = Pub;
+            Pub->Subscribe(this);
+        }
     }
 }
 
 void UNoDamageRequirement::Cleanup()
 {
-    if (ObservedHealthComp.IsValid())
+    if (CachedPublisher.IsValid())
     {
-        ObservedHealthComp->OnHealthChanged.RemoveDynamic(this, &UNoDamageRequirement::OnPlayerHealthChanged);
+        CachedPublisher->Unsubscribe(this);
+        CachedPublisher = nullptr;
     }
 }
 
-void UNoDamageRequirement::OnPlayerHealthChanged(float NewHealth)
+void UNoDamageRequirement::Update(APublisher* Publisher)
 {
-    if (!ObservedHealthComp.IsValid()) return;
-    if (NewHealth < InitialHealth)
+    APlayerHealthPublisher* HPub = Cast<APlayerHealthPublisher>(Publisher);
+    if (HPub && HPub->GetCurrentHealth() < HPub->GetInitialHealth())
     {
         bNoDamageTaken = false;
-        // Unsubscribe since requirement already failed
-        ObservedHealthComp->OnHealthChanged.RemoveDynamic(this, &UNoDamageRequirement::OnPlayerHealthChanged);
+        HPub->Unsubscribe(this);
     }
 }

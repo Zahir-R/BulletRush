@@ -15,12 +15,15 @@ struct FBulletData
 	float Speed;
 	bool bIsActive;
 	bool bIsPlayerBullet;
-	FVector Scale;
 
 	AActor* OwnerActor;
 
-	// Inicializador por defecto
-	FBulletData() : Direction(FVector::ZeroVector), SpawnLocation(FVector::ZeroVector), Damage(0.f), Speed(0.f), bIsActive(false), bIsPlayerBullet(false), OwnerActor(nullptr), Scale(FVector(1.0f)) {}
+	float RemainingLifetime = -1.f;
+
+	FVector ConvergeCenter;
+	float ConvergeDelay = -1.f;
+
+	FBulletData() : Direction(FVector::ZeroVector), SpawnLocation(FVector::ZeroVector), Damage(0.f), Speed(0.f), bIsActive(false), bIsPlayerBullet(false), OwnerActor(nullptr), ConvergeCenter(FVector::ZeroVector), ConvergeDelay(-1.f) {}
 };
 
 UCLASS(Blueprintable)

@@ -103,3 +103,25 @@ void UWeakPointComponent::OnWeakPointOverlap(UPrimitiveComponent* OverlappedComp
         PoolCache->ReturnBullet(Bullet);
     }
 }
+
+void UWeakPointComponent::SetVisualMaterial(UMaterialInterface* NewMat)
+{
+    
+    if (VisualMesh && NewMat)
+        VisualMesh->SetMaterial(0, NewMat);
+}
+
+void UWeakPointComponent::ResetWeakPoint()
+{
+    CurrentHealth = MaxHealth;
+    SetGenerateOverlapEvents(false); // Se reactivará en Open()
+    if (VisualMesh) VisualMesh->SetVisibility(true);
+}
+
+void UWeakPointComponent::ForceDestroy()
+{
+    CurrentHealth = 0.0f;
+    SetGenerateOverlapEvents(false);
+    if (VisualMesh) VisualMesh->SetVisibility(false);
+    OnDestroyedEvent.Broadcast();
+}

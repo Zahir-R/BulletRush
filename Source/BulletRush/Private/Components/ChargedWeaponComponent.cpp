@@ -21,11 +21,11 @@ void UChargedWeaponComponent::StartFiring()
 void UChargedWeaponComponent::StopFiring()
 {
     // Limpiamos el temporizador cuando el jugador suelta el clic
-	ExecuteFire(); // Disparamos la bala cargada al soltar el clic
+	//ExecuteFire(); // Disparamos la bala cargada al soltar el clic
     GetWorld()->GetTimerManager().ClearTimer(FiringTimer);
 }
 
-void UChargedWeaponComponent::ExecuteFire()
+/*void UChargedWeaponComponent::ExecuteFire()
 {
 	UWorld* World = GetWorld();
 	if (!World)
@@ -67,4 +67,4 @@ void UChargedWeaponComponent::ExecuteFire()
 	}
 	Bullet->Tags.Add("BalaJugador");
 	Damage = DamageBase; // Reset
-}
+}*/

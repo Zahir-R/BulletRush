@@ -3,13 +3,13 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "ILevelRequirement.h"
+#include "Core/Subscriber.h"
 #include "NoDamageRequirement.generated.h"
 
-class UHealthComponent;
+class APlayerHealthPublisher;
 
-// Observer pattern: subscribes to player's health changes
 UCLASS(Blueprintable)
-class BULLETRUSH_API UNoDamageRequirement : public UObject, public ILevelRequirement
+class BULLETRUSH_API UNoDamageRequirement : public UObject, public ILevelRequirement, public ISubscriber
 {
     GENERATED_BODY()
 
@@ -19,13 +19,9 @@ public:
     virtual FString GetDescription() const override { return FString("Do not take any damage"); }
     virtual void Cleanup() override;
 
-protected:
-    // Handler for health change events
-    UFUNCTION()
-    void OnPlayerHealthChanged(float NewHealth);
+    virtual void Update(class APublisher* Publisher) override;
 
-    // Track initial and current state
+protected:
     bool bNoDamageTaken = true;
-    float InitialHealth = 0.f;
-    TWeakObjectPtr<UHealthComponent> ObservedHealthComp;
+    TWeakObjectPtr<APlayerHealthPublisher> CachedPublisher;
 };

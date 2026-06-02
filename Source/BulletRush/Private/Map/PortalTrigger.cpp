@@ -14,6 +14,12 @@ APortalTrigger::APortalTrigger()
 
     Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
     Mesh->SetupAttachment(RootComponent);
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> PortalMesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Torus.Shape_Torus'"));
+    if (PortalMesh.Succeeded())
+    {
+        Mesh->SetStaticMesh(PortalMesh.Object);
+        Mesh->SetWorldScale3D(FVector(2.f));
+    }
 }
 
 void APortalTrigger::BeginPlay()
@@ -35,5 +41,12 @@ void APortalTrigger::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor*
     if (APlayingPlayer* Player = Cast<APlayingPlayer>(OtherActor))
     {
         Player->SetActorLocation(TeleportTarget);
+        OnPortalTriggered.Broadcast();
     }
+}
+
+void APortalTrigger::OnPortalOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+    // Reserved for future use
 }

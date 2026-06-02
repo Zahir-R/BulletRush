@@ -34,7 +34,7 @@ public:
 	{
 		return InnerStats ? InnerStats->GetHealthRestore() : 0.0f;
 	}
-  virtual float GetProjectileSpeedMultiplier() const override 
+	virtual float GetProjectileSpeedMultiplier() const override 
 	{
 		return InnerStats ? InnerStats->GetProjectileSpeedMultiplier() : 1.0f;
 	}

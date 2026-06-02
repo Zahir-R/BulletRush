@@ -1,7 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Enemies/BossBase.h"
-#include "Enemies/BossState.h"
+#include "Enemies/State/BossStateBase.h"
+#include "Enemies/State/BossStateIntro.h"
+#include "Enemies/State/BossStateIdle.h"
+#include "Enemies/State/BossStateAttacking.h"
+#include "Enemies/State/BossStateStunned.h"
+#include "Enemies/State/BossStatePhaseTransition.h"
+#include "Enemies/State/BossStateDead.h"
 #include "Engine/World.h"
 #include "Components/HealthComponent.h"
 #include "Components/WeakPointComponent.h"
@@ -14,11 +20,27 @@ ABossBase::ABossBase()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	CurrentStateObject = nullptr;
+
+	bAutoStartAttack = false;
+	HealthComp->MaxHealth = 4000.0f;
+
+	BulletSpawner = CreateDefaultSubobject<UBulletSpawnerComponent>(TEXT("BulletSpawnerr"));
+
+	Tags.Add("Jefe");
+
+	//TestWeak = CreateDefaultSubobject<UWeakPointComponent>(TEXT("TestWeakPoint"));
+	//TestWeak->SetupAttachment(RootComponent);
+	//TestWeak->SetRelativeLocation(FVector(-50.0f, -250.0f, 100.0f));
+
+	HealthComp->SetInvulnerable(true);
 }
 
 void ABossBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	HealthComp->CurrentHealth = 5000.0f;
 
 	IntroState = NewObject<UBossStateIntro>(this);
 	IdleState = NewObject<UBossStateIdle>(this);
@@ -27,8 +49,21 @@ void ABossBase::BeginPlay()
 	PhaseTransitionState = NewObject<UBossStatePhaseTransition>(this);
 	DeadState = NewObject<UBossStateDead>(this);
 
+	ActiveWeakPoints = 0;
+
+	TArray<UWeakPointComponent*> WeakPoints;
+	GetComponents<UWeakPointComponent>(WeakPoints);
+
+	for (UWeakPointComponent* WP : WeakPoints)
+	{
+		ActiveWeakPoints++;
+		WP->OnDestroyedEvent.AddDynamic(this, &ABossBase::HandleWeakPointDestroyed);
+	}
+
 	Combo2.Add(FAttackStep(EAttackType::Burst, 5, 80.0f, 0.2f, 0.1f));
 	Combo.Add(FAttackStep(EAttackType::Sphere, 1000, 800.0f, 0.5f, 0.1f));
+
+	ChangeState(IntroState);
 }
 
 void ABossBase::Tick(float DeltaTime)
@@ -111,18 +146,6 @@ void ABossBase::HandleWeakPointDestroyed()
 
 float ABossBase::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
 {
-	TArray<UWeakPointComponent*> WeakPoints;
-	GetComponents<UWeakPointComponent>(WeakPoints);
-
-	for (UWeakPointComponent* WP : WeakPoints)
-	{
-		if (WP->CurrentHealth > 0.0f)
-		{
-			WP->TakeDamageFromHit(DamageAmount);
-			return DamageAmount;
-		}
-	}
-
 	float RealDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 	if (RealDamage <= 0.0f) return 0.0f;

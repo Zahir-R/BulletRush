@@ -37,6 +37,7 @@ void AChronostasisMass::Tick(float DeltaSeconds)
         if (PlayerPawn)
         {
             FVector NewPos = MovementStrategy->GetNextPosition(this, DeltaSeconds, PlayerPawn->GetActorLocation());
+            NewPos = ApplyEnemySeparation(NewPos);
             SetActorLocation(NewPos);
         }
     }

@@ -47,7 +47,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void ChangeState(UBossState* NewState);
+	virtual void ChangeState(UBossState* NewState);
 
 	UFUNCTION()
 	void OnTestWeakDestroyed();
@@ -71,7 +71,7 @@ public:
 	UBulletSpawnerComponent* BulletSpawner;
 	FTimerHandle AttackLoopTimer;
 
-	UWeakPointComponent* TestWeak;
+	//UWeakPointComponent* TestWeak;
 
 	TArray<FAttackStep> Combo;
 	TArray<FAttackStep> Combo2;
@@ -100,4 +100,6 @@ public:
 	UBossStateDead* DeadState;
 
 	void Die() override;
+
+	bool HasActiveWeakPoints() const { return ActiveWeakPoints > 0; }
 };

@@ -8,9 +8,12 @@
 #include "Components/HealthComponent.h"
 #include "Components/WeaponBaseComponent.h"
 #include "Components/ChargedWeaponComponent.h"
-#include "Components/RhytmConductorComponent.h"
-#include "Enemies/Orchestrator/Orchestrator.h"
 #include "GameFramework/CharacterMovementComponent.h"
+//////Strategies//////
+#include "Components/Weapons/AutoFireStrategy.h"
+#include "Components/Weapons/PlusFireStrategy.h"
+#include "Components/Weapons/VolleyStrategy.h"
+////////Buffs////////
 #include "Buffs/PlayerStatsDecorator.h"
 #include "Buffs/DoubleDamage.h"
 #include "Buffs/SpeedBoost.h"
@@ -66,7 +69,7 @@ APlayingPlayer::APlayingPlayer()
 	GetCharacterMovement()->bRequestedMoveUseAcceleration = false;
 
 	TestWeapon = CreateDefaultSubobject<UWeaponBaseComponent>(TEXT("ArmaPrincipal"));
-	TestWeapontwo = CreateDefaultSubobject<UChargedWeaponComponent>(TEXT("ArmaSecundaria"));
+	TestWeapontwo = CreateDefaultSubobject<UWeaponBaseComponent>(TEXT("ArmaSecundaria"));
 	TestWeapon->SetupAttachment(RootComponent);
 	TestWeapontwo->SetupAttachment(RootComponent);
 	TestWeapon->SetRelativeLocation(FVector(100.0f, 0.0f, 0.0f));
@@ -88,21 +91,22 @@ void APlayingPlayer::BeginPlay()
 
 	BaseStats = NewObject<UPlayerStatsBase>();
 	CurrentStats = BaseStats;
+
+	// TODO: Esto deberia hacer que el jugador muera, redirija al nivel CupHead y resetee el progreso
 	if (HealthComp) HealthComp->OnDeath.AddDynamic(this, &APlayingPlayer::OnPlayerDeath);
 
-	AActor* BossActor = UGameplayStatics::GetActorOfClass(GetWorld(), AOrchestrator::StaticClass());
-	if (BossActor)
-	{
-		AOrchestrator* TheOrchestrator = Cast<AOrchestrator>(BossActor);
-		if (TheOrchestrator && TheOrchestrator->RhythmConductor)
-		{
-			// Conectamos el delegado OnSilence al arma del jugador
-			for (UWeaponBaseComponent* Weapon : EquippedWeapons)
-			{
-				TheOrchestrator->RhythmConductor->OnSilence.AddDynamic(Weapon, &UWeaponBaseComponent::HandleSilenceEvent);
-			}
-		}
-	}
+	// Weapon 1 Strategy
+
+	UVolleyStrategy* VolleyStrategy =
+		NewObject<UVolleyStrategy>(this);
+
+	TestWeapon->SetFireStrategy(VolleyStrategy);
+
+	// Weapon 2 Strategy
+
+	UPlusFireStrategy* PlusStrategy =
+		NewObject<UPlusFireStrategy>(this);
+	TestWeapontwo->SetFireStrategy(PlusStrategy);
 }
 
 void APlayingPlayer::Tick(float DeltaTime)
