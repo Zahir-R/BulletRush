@@ -22,7 +22,7 @@ FVector USinusoidalSeekMovement::GetNextPosition(AActor* Enemy, float DeltaTime,
     Perp.Normalize();
 
     AccumulatedTime += DeltaTime;
-    float Lateral = FMath::Sin(AccumulatedTime * Frequency * 2.f * PI) * Amplitude;
+    float Lateral = FMath::Sin(AccumulatedTime * Frequency * 2.f * PI + InitialPhase) * Amplitude;
     FVector MoveDir = ToTarget + Perp * (Lateral / FMath::Max(1.f, Dist));
     MoveDir.Normalize();
 
