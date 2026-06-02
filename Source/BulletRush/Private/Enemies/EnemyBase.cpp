@@ -45,7 +45,7 @@ void AEnemyBase::BeginPlay()
 		BeginAttackLoop();
 	}
 
-
+	Tags.Add("Enemy");
 }
 
 float AEnemyBase::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)

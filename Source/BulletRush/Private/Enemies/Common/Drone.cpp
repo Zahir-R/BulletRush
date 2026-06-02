@@ -38,18 +38,29 @@ void ADrone::Tick(float DeltaSeconds)
 
 void ADrone::StartAttack()
 {
-    UBulletSpawnerComponent* Spawner = FindComponentByClass<UBulletSpawnerComponent>();
-    if (!Spawner) return;
+    if (!BulletSpawner)
+    {
+        return;
+    }
 
-    FAttackParams Params;
-    Params.Origin = GetActorLocation();
-    Params.Damage = Damage;
-    Params.Speed = ProjectileSpeed * CurrentProjectileSpeedMultiplier;
+    APawn* PlayerPawn =
+        UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 
-    Params.Count = 3;
-    Params.SpecialParam = FMath::RandRange(0.1f, 0.3f);
+    if (!PlayerPawn)
+    {
+        return;
+    }
 
-    FBurstAttack().Execute(Spawner, Params);
+    FVector Direction =
+        (PlayerPawn->GetActorLocation() -
+            GetActorLocation()).GetSafeNormal();
+
+    BulletSpawner->InternalSpawn(
+        GetActorLocation(),
+        Direction,
+        ProjectileSpeed,
+        Damage
+    );
 }
 
 void ADrone::ApplySpeedBuff(float Duration, float FireRateMult, float ProjectileSpeedMult)
