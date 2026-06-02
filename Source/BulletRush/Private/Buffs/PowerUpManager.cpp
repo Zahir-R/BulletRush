@@ -79,15 +79,15 @@ void APowerUpManager::SpawnRandomPowerUp()
 		{
 			FTimerHandle LifeTimer;
 			TWeakObjectPtr<APowerUpBase> WeakPowerUp = NewPowerUp;
-			GetWorldTimerManager().SetTimer(LifeTimer, [this, WeakPowerUp]()
+			GetWorldTimerManager().SetTimer(LifeTimer, FTimerDelegate::CreateLambda([this, WeakPowerUp]()
 				{
 					if (WeakPowerUp.IsValid() && !WeakPowerUp->IsActorBeingDestroyed())
 					{
 						OnPowerUpCollected(WeakPowerUp.Get());
 						WeakPowerUp->Destroy();
 					}
-					LifecycleTimers.Remove(NewPowerUp);
-				}, PowerUpLifetime, false);
+					LifecycleTimers.Remove(WeakPowerUp.Get());
+				}), PowerUpLifetime, false);
 			LifecycleTimers.Add(NewPowerUp, LifeTimer);
 		}
 	}
