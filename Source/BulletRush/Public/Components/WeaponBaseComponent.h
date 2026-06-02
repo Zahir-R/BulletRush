@@ -24,7 +24,7 @@ protected:
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
+	UPROPERTY()
 	TScriptInterface<IWeaponsInterface> FireStrategy;
 
 	virtual void StartFiring();

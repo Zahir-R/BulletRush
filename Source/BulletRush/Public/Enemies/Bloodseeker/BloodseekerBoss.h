@@ -8,6 +8,7 @@
 class APlayingPlayer;
 class AKamikazeEnemy;
 class ABloodseekerFacade;
+class UBossStateUltimate;
 
 
 // Enumerador de fases de ataque del Boss
@@ -29,6 +30,8 @@ class BULLETRUSH_API ABloodseekerBoss : public ABossBase
 {
     GENERATED_BODY()
 
+    friend class UBossStateUltimate;
+
 public:
     ABloodseekerBoss();
 
@@ -36,6 +39,14 @@ public:
     virtual void Tick(float DeltaTime) override;
     virtual void Attack() override;
     virtual void Die() override;
+    virtual void ChangeState(UBossState* NewState) override;
+
+    // Estado Ultimate (Maldición del Sangrado)
+    UPROPERTY()
+    UBossStateUltimate* UltimateState;
+
+    // Timer de transición de Attacking → Ultimate (20s)
+    FTimerHandle UltimateTransitionTimer;
 
     // Referencia al Facade para pausar/reanudar boss waves asignada desde GameMode
     UPROPERTY()
@@ -63,7 +74,6 @@ private:
 
     void ExecuteLinearBurst();
     void ExecuteRadialSphere();
-    void ExecuteUltimateMalediction();
     void CycleNextAttack();
     int32 AttackCycleIndex;
 
@@ -89,24 +99,12 @@ private:
     UPROPERTY(EditAnywhere, Category = "Bloodseeker | Rupture", meta = (AllowPrivateAccess = "true"))
     float RuptureDuration;
 
-    FTimerHandle RuptureTimerHandle;
-
     // Oleadas de Kamikazes
     void SpawnKamikazeWave(int32 Count, float DelayBetween);
-    FTimerHandle WaveTimerHandle;
-    FTimerHandle WaveTimerHandle2;
-    FTimerHandle KamikazeWaveTimer;
-    FTimerHandle KamikazeWaveTimer2;
-
-    void ActivateMalediction();
-    void DeactivateMalediction();
 
     void OnBossHealthChanged(float NewHealth);
 
-    // Ultimate por tiempo
     int32 UltimateCount;
-    FTimerHandle UltimateTimerHandle;
-    void TryActivateUltimate();
 
     // Movimiento sinusoidal en la arena
  

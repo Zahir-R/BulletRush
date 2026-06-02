@@ -72,9 +72,17 @@ void ABloodseekerFacade::SetupDefaultBossWaves()
 
 void ABloodseekerFacade::StartGame()
 {
-    if (!EnemyFactory)
+    if (!KamikazeFactory)
     {
-        EnemyFactory = NewObject<UBloodseekerEnemyFactory>(this);
+        KamikazeFactory = NewObject<UKamikazeFactory>(this);
+    }
+    if (!LineWelderFactory)
+    {
+        LineWelderFactory = NewObject<ULineWelderFactory>(this);
+    }
+    if (!GravitySiphonFactory)
+    {
+        GravitySiphonFactory = NewObject<UGravitySiphonFactory>(this);
     }
 
     SetupDefaultWaves();
@@ -184,11 +192,11 @@ void ABloodseekerFacade::SpawnEnemiesForConfig(const FBloodseekerWaveConfig& Con
 void ABloodseekerFacade::SpawnSingleKamikaze(const FVector& Location)
 {
     UE_LOG(LogTemp, Warning, TEXT("[Facade] >>> SpawnSingleKamikaze INICIO - Location:%s World:%s Factory:%s"),
-        *Location.ToString(), GetWorld() ? TEXT("OK") : TEXT("NULL"), EnemyFactory ? TEXT("OK") : TEXT("NULL"));
+        *Location.ToString(), GetWorld() ? TEXT("OK") : TEXT("NULL"), KamikazeFactory ? TEXT("OK") : TEXT("NULL"));
 
-    if (!GetWorld() || !EnemyFactory)
+    if (!GetWorld() || !KamikazeFactory)
     {
-        UE_LOG(LogTemp, Error, TEXT("[Facade] SpawnSingleKamikaze FALLA - World:%s Factory:%s"), GetWorld() ? TEXT("OK") : TEXT("NULL"), EnemyFactory ? TEXT("OK") : TEXT("NULL"));
+        UE_LOG(LogTemp, Error, TEXT("[Facade] SpawnSingleKamikaze FALLA - World:%s Factory:%s"), GetWorld() ? TEXT("OK") : TEXT("NULL"), KamikazeFactory ? TEXT("OK") : TEXT("NULL"));
         return;
     }
 
@@ -211,7 +219,8 @@ void ABloodseekerFacade::SpawnSingleKamikaze(const FVector& Location)
         ActualSpawnLocation.Z += HeightOffset;
     }
 
-    AKamikazeEnemy* Enemy = EnemyFactory->CreateKamikaze(GetWorld(), ActualSpawnLocation);
+    AEnemyBase* NewEnemy = KamikazeFactory->CreateEnemy(GetWorld(), ActualSpawnLocation);
+    AKamikazeEnemy* Enemy = Cast<AKamikazeEnemy>(NewEnemy);
     if (Enemy)
     {
         UE_LOG(LogTemp, Warning, TEXT("[Facade] Kamikaze spawneado en %s - Actor:%s"), *ActualSpawnLocation.ToString(), *Enemy->GetName());
@@ -236,9 +245,10 @@ void ABloodseekerFacade::SpawnSingleKamikaze(const FVector& Location)
 
 void ABloodseekerFacade::SpawnSingleLineWelder(const FVector& Location)
 {
-    if (!GetWorld() || !EnemyFactory) return;
+    if (!GetWorld() || !LineWelderFactory) return;
 
-    ALineWelderEnemy* Enemy = EnemyFactory->CreateLineWelder(GetWorld(), Location);
+    AEnemyBase* NewEnemy = LineWelderFactory->CreateEnemy(GetWorld(), Location);
+    ALineWelderEnemy* Enemy = Cast<ALineWelderEnemy>(NewEnemy);
     if (Enemy)
     {
         Enemy->OnEnemyDeath.AddDynamic(this, &ABloodseekerFacade::OnEnemyKilled);
@@ -247,9 +257,10 @@ void ABloodseekerFacade::SpawnSingleLineWelder(const FVector& Location)
 
 void ABloodseekerFacade::SpawnSingleGravitySiphon(const FVector& Location)
 {
-    if (!GetWorld() || !EnemyFactory) return;
+    if (!GetWorld() || !GravitySiphonFactory) return;
 
-    AGravitySiphonEnemy* Enemy = EnemyFactory->CreateGravitySiphon(GetWorld(), Location);
+    AEnemyBase* NewEnemy = GravitySiphonFactory->CreateEnemy(GetWorld(), Location);
+    AGravitySiphonEnemy* Enemy = Cast<AGravitySiphonEnemy>(NewEnemy);
     if (Enemy)
     {
         Enemy->OnEnemyDeath.AddDynamic(this, &ABloodseekerFacade::OnEnemyKilled);
