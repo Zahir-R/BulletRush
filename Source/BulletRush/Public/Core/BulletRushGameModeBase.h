@@ -22,8 +22,8 @@ public:
 
 	static APowerUpManager* SpawnPowerUpsForLevel(UWorld* World, FName LevelName);
 
-	UFUNCTION(Exec)
-	void DealDamageToTarget(float Damage);
+	//UFUNCTION(Exec)
+	//void DealDamageToTarget(float Damage);
 
 	/*
 	// Esta funci�n permite decidir qu� Pawn usar din�micamente

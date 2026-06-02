@@ -3,7 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Enemies/BossState.h"
+#include "Enemies/State/BossStateBase.h"
+#include "Enemies/State/BossStateIntro.h"
+#include "Enemies/State/BossStatePhaseTransition.h"
 #include "OrchestratorStates.generated.h"
 
 class AOrchestrator;

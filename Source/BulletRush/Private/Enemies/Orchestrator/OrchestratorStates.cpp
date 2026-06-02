@@ -44,7 +44,7 @@ void UOrchestrator_Normal::HandleBeat()
 {
 	if (!OrchestratorRef || !OrchestratorRef->BulletSpawner) return;
 
-	BeatCounter++; // Aumentamos el contador en cada pulso
+	BeatCounter++;
 	FVector DynamicScale = GetScaleFromBPM(120.0f);
 	TArray<FAttackStep> CurrentBeatAttack;
 
@@ -52,25 +52,24 @@ void UOrchestrator_Normal::HandleBeat()
 
 	if (Compas == 1)
 	{
-		// Pulso 1 (Fuerte): Dispara un anillo grande
-		CurrentBeatAttack.Add(FAttackStep(EAttackType::Circle, 12, 600.0f, 0.0f, 0.1f, 0.0f, DynamicScale, 10.0f));
+		// Pulso 1 (Fuerte): Anillo grande
+		CurrentBeatAttack.Add(FAttackStep(EAttackType::Circle, 12, 600.0f, 0.0f, 0.0f, 10.0f, 0.1f, DynamicScale));
 	}
 	else if (Compas == 2)
 	{
-		// Pulso 2 (Débil): No hacemos nada, dejamos un espacio para que el jugador esquive
+		// Pulso 2 (Débil): Espacio para esquivar
 	}
 	else if (Compas == 3)
 	{
-		// Pulso 3 (Medio): Disparamos una ráfaga directa
-		CurrentBeatAttack.Add(FAttackStep(EAttackType::Burst, 3, 800.0f, 0.0f, 0.2f, 0.0f, DynamicScale, 10.0f));
+		// Pulso 3 (Medio): Ráfaga directa
+		CurrentBeatAttack.Add(FAttackStep(EAttackType::Burst, 3, 800.0f, 0.0f, 0.0f, 10.0f, 0.2f, DynamicScale));
 	}
 	else if (Compas == 0)
 	{
-		// Pulso 4 (Débil): Cerramos el combo con una espiral corta
-		CurrentBeatAttack.Add(FAttackStep(EAttackType::Spiral, 20, 500.0f, 0.0f, 0.1f, 15.0f, DynamicScale, 10.0f));
+		// Pulso 4 (Débil): Espiral con SpecialParam de 15.0f
+		CurrentBeatAttack.Add(FAttackStep(EAttackType::Spiral, 20, 500.0f, 0.0f, 15.0f, 10.0f, 0.1f, DynamicScale));
 	}
 
-	// Si hay un ataque programado para este pulso, lo disparamos
 	if (CurrentBeatAttack.Num() > 0)
 	{
 		OrchestratorRef->BulletSpawner->StartSequence(CurrentBeatAttack);
@@ -106,7 +105,7 @@ void UOrchestrator_Melancholy::HandleBeat()
 {
 	if (!OrchestratorRef || !OrchestratorRef->BulletSpawner) return;
 
-	BeatCounter++; // Aumentamos el contador en cada pulso
+	BeatCounter++;
 	FVector DynamicScale = GetScaleFromBPM(60.0f);
 	TArray<FAttackStep> CurrentBeatAttack;
 
@@ -114,24 +113,23 @@ void UOrchestrator_Melancholy::HandleBeat()
 
 	if (Compas == 1)
 	{
-		// Pulso 1 (Fuerte): Dispara un anillo grande
-		CurrentBeatAttack.Add(FAttackStep(EAttackType::Circle, 12, 600.0f, 0.0f, 0.1f, 0.0f, DynamicScale, 10.0f));
+		// Pulso 1 (Fuerte)
+		CurrentBeatAttack.Add(FAttackStep(EAttackType::Circle, 12, 600.0f, 0.0f, 0.0f, 10.0f, 0.1f, DynamicScale));
 	}
 	else if (Compas == 2)
 	{
-		// Pulso 2 (Débil): No hacemos nada, dejamos un espacio para que el jugador esquive
+		// Pulso 2 (Débil)
 	}
 	else if (Compas == 3)
 	{
-		// Pulso 3 (Fuerte): Melancólico  maximus
-		CurrentBeatAttack.Add(FAttackStep(EAttackType::Circle, 12, 600.0f, 0.0f, 0.1f, 0.0f, DynamicScale, 10.0f));
+		// Pulso 3 (Fuerte)
+		CurrentBeatAttack.Add(FAttackStep(EAttackType::Circle, 12, 600.0f, 0.0f, 0.0f, 10.0f, 0.1f, DynamicScale));
 	}
 	else if (Compas == 0)
 	{
-		// Pulso 4 (Debil): 
+		// Pulso 4 (Débil)
 	}
 
-	// Si hay un ataque programado para este pulso, lo disparamos
 	if (CurrentBeatAttack.Num() > 0)
 	{
 		OrchestratorRef->BulletSpawner->StartSequence(CurrentBeatAttack);
@@ -168,11 +166,12 @@ void UOrchestrator_Frenetic::HandleBeat()
 {
 	if (!OrchestratorRef || !OrchestratorRef->BulletSpawner) return;
 
-	FVector DynamicScale = GetScaleFromBPM(160.0f); // Generará aprox FVector(1.0f) o menor
+	FVector DynamicScale = GetScaleFromBPM(160.0f);
 
 	TArray<FAttackStep> Phase3Combo;
-	Phase3Combo.Add(FAttackStep(EAttackType::Circle, 24, 900.0f, 0.0f, 0.1f, 0.0f, DynamicScale, 10.0f));
-	Phase3Combo.Add(FAttackStep(EAttackType::Spiral, 24, 900.0f, 0.0f, 0.1f, 0.0f, DynamicScale, 10.0f));
+	Phase3Combo.Add(FAttackStep(EAttackType::Circle, 24, 900.0f, 0.0f, 0.0f, 10.0f, 0.1f, DynamicScale));
+	Phase3Combo.Add(FAttackStep(EAttackType::Spiral, 24, 900.0f, 0.0f, 0.0f, 10.0f, 0.1f, DynamicScale));
+
 	OrchestratorRef->BulletSpawner->StartSequence(Phase3Combo);
 }
 
@@ -206,11 +205,12 @@ void UOrchestrator_Furious::HandleBeat()
 {
 	if (!OrchestratorRef || !OrchestratorRef->BulletSpawner) return;
 
-	FVector DynamicScale = GetScaleFromBPM(180.0f); // Generará FVector(0.6f) - balas pequeñas y engañosas
+	FVector DynamicScale = GetScaleFromBPM(180.0f);
 
 	TArray<FAttackStep> Phase4Combo;
-	Phase4Combo.Add(FAttackStep(EAttackType::Burst, 3, 1000.0f, 0.1f, 0.1f, 0.0f, DynamicScale, 10.0f));
-	Phase4Combo.Add(FAttackStep(EAttackType::Circle, 16, 700.0f, 0.0f, 0.1f, 0.0f, DynamicScale, 10.0f));
+	Phase4Combo.Add(FAttackStep(EAttackType::Burst, 3, 1000.0f, 0.1f, 0.0f, 10.0f, 0.1f, DynamicScale));
+	Phase4Combo.Add(FAttackStep(EAttackType::Circle, 16, 700.0f, 0.0f, 0.0f, 10.0f, 0.1f, DynamicScale));
+
 	OrchestratorRef->BulletSpawner->StartSequence(Phase4Combo);
 }
 

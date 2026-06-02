@@ -52,7 +52,7 @@ ASurveillanceDrone::ASurveillanceDrone()
 	// Inicializamos la malla del cono
 	VisionConeMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisionConeMesh"));
 	VisionConeMesh->SetCanEverAffectNavigation(false);
-	
+
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> ConeMesh(TEXT("/Game/StarterContent/Shapes/Shape_Cone.Shape_Cone"));
 	if (ConeMesh.Succeeded())
@@ -66,7 +66,7 @@ ASurveillanceDrone::ASurveillanceDrone()
 		VisionConeMesh->SetRelativeRotation(FRotator(-90.0f, 0.0f, 0.0f));
 	}
 
-	
+
 
 	// Desactivamos el comportamiento de ataque base
 	bAutoStartAttack = false;

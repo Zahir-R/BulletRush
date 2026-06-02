@@ -14,15 +14,14 @@ void UAutoFireStrategy::StartFiring(
 
 	ExecuteFire(Weapon);
 
-	Weapon->GetWorld()->GetTimerManager().SetTimer(
-		Weapon->FiringTimer,
-		FTimerDelegate::CreateLambda([this, Weapon]()
-			{
-				ExecuteFire(Weapon);
-			}),
-		Weapon->FireRate,
-		true
-	);
+	TWeakObjectPtr<UAutoFireStrategy> WeakThis(this);
+	TWeakObjectPtr<UWeaponBaseComponent> WeakWeapon(Weapon);
+
+	Weapon->GetWorld()->GetTimerManager().SetTimer(Weapon->FiringTimer,
+		[WeakThis, WeakWeapon]()
+		{
+			WeakThis->ExecuteFire(WeakWeapon.Get());
+		}, WeakWeapon->FireRate, true);
 }
 
 void UAutoFireStrategy::StopFiring(
@@ -33,9 +32,10 @@ void UAutoFireStrategy::StopFiring(
 		return;
 	}
 
-	Weapon->GetWorld()->GetTimerManager().ClearTimer(
-		Weapon->FiringTimer
-	);
+	if (Weapon->FiringTimer.IsValid())
+	{
+		Weapon->GetWorld()->GetTimerManager().ClearTimer(Weapon->FiringTimer);
+	}
 }
 
 void UAutoFireStrategy::ExecuteFire(

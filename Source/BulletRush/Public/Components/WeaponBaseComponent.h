@@ -25,6 +25,7 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	UPROPERTY()
 	TScriptInterface<IWeaponsInterface> FireStrategy;
 
 	virtual void StartFiring();
@@ -34,7 +35,7 @@ public:
 
 	FTimerHandle FiringTimer;
 
-	float BaseDamage = 20.0f;
+	float BaseDamage = 10.0f;
 
 	float BaseProjectileSpeed = 7500.f;
 	

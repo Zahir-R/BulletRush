@@ -19,7 +19,7 @@ enum class EAttackType : uint8
 };
 
 struct FAttackStep
-{	
+{
 	EAttackType Type = EAttackType::Circle;
 	int32 BulletCount = 10;
 	float Speed = 500.0f;
@@ -35,15 +35,10 @@ struct FAttackStep
 	* Constructor por defecto, genera un ataque circular con 10 balas, velocidad 500, delay de 1 segundo, sin par�metros especiales y origen en el boss. Esto es solo para facilitar la creaci�n de ataques simples, se pueden usar los otros constructores para m�s control.
 	* Los par�metros, en orden, son Tipo de ataque, Cantidad de balas, Velocidad, Delay despu�s del ataque, Par�metro especial (dependiendo del tipo de ataque), Si usa la ubicaci�n del boss o no, y la ubicaci�n personalizada si no se usa la del boss.
 	*/
-	FAttackStep()	{}
+	FAttackStep() {};
 
-	/* Constructor para ataques desde boss. En cuyo caso el Origen es ZeroVector
-	FAttackStep(EAttackType InType, int32 InCount, float InSpeed, float InDelay, float InSpecial = 0.0f, float InDamage = 10.0f) 
-		: Type(InType), BulletCount(InCount), Speed(InSpeed), DelayAfter(InDelay), SpecialParam(InSpecial), bUseBossLocation(true), CustomOrigin(FVector::ZeroVector), Damage(InDamage) {}
-
-*/	// * Constructor para ataques en ubicaci�n espec�fica, donde el origen es diferente del boss
-	FAttackStep(EAttackType InType, int32 InCount, float InSpeed, float InDelay, float InTime, float InSpecial = 0.0f, FVector InScale = FVector(0.4f), float InDamage = 10.0f)
-		: Type(InType), BulletCount(InCount), Speed(InSpeed), DelayAfter(InDelay), TimeBetweenShots(InTime), SpecialParam(InSpecial), BulletScale(InScale), Damage(InDamage) {
+	FAttackStep(EAttackType InType, int32 InCount, float InSpeed, float InDelay, float InSpecial = 0.0f, float InDamage = 10.0f, float InTime = 0.1f, FVector InScale = FVector(0.4f))
+		: Type(InType), BulletCount(InCount), Speed(InSpeed), DelayAfter(InDelay), SpecialParam(InSpecial), bUseBossLocation(true), CustomOrigin(FVector::ZeroVector), TimeBetweenShots(InTime), BulletScale(InScale), Damage(InDamage) {
 	}
 
 	// Constructor para ataques en ubicación específica

@@ -2,7 +2,8 @@
 
 
 #include "Enemies/Orchestrator/Orchestrator.h"
-#include "Enemies/BossState.h"
+#include "Enemies/State/BossStateBase.h"
+#include "Enemies/State/BossStateDead.h"
 #include "Enemies/Orchestrator/OrchestratorStates.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Components/CapsuleComponent.h"
@@ -50,7 +51,11 @@ AOrchestrator::AOrchestrator()
 	CurrentStateObject = nullptr;
 	bAutoStartAttack = false;
 
-	BulletSpawner = CreateDefaultSubobject<UBulletSpawnerComponent>(TEXT("BulletSpawnerr"));
+	if (!BulletSpawner)
+	{
+		BulletSpawner = CreateDefaultSubobject<UBulletSpawnerComponent>(TEXT("BulletSpawnerr"));
+	}
+
 
 	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 	HealthComp->MaxHealth = 4000.0f;
