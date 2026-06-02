@@ -35,6 +35,8 @@ struct FAttackParams
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	float Damage = 10.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	FVector Scale = FVector(0.4f);
 };
 
 UCLASS(Abstract, Blueprintable, EditInlineNew, DefaultToInstanced)
