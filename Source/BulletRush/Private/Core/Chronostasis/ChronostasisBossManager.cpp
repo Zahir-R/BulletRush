@@ -2,7 +2,11 @@
 #include "Core/Chronostasis/ChronostasisFacade.h"
 #include "Core/Chronostasis/ChargerFactory.h"
 #include "Core/Chronostasis/LinkerFactory.h"
+#include "Core/Chronostasis/GenericEnemyFactory.h"
 #include "Enemies/Chronostasis/Boss/SerXBoss.h"
+#include "Enemies/Chronostasis/ChronostasisDrone.h"
+#include "Enemies/Chronostasis/ChronostasisExpansive.h"
+#include "Enemies/Chronostasis/ChronostasisMass.h"
 #include "Enemies/EnemyBase.h"
 #include "Core/BulletRushHUD.h"
 #include "Subsystems/ProjectilesSubsystem.h"
@@ -17,6 +21,10 @@ void UChronostasisBossManager::Initialize(AChronostasisFacade* Owner, TSubclassO
 
     BossChargerFactory = NewObject<UChargerFactory>(this);
     BossLinkerFactory = NewObject<ULinkerFactory>(this);
+
+    MinionFactories.Add(CreateGenericFactory<AChronostasisDrone>(this));
+    MinionFactories.Add(CreateGenericFactory<AChronostasisExpansive>(this));
+    MinionFactories.Add(CreateGenericFactory<AChronostasisMass>(this));
 }
 
 void UChronostasisBossManager::StartBossFight()
@@ -32,6 +40,10 @@ void UChronostasisBossManager::StartBossFight()
         Boss->OnEnemyDeath.AddDynamic(this, &UChronostasisBossManager::OnBossKilled);
         Boss->SetChargerFactory(BossChargerFactory);
         Boss->SetLinkerFactory(BossLinkerFactory);
+        for (auto* Factory : MinionFactories)
+        {
+            Boss->AddMinionFactory(Factory);
+        }
 
         APlayerController* PC = UGameplayStatics::GetPlayerController(World, 0);
         ABulletRushHUD* HUD = PC ? Cast<ABulletRushHUD>(PC->GetHUD()) : nullptr;

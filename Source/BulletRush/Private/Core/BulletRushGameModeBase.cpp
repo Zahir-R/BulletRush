@@ -71,6 +71,10 @@ APowerUpManager* ABulletRushGameModeBase::SpawnPowerUpsForLevel(UWorld* World, F
 	return Manager;
 }
 
+void ABulletRushGameModeBase::DealDamageToTarget(float Damage)
+{
+}
+
 //para testeo noma aqui
 /*
 UClass* ABulletRushGameModeBase::GetDefaultPawnClassForController_Implementation(AController* InController)

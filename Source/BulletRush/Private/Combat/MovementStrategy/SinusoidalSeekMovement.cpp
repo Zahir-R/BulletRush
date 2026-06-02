@@ -29,3 +29,9 @@ FVector USinusoidalSeekMovement::GetNextPosition(AActor* Enemy, float DeltaTime,
     float BaseSpeed = 400.f;
     return Current + MoveDir * BaseSpeed * DeltaTime;
 }
+
+void USinusoidalSeekMovement::Reset()
+{
+	Super::Reset();
+	AccumulatedTime = 0.f;
+}

@@ -74,6 +74,7 @@ void APowerUpManager::SpawnRandomPowerUp()
 
 	if (NewPowerUp)
 	{
+		NewPowerUp->SetManager(this);
 		SpawnedPowerUps.Add(NewPowerUp);
 		if (PowerUpLifetime > 0.0f)
 		{

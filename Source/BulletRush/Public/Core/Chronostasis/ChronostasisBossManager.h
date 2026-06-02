@@ -33,6 +33,8 @@ private:
     UChronostasisFactoryEnemy* BossChargerFactory;
     UPROPERTY()
     UChronostasisFactoryEnemy* BossLinkerFactory;
+    UPROPERTY()
+    TArray<UChronostasisFactoryEnemy*> MinionFactories;
 
     UPROPERTY()
     AChronostasisFacade* OwnerFacade;
