@@ -132,6 +132,17 @@ void ABossBase::Attack()
 	}
 }
 
+void ABossBase::ScheduleNextAttack()
+{
+	if (bIsDead) return;
+	Attack();
+	if (!CurrentStateObject || CurrentStateObject != AttackingState) return;
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().SetTimer(AttackLoopTimer, this, &ABossBase::ScheduleNextAttack, AttackInterval, false);
+	}
+}
+
 void ABossBase::HandleWeakPointDestroyed()
 {
 	ActiveWeakPoints--;

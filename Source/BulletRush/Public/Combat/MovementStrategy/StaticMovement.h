@@ -11,4 +11,5 @@ class BULLETRUSH_API UStaticMovement : public UMovementStrat
 
 public:
 	virtual FVector GetNextPosition(AActor* Enemy, float DeltaTime, const FVector& TargetLocation) override;
+	virtual void Reset() override;
 };

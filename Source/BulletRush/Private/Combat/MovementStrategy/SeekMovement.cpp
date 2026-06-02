@@ -11,3 +11,8 @@ FVector USeekMovement::GetNextPosition(AActor* Enemy, float DeltaTime, const FVe
     Dir.Normalize();
     return Current + Dir * Speed * DeltaTime;
 }
+
+void USeekMovement::Reset()
+{
+	Super::Reset();
+}

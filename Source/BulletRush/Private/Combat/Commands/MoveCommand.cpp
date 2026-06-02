@@ -5,6 +5,6 @@ void UMoveCommand::Execute(ASerXBoss* Boss)
 {
 	if (Boss)
 	{
-		Boss->MoveTo(TargetLocation);
+		Boss->MoveTo(TargetLocation, StrategyIndex);
 	}
 }
