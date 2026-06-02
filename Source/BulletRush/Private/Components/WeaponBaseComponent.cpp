@@ -83,8 +83,8 @@ void UWeaponBaseComponent::ExecuteFire()
 	APlayingPlayer* Player = Cast<APlayingPlayer>(GetOwner());
 	if (!Player) return;
 	float DamageMultiplier = Player->GetTotalDamageMultiplier();
-	float FinalDamage = BaseDamage * DamageMultiplier;
-
+	//float FinalDamage = BaseDamage * DamageMultiplier;
+	float FinalDamage = BaseDamage;
 	FVector Location = GetComponentLocation();
 	FVector Direction = GetComponentRotation().Vector();
 	ABulletBase* Bullet = PoolSubsystem->RequestBullet(Location, Direction, 1000.0f, true, FinalDamage, Location, GetOwner());
@@ -95,4 +95,19 @@ void UWeaponBaseComponent::ExecuteFire()
 	}
 	Bullet->Tags.Add("BalaJugador");
 	
+}
+
+void UWeaponBaseComponent::HandleSilenceEvent(bool bIsSilenceActive)
+{
+	// Actualizamos el estado del arma según lo que dicte el director musical
+	bIsSilenced = bIsSilenceActive;
+
+	if (bIsSilenced)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("El arma ha sido BLOQUEADA por el silencio."));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("El silencio terminó. Arma DESBLOQUEADA."));
+	}
 }

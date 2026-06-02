@@ -14,27 +14,11 @@ ABossBase::ABossBase()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	CurrentStateObject = nullptr;
-
-	bAutoStartAttack = false;
-	HealthComp->MaxHealth = 4000.0f;
-
-	BulletSpawner = CreateDefaultSubobject<UBulletSpawnerComponent>(TEXT("BulletSpawnerr"));
-
-	Tags.Add("Jefe");
-
-	TestWeak = CreateDefaultSubobject<UWeakPointComponent>(TEXT("TestWeakPoint"));
-	TestWeak->SetupAttachment(RootComponent);
-	TestWeak->SetRelativeLocation(FVector(-50.0f, -250.0f, 100.0f));
-
-	HealthComp->SetInvulnerable(true);
 }
 
 void ABossBase::BeginPlay()
 {
 	Super::BeginPlay();
-
-	HealthComp->CurrentHealth = 5000.0f;
 
 	IntroState = NewObject<UBossStateIntro>(this);
 	IdleState = NewObject<UBossStateIdle>(this);
@@ -43,21 +27,8 @@ void ABossBase::BeginPlay()
 	PhaseTransitionState = NewObject<UBossStatePhaseTransition>(this);
 	DeadState = NewObject<UBossStateDead>(this);
 
-	ActiveWeakPoints = 0;
-
-	TArray<UWeakPointComponent*> WeakPoints;
-	GetComponents<UWeakPointComponent>(WeakPoints);
-
-	for (UWeakPointComponent* WP : WeakPoints)
-	{
-		ActiveWeakPoints++;
-		WP->OnDestroyedEvent.AddDynamic(this, &ABossBase::HandleWeakPointDestroyed);
-	}
-
 	Combo2.Add(FAttackStep(EAttackType::Burst, 5, 80.0f, 0.2f, 0.1f));
 	Combo.Add(FAttackStep(EAttackType::Sphere, 1000, 800.0f, 0.5f, 0.1f));
-
-	ChangeState(IntroState);
 }
 
 void ABossBase::Tick(float DeltaTime)

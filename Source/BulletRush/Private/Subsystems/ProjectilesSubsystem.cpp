@@ -116,13 +116,18 @@ void UProjectilesSubsystem::InitializePool()
 	}
 }
 
-ABulletBase* UProjectilesSubsystem::RequestBullet(FVector Loc, FVector Dir, float Spd, bool bIsPlayer, float Damage, FVector SpawnLocation, AActor* Owner)
+ABulletBase* UProjectilesSubsystem::RequestBullet(FVector Loc, FVector Dir, float Spd, bool bIsPlayer, float Damage, FVector SpawnLocation, AActor* Owner, FVector Scale)
 {
 	for (ABulletBase* Bullet : BulletPool)
 	{
 		if (Bullet && !Bullet->BulletData.bIsActive)
 		{
 			Bullet->ActivateBullet(SpawnLocation, Dir, Spd, bIsPlayer, Damage, SpawnLocation, Owner);
+			if (Scale != FVector(0.4f))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Escala ajustada"));
+				Bullet->SetActorRelativeScale3D(Scale);
+			}
 			return Bullet;
 		}
 	}

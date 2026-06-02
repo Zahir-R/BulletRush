@@ -60,22 +60,30 @@ UBossStateIdle::UBossStateIdle()
 
 void UBossStateIdle::EnterState(ABossBase* Boss)
 {
+	
 	if (Boss->TestWeak)
 	{
 		Boss->TestWeak->OnDestroyedEvent.AddDynamic(Boss, &ABossBase::OnTestWeakDestroyed);
 	}
+	UE_LOG(LogTemp, Warning, TEXT("Jefe entra en estado Idle..."))
 }
 
 void UBossStateIdle::UpdateState(ABossBase* Boss, float DeltaTime)
 {
+	if (!Boss->TestWeak)
+	{
+		Boss->ChangeState(Boss->AttackingState);
+	}
 }
 
 void UBossStateIdle::ExitState(ABossBase* Boss)
 {
+	
 	if (Boss->TestWeak)
 	{
 		Boss->TestWeak->OnDestroyedEvent.RemoveDynamic(Boss, &ABossBase::OnTestWeakDestroyed);
 	}
+	UE_LOG(LogTemp, Warning, TEXT("Jefe sale de estado Idle..."))
 }
 
 FName UBossStateIdle::GetStateTagName() const
@@ -90,15 +98,15 @@ UBossStateAttacking::UBossStateAttacking()
 void UBossStateAttacking::EnterState(ABossBase* Boss)
 {
 	Boss->HealthComp->SetInvulnerable(false);
-
-	if (Boss->bHasTransitioned)
+	UE_LOG(LogTemp, Warning, TEXT("Jefe entra en estado Ataque..."));
+	/*if (Boss->bHasTransitioned)
 	{
 		Boss->AttackIdentifier = 1;
 	}
 	else
 	{
 		Boss->AttackIdentifier = 0;
-	}
+	}*/
 
 	Boss->Attack();
 
@@ -113,15 +121,17 @@ void UBossStateAttacking::EnterState(ABossBase* Boss)
 
 void UBossStateAttacking::UpdateState(ABossBase* Boss, float DeltaTime)
 {
-	if (Boss->HealthComp && Boss->HealthComp->CurrentHealth < 3000.0f && Boss->AttackIdentifier < 1)
+	/*if (Boss->HealthComp && Boss->HealthComp->CurrentHealth < 3000.0f && Boss->AttackIdentifier < 1)
 	{
 		Boss->ChangeState(Boss->PhaseTransitionState);
 	}
+	*/
 }
 
 void UBossStateAttacking::ExitState(ABossBase* Boss)
 {
 	Boss->GetWorld()->GetTimerManager().ClearTimer(Boss->AttackLoopTimer);
+	UE_LOG(LogTemp, Warning, TEXT("Jefe sale de estado Ataque..."));
 }
 
 FName UBossStateAttacking::GetStateTagName() const
@@ -135,6 +145,7 @@ UBossStateStunned::UBossStateStunned()
 
 void UBossStateStunned::EnterState(ABossBase* Boss)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Jefe stuneado"));
 	Boss->HealthComp->SetInvulnerable(false);
 
 	Boss->GetWorld()->GetTimerManager().SetTimer(Boss->StunnedTimer, [Boss]()
@@ -150,6 +161,7 @@ void UBossStateStunned::EnterState(ABossBase* Boss)
 void UBossStateStunned::ExitState(ABossBase* Boss)
 {
 	Boss->GetWorld()->GetTimerManager().ClearTimer(Boss->StunnedTimer);
+	UE_LOG(LogTemp, Warning, TEXT("Jefe no stun..."));
 }
 
 FName UBossStateStunned::GetStateTagName() const
@@ -163,6 +175,7 @@ UBossStatePhaseTransition::UBossStatePhaseTransition()
 
 void UBossStatePhaseTransition::EnterState(ABossBase* Boss)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Jefe cambio de fase I..."));
 	Boss->SetInvulnerable(true);
 	Boss->GetWorld()->GetTimerManager().ClearTimer(Boss->AttackLoopTimer);
 
@@ -186,6 +199,7 @@ void UBossStatePhaseTransition::EnterState(ABossBase* Boss)
 
 void UBossStatePhaseTransition::ExitState(ABossBase* Boss)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Jefe cambio de fase O..."));
 	Boss->GetWorld()->GetTimerManager().ClearTimer(Boss->PhaseTransitionTimer);
 }
 
@@ -200,10 +214,12 @@ UBossStateDead::UBossStateDead()
 
 void UBossStateDead::EnterState(ABossBase* Boss)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Jefe muerto I..."));
 }
 
 void UBossStateDead::ExitState(ABossBase* Boss)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Jefe muerto O..."));
 }
 
 FName UBossStateDead::GetStateTagName() const

@@ -57,6 +57,7 @@ void ABulletBase::DesactivateBullet()
 	BulletData.bIsActive = false;
 	SetActorHiddenInGame(true);
 	SetActorEnableCollision(false);
+	SetActorRelativeScale3D(FVector(0.4f));
 	// La mandamos lejos para que no estorbe
 	SetActorLocation(FVector(0, 0, -5000.f));
 }

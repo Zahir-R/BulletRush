@@ -1,4 +1,4 @@
-#include "../../Public/Components/RhytmConductorComponent.h"
+#include "Components/RhytmConductorComponent.h"
 
 URhytmConductorComponent::URhytmConductorComponent()
 {
@@ -8,26 +8,40 @@ URhytmConductorComponent::URhytmConductorComponent()
 }
 
 
-void URhytmConductorComponent::BeginPlay()
+void URhytmConductorComponent::StartRhythm(float InBPM)
 {
-	Super::BeginPlay();
-}
-
-void URhytmConductorComponent::StartMusic()
-{
+	BPM = InBPM;
 	float TimeBetweenBeats = 60.0f / BPM;
 
-	GetWorld()->GetTimerManager().SetTimer(RhytmTimerHandle, this, &URhytmConductorComponent::TriggerBeat, TimeBetweenBeats, true);
+	// Configuramos el timer para que se repita al ritmo exacto
+	GetWorld()->GetTimerManager().SetTimer(RhytmTimerHandle, this, &URhytmConductorComponent::BroadcastBeat, TimeBetweenBeats, true);
 }
 
+void URhytmConductorComponent::StopRhythm()
+{
+	GetWorld()->GetTimerManager().ClearTimer(RhytmTimerHandle);
+}
+/*
 void URhytmConductorComponent::TriggerBeat()
 {
 	bToggleStrongBeat = !bToggleStrongBeat;
 	OnBeatHit.Broadcast(bToggleStrongBeat);
+}*/
+
+void URhytmConductorComponent::BroadcastBeat()
+{
+	OnBeat.Broadcast();
 }
 
-void URhytmConductorComponent::EnterSilence()
+void URhytmConductorComponent::TriggerSilence(bool bActivateSilence)
 {
-	GetWorld()->GetTimerManager().ClearTimer(RhytmTimerHandle);
-	OnSilenceEnter.Broadcast();
+	OnSilence.Broadcast(bActivateSilence);
+	if (bActivateSilence)
+	{
+		StopRhythm(); // Detenemos los ataques durante el silencio
+	}
+	else
+	{
+		StartRhythm(BPM); // Retomamos el ritmo
+	}
 }

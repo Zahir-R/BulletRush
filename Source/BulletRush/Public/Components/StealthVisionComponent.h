@@ -3,18 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/SceneComponent.h"
-#include "WeaponBaseComponent.generated.h"
+#include "Components/ActorComponent.h"
+#include "StealthVisionComponent.generated.h"
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class BULLETRUSH_API UWeaponBaseComponent : public USceneComponent
+class BULLETRUSH_API UStealthVisionComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:	
 	// Sets default values for this component's properties
-	UWeaponBaseComponent();
+	UStealthVisionComponent();
 
 protected:
 	// Called when the game starts
@@ -24,20 +24,14 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	virtual void StartFiring();
-	virtual void StopFiring();
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stealth")
+	float VisionDistance;
 
-	UFUNCTION()
-	void HandleSilenceEvent(bool bIsSilenceActive);
-
-	float FireRate;
-
-	FTimerHandle FiringTimer;
-
-	virtual void ExecuteFire();
-		
-	float BaseDamage = 20.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stealth")
+	float FieldOfViewDegrees;
 
 private:
-	bool bIsSilenced = false;
+	bool bHasDetectedPlayer;
+
+		
 };

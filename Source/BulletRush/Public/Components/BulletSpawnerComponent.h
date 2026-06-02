@@ -20,28 +20,36 @@ enum class EAttackType : uint8
 
 struct FAttackStep
 {	
-	EAttackType Type;
-	int32 BulletCount;
-	float Speed;
-	float DelayAfter;
-	float SpecialParam;
-	bool bUseBossLocation; // Si genera en el boss o en otro lugar
-	FVector CustomOrigin; // Si bUseBossLocation es false
-	float Damage;
+	EAttackType Type = EAttackType::Circle;
+	int32 BulletCount = 10;
+	float Speed = 500.0f;
+	float DelayAfter = 1.0f;
+	float SpecialParam = 0.0f;
+	bool bUseBossLocation = true;
+	FVector CustomOrigin = FVector::ZeroVector;
+	float TimeBetweenShots = 0.1f;
+	FVector BulletScale = FVector(0.4f, 0.4f, 0.4f);
+	float Damage = 10.0f;
 
 	/**
 	* Constructor por defecto, genera un ataque circular con 10 balas, velocidad 500, delay de 1 segundo, sin par�metros especiales y origen en el boss. Esto es solo para facilitar la creaci�n de ataques simples, se pueden usar los otros constructores para m�s control.
 	* Los par�metros, en orden, son Tipo de ataque, Cantidad de balas, Velocidad, Delay despu�s del ataque, Par�metro especial (dependiendo del tipo de ataque), Si usa la ubicaci�n del boss o no, y la ubicaci�n personalizada si no se usa la del boss.
 	*/
-	FAttackStep() : Type(EAttackType::Circle), BulletCount(10), Speed(500.0f), DelayAfter(1.0f), SpecialParam(0.0f), bUseBossLocation(true), CustomOrigin(FVector::ZeroVector), Damage(10.0f) {}
+	FAttackStep()	{}
 
-	// * Constructor para ataques desde boss. En cuyo caso el Origen es ZeroVector
+	/* Constructor para ataques desde boss. En cuyo caso el Origen es ZeroVector
 	FAttackStep(EAttackType InType, int32 InCount, float InSpeed, float InDelay, float InSpecial = 0.0f, float InDamage = 10.0f) 
 		: Type(InType), BulletCount(InCount), Speed(InSpeed), DelayAfter(InDelay), SpecialParam(InSpecial), bUseBossLocation(true), CustomOrigin(FVector::ZeroVector), Damage(InDamage) {}
 
-	// * Constructor para ataques en ubicaci�n espec�fica, donde el origen es diferente del boss
-	FAttackStep(EAttackType InType, int32 InCount, float InSpeed, float InDelay, FVector InOrigin, float InSpecial = 0.0f, float InDamage = 10.0f)
-		: Type(InType), BulletCount(InCount), Speed(InSpeed), DelayAfter(InDelay), SpecialParam(InSpecial), bUseBossLocation(false), CustomOrigin(InOrigin), Damage(InDamage) {}
+*/	// * Constructor para ataques en ubicaci�n espec�fica, donde el origen es diferente del boss
+	FAttackStep(EAttackType InType, int32 InCount, float InSpeed, float InDelay, float InTime, float InSpecial = 0.0f, FVector InScale = FVector(0.4f), float InDamage = 10.0f)
+		: Type(InType), BulletCount(InCount), Speed(InSpeed), DelayAfter(InDelay), TimeBetweenShots(InTime), SpecialParam(InSpecial), BulletScale(InScale), Damage(InDamage) {
+	}
+
+	// Constructor para ataques en ubicación específica
+	FAttackStep(EAttackType InType, int32 InCount, float InSpeed, float InDelay, FVector InOrigin, float InTime = 0.1f, float InSpecial = 0.0f, float InDamage = 10.0f)
+		: Type(InType), BulletCount(InCount), Speed(InSpeed), DelayAfter(InDelay), bUseBossLocation(false), CustomOrigin(InOrigin), TimeBetweenShots(InTime), SpecialParam(InSpecial), Damage(InDamage) {
+	}
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -58,7 +66,7 @@ public:
 	/**
 	* Genera las balas en el mundo. Esta funci�n es llamada por las estrategias de ataque para crear las balas con la direcci�n y velocidad adecuadas. El origen puede ser el jefe o una ubicaci�n espec�fica, dependiendo de los par�metros del ataque.
 	*/
-	void InternalSpawn(FVector Origin, FVector Direction, float Speed, float Damage);
+	void InternalSpawn(FVector Origin, FVector Direction, float Speed, float Damage, FVector Scale = FVector(0.4f));
 
 	void StopCurrentSequence();
 

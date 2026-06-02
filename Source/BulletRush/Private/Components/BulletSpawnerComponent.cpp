@@ -36,7 +36,7 @@ void UBulletSpawnerComponent::TickComponent(float DeltaTime, ELevelTick TickType
 }
 
 
-void UBulletSpawnerComponent::InternalSpawn(FVector Origin, FVector Direction, float Speed, float Damage)
+void UBulletSpawnerComponent::InternalSpawn(FVector Origin, FVector Direction, float Speed, float Damage, FVector Scale)
 {
 	if (!GetOwner() || !ProjectilesSubsystem) return;
 
@@ -44,7 +44,7 @@ void UBulletSpawnerComponent::InternalSpawn(FVector Origin, FVector Direction, f
 	AActor* OwnerActor = GetOwner();
 
 	ABulletBase* Bullet = ProjectilesSubsystem->RequestBullet(
-        SpawnLocation, Direction, Speed, bIsPlayerSource, Damage, SpawnLocation, OwnerActor
+        SpawnLocation, Direction, Speed, bIsPlayerSource, Damage, SpawnLocation, OwnerActor, Scale
 	);
 
 	if (Bullet)
@@ -83,7 +83,8 @@ void UBulletSpawnerComponent::ExecuteNextStep()
 			Step.DelayAfter,
 			Step.SpecialParam,
 			SpawnOrigin,
-			Step.Damage
+			Step.Damage,
+			Step.BulletScale
 		};
 		AttackRegist[Step.Type]->Execute(this, Params);
 	}

@@ -93,7 +93,7 @@ void AEnemyBase::StartAttack()
 	if (!BulletSpawner) return;
 	FVector FireDirection = GetActorForwardVector();
 	TArray<FAttackStep> TestCombo;
-	TestCombo.Add(FAttackStep(EAttackType::Circle, 12, 600.0f, 0.0f));
+	TestCombo.Add(FAttackStep());
 	BulletSpawner->StartSequence(TestCombo);
 
 //	UE_LOG(LogTemp, Log, TEXT("[%s] Ejecutando disparo de prueba."), *GetName());

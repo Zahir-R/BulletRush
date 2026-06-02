@@ -8,6 +8,8 @@
 #include "Components/HealthComponent.h"
 #include "Components/WeaponBaseComponent.h"
 #include "Components/ChargedWeaponComponent.h"
+#include "Components/RhytmConductorComponent.h"
+#include "Enemies/Orchestrator/Orchestrator.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Buffs/PlayerStatsDecorator.h"
 #include "Buffs/DoubleDamage.h"
@@ -87,6 +89,20 @@ void APlayingPlayer::BeginPlay()
 	BaseStats = NewObject<UPlayerStatsBase>();
 	CurrentStats = BaseStats;
 	if (HealthComp) HealthComp->OnDeath.AddDynamic(this, &APlayingPlayer::OnPlayerDeath);
+
+	AActor* BossActor = UGameplayStatics::GetActorOfClass(GetWorld(), AOrchestrator::StaticClass());
+	if (BossActor)
+	{
+		AOrchestrator* TheOrchestrator = Cast<AOrchestrator>(BossActor);
+		if (TheOrchestrator && TheOrchestrator->RhythmConductor)
+		{
+			// Conectamos el delegado OnSilence al arma del jugador
+			for (UWeaponBaseComponent* Weapon : EquippedWeapons)
+			{
+				TheOrchestrator->RhythmConductor->OnSilence.AddDynamic(Weapon, &UWeaponBaseComponent::HandleSilenceEvent);
+			}
+		}
+	}
 }
 
 void APlayingPlayer::Tick(float DeltaTime)
