@@ -3,6 +3,7 @@
 #include "VaultKeeper/enemies/DronMecha.h"
 #include "VaultKeeper/objets/BatteryActor.h"
 #include "Map/LevelPortal.h"
+#include "Core/BulletRushGameInstance.h"
 #include "Components/HealthComponent.h"
 #include "Player/PlayingPlayer.h"
 #include "Kismet/GameplayStatics.h"
@@ -43,7 +44,9 @@ void ALevel21Facade::BeginPlay()
         FRotator::ZeroRotator
     );
 
-    
+    PortalToBoss = GetWorld()->SpawnActor<ALevelPortal>(
+        ALevelPortal::StaticClass(),
+        FVector(0.f, 0.f, 100.f), FRotator::ZeroRotator);
 }
 
 
@@ -145,18 +148,30 @@ void ALevel21Facade::OnPlayerDeath()
 
 void ALevel21Facade::OpenPortal(bool bToSecret)
 {
-    ALevelPortal* Portal = bToSecret ? PortalToSecret : PortalToBoss;
-
-    if (Portal)
+    UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
+    if (!GI)
     {
-        Portal->TargetLevelName = bToSecret ? FName("Map_02Secret") : FName("Map_02Boss");
-        //Portal->CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-        Portal->SetActorHiddenInGame(false);
-        UE_LOG(LogTemp, Warning, TEXT("[Level21Facade] Portal abierto hacia: %s"),
-            bToSecret ? TEXT("Secreto") : TEXT("Jefe"));
+        UE_LOG(LogTemp, Error, TEXT("[Level21Facade] GameInstance no encontrado"));
+        return;
+    }
+
+    if (bToSecret)
+    {
+        GI->Level2State = ELevelState::Secret;
+        UE_LOG(LogTemp, Warning, TEXT("[Level21Facade] Estado ? Secret"));
     }
     else
     {
-        UE_LOG(LogTemp, Error, TEXT("[Level21Facade] Portal no asignado en el editor"));
+        GI->Level2State = ELevelState::Boss;
+        UE_LOG(LogTemp, Warning, TEXT("[Level21Facade] Estado ? Boss"));
     }
+
+    if (PortalToBoss)
+    {
+        PortalToBoss->TargetLevelName = FName("Map_02Boss");
+        //PortalToBoss->CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+        PortalToBoss->SetActorHiddenInGame(false);
+    }
+    else
+        UE_LOG(LogTemp, Error, TEXT("[Level21Facade] Portal no asignado"));
 }

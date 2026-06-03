@@ -32,6 +32,10 @@ void AVaultKeeperFacade::BeginPlay()
     );
 
     //StartLevel();
+
+    PortalToMap = GetWorld()->SpawnActor<ALevelPortal>(
+        ALevelPortal::StaticClass(),
+        FVector(0.f, 0.f, 100.f), FRotator::ZeroRotator);
 }
 
 void AVaultKeeperFacade::StartLevel()
@@ -119,26 +123,24 @@ void AVaultKeeperFacade::OnBossDeath(AEnemyBase* DeadEnemy)
     if (bLevelComplete) return;
     bLevelComplete = true;
 
-    // Detenemos spawn de drones
     GetWorld()->GetTimerManager().ClearTimer(DroneSpawnTimer);
 
-    // Destruimos drones activos
     for (ADronMecha* Drone : ActiveDrones)
         if (Drone && IsValid(Drone))
             Drone->Destroy();
-
     ActiveDrones.Empty();
 
-    UE_LOG(LogTemp, Warning, TEXT("[VaultKeeperFacade] Boss derrotado — nivel completo"));
-    OpenPortal();
-}
+    // Marcamos el mapa como completado
+    UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
+    if (GI)
+    {
+        GI->MarcarMapaCompletado(FName("Map_02Boss"));
+        GI->Level2State = ELevelState::Normal; // reseteamos para proxima vez
+        UE_LOG(LogTemp, Warning, TEXT("[VaultKeeperFacade] Nivel completo — mapa marcado"));
+    }
 
-void AVaultKeeperFacade::OnDroneKilled(AEnemyBase* DeadEnemy)
-{
-    ADronMecha* Drone = Cast<ADronMecha>(DeadEnemy);
-    if (Drone) ActiveDrones.Remove(Drone);
-    UE_LOG(LogTemp, Warning, TEXT("[VaultKeeperFacade] Drone eliminado. Activos: %d"),
-        ActiveDrones.Num());
+    UE_LOG(LogTemp, Warning, TEXT("[VaultKeeperFacade] Boss derrotado"));
+    OpenPortal();
 }
 
 void AVaultKeeperFacade::OpenPortal()
@@ -151,7 +153,14 @@ void AVaultKeeperFacade::OpenPortal()
         UE_LOG(LogTemp, Warning, TEXT("[VaultKeeperFacade] Portal al mapa abierto"));
     }
     else
-    {
         UE_LOG(LogTemp, Error, TEXT("[VaultKeeperFacade] PortalToMap no asignado"));
-    }
 }
+
+void AVaultKeeperFacade::OnDroneKilled(AEnemyBase* DeadEnemy)
+{
+    ADronMecha* Drone = Cast<ADronMecha>(DeadEnemy);
+    if (Drone) ActiveDrones.Remove(Drone);
+    UE_LOG(LogTemp, Warning, TEXT("[VaultKeeperFacade] Drone eliminado. Activos: %d"),
+        ActiveDrones.Num());
+}
+

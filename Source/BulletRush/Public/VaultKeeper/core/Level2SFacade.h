@@ -47,7 +47,7 @@ private:
     TArray<ADronMecha*> ActiveDrones;
 
     int32 DronesKilled = 0;
-    int32 TotalDrones = 15;
+    int32 TotalDrones = 1;
     bool bLevelComplete = false;
 
     FTimerHandle VenomTimer;

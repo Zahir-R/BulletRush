@@ -4,6 +4,7 @@
 #include "VaultKeeper/enemies/VaultKeeper.h"
 #include "VaultKeeper/objets/BatteryActor.h"
 #include "Map/LevelPortal.h"
+#include "Core/BulletRushGameInstance.h"
 #include "Components/HealthComponent.h"
 #include "Components/BoxComponent.h"
 #include "Player/PlayingPlayer.h"
@@ -44,6 +45,9 @@ void ALevel2SFacade::BeginPlay()
     );
 
     //StartLevel();
+    PortalToBoss = GetWorld()->SpawnActor<ALevelPortal>(
+        ALevelPortal::StaticClass(),
+        FVector(0.f, 0.f, 100.f), FRotator::ZeroRotator);
 }
 
 void ALevel2SFacade::StartLevel()
@@ -137,28 +141,18 @@ void ALevel2SFacade::CheckLevelComplete()
     if (bLevelComplete) return;
 
     bLevelComplete = true;
-
-    // Detenemos veneno
     GetWorld()->GetTimerManager().ClearTimer(VenomTimer);
 
-    UE_LOG(LogTemp, Warning, TEXT("[Level2SFacade] Completado — VaultKeeper debilitado"));
-
-    // Guardamos la recompensa en el GameInstance para que 2-2 la lea
-    ///if (UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance()))
-    //{
-        //GI->bVaultKeeperWeakened = true;
-    //}
+    UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
+    if (GI)
+    {
+        GI->bVaultKeeperWeakened = true;
+        GI->Level2State = ELevelState::Boss;
+        UE_LOG(LogTemp, Warning, TEXT("[Level2SFacade] Completado — VK debilitado, estado ? Boss"));
+    }
 
     OpenPortal();
 }
-
-void ALevel2SFacade::OnPlayerDeath()
-{
-    GetWorld()->GetTimerManager().ClearTimer(VenomTimer);
-    UE_LOG(LogTemp, Warning, TEXT("[Level2SFacade] Jugador murio — reintento"));
-    UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()));
-}
-
 
 void ALevel2SFacade::OpenPortal()
 {
@@ -169,7 +163,14 @@ void ALevel2SFacade::OpenPortal()
         PortalToBoss->SetActorHiddenInGame(false);
     }
     else
-    {
-        UE_LOG(LogTemp, Error, TEXT("[Level2SFacade] PortalToBoss no asignado"));
-    }
+        UE_LOG(LogTemp, Error, TEXT("[Level2SFacade] Portal no asignado"));
 }
+
+void ALevel2SFacade::OnPlayerDeath()
+{
+    GetWorld()->GetTimerManager().ClearTimer(VenomTimer);
+    UE_LOG(LogTemp, Warning, TEXT("[Level2SFacade] Jugador murio — reintento"));
+    UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()));
+}
+
+

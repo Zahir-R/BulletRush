@@ -53,7 +53,7 @@ private:
     TArray<ADronMecha*> ActiveDrones;
 
     int32 DronesKilled = 0;
-    int32 TotalDrones = 15;
+    int32 TotalDrones = 1;
     bool bPlayerDied = false;
     bool bLevelComplete = false;
 
