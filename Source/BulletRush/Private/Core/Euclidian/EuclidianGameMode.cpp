@@ -1,5 +1,6 @@
 #include "Core/Euclidian/EuclidianGameMode.h"
 #include "Enemies/Euclidian/RedTurret.h"
+#include "Enemies/Euclidian/RedDrone.h"
 #include "Kismet/GameplayStatics.h"
 #include "Core/Euclidian/Phase1.h"
 #include "Core/Euclidian/PhaseS.h"
@@ -7,12 +8,88 @@
 #include "Core/Euclidian/Strategies/RedTurretObjective.h"
 
 void AEuclidianGameMode::BeginPlay()
-{	
-	CurrentPhase = NewObject<UPhase1>(this);
+{
+	Super::BeginPlay();
 
-	if (CurrentPhase)
+	ChangePhase(
+		NewObject<UPhase1>(this)
+	);
+	TArray<AActor*>FoundDrones;
+
+	UGameplayStatics::GetAllActorsOfClass(
+		GetWorld(),
+		ADrone::StaticClass(),
+		FoundDrones
+	);
+	for (AActor* Actor : FoundDrones)
 	{
-		CurrentPhase->EnterPhase(this);
+		ADrone* Drone = Cast<ADrone>(Actor);
+
+		if (Drone)
+		{
+			Drone->OnEnemyDeath.AddDynamic(
+				this,
+				&AEuclidianGameMode::OnDroneDestroyed
+			);
+		}
+	}
+}
+
+void AEuclidianGameMode::OnDroneDestroyed(
+	AEnemyBase * DeadEnemy)
+{
+	DeadDroneCount++;
+
+	if (DeadDroneCount % 6 == 0)
+	{
+		SpawnRedDrone();
+	}
+}
+
+void AEuclidianGameMode::SpawnRedDrone()
+{
+	FVector SpawnLocation(
+		FMath::RandRange(-1500.f, 1500.f),
+		FMath::RandRange(-1500.f, 1500.f),
+		100.f
+	);
+
+	GetWorld()->SpawnActor<ARedDrone>(
+		ARedDrone::StaticClass(),
+		SpawnLocation,
+		FRotator::ZeroRotator
+	);
+
+	RefreshDroneList();
+}
+void AEuclidianGameMode::RefreshDroneList()
+{
+	Drones.Empty();
+
+	TArray<AActor*> FoundDrones;
+
+	UGameplayStatics::GetAllActorsOfClass(
+		GetWorld(),
+		ADrone::StaticClass(),
+		FoundDrones
+	);
+
+	for (AActor* Actor : FoundDrones)
+	{
+		if (ADrone* Drone = Cast<ADrone>(Actor))
+		{
+			Drone->OnEnemyDeath.RemoveDynamic(
+				this,
+				&AEuclidianGameMode::OnDroneDestroyed
+			);
+
+			Drone->OnEnemyDeath.AddDynamic(
+				this,
+				&AEuclidianGameMode::OnDroneDestroyed
+			);
+
+			Drones.Add(Drone);
+		}
 	}
 }
 void AEuclidianGameMode::OnObservedEnemyDeath(AEnemyBase* Enemy)
@@ -30,7 +107,7 @@ void AEuclidianGameMode::OnObservedEnemyDeath(AEnemyBase* Enemy)
 	if (Objective->IsCompleted())
 	{
 		ChangePhase(
-			NewObject<UPhaseS>(this)
+			NewObject<UPhase2>(this)
 		);
 	}
 }
@@ -60,9 +137,25 @@ void AEuclidianGameMode::ChangePhase(
 		CurrentPhase->EnterPhase(this);
 	}
 }
-void AEuclidianGameMode::RegisterDroneDeath()
+void AEuclidianGameMode::EnableRedTurretVulnerability(
+	float Duration)
 {
-	DeadDroneCount++;
+	bRedTurretsVulnerable = true;
 
-	UE_LOG(LogTemp, Warning, TEXT("Drones dead: %d / 8"), DeadDroneCount);
+	GetWorldTimerManager().ClearTimer(
+		RedTurretVulnerabilityTimer
+	);
+
+	GetWorldTimerManager().SetTimer(
+		RedTurretVulnerabilityTimer,
+		this,
+		&AEuclidianGameMode::DisableRedTurretVulnerability,
+		Duration,
+		false
+	);
+}
+
+void AEuclidianGameMode::DisableRedTurretVulnerability()
+{
+	bRedTurretsVulnerable = false;
 }

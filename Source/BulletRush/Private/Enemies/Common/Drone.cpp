@@ -1,6 +1,7 @@
 #include "Enemies/Common/Drone.h"
 #include "Combat/AttackPatterns.h"
 #include "Components/BulletSpawnerComponent.h"
+#include "Core/Euclidian/EuclidianGameMode.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 #include "Engine/World.h"
@@ -19,6 +20,7 @@ void ADrone::BeginPlay()
     Super::BeginPlay();
     MovementStrategy = MakeShareable(new FSinusoidalSeekMovement(200.f, 2.f, 500.f));
     BeginAttackLoop();
+
 }
 
 void ADrone::Tick(float DeltaSeconds)

@@ -6,6 +6,7 @@
 #include "Enemies/Common/Drone.h"
 #include "Enemies/Euclidian/RedTurret.h"
 
+
 void UPhase1::EnterPhase(AEuclidianGameMode* GameMode)
 {
 	if (!GameMode)
