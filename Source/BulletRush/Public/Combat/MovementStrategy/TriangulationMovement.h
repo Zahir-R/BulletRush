@@ -2,30 +2,28 @@
 
 #include "CoreMinimal.h"
 #include "Combat/MovementStrategy/MovementStrat.h"
-#include "SinusoidalSeekMovement.generated.h"
+#include "TriangulationMovement.generated.h"
 
 UCLASS(Blueprintable)
-class BULLETRUSH_API USinusoidalSeekMovement : public UMovementStrat
+class BULLETRUSH_API UTriangulationMovement : public UMovementStrat
 {
 	GENERATED_BODY()
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	float Amplitude = 200.f;
+	float Speed = 400.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	float Frequency = 2.f;
+	float TriangleSize = 300.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	float StopDistance = 500.f;
+	float StopDistance = 50.f;
 
-public:
-	float InitialPhase = 0.f;
-
-private:
-	float AccumulatedTime = 0.f;
-
-public:
 	virtual FVector GetNextPosition(AActor* Enemy, float DeltaTime, const FVector& TargetLocation) override;
 	virtual void Reset() override;
+
+private:
+	TArray<FVector> Vertices;
+	int32 VertexIndex = 0;
+	bool bInitialized = false;
 };

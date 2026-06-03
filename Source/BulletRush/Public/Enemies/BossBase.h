@@ -56,6 +56,7 @@ public:
 	FName GetCurrentBossStateName() const;
 
 	virtual void Attack() override;
+	void ScheduleNextAttack();
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* BossMesh;

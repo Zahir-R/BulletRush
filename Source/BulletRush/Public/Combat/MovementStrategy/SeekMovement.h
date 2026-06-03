@@ -14,4 +14,5 @@ public:
 	float Speed = 300.f;
 
 	virtual FVector GetNextPosition(AActor* Enemy, float DeltaTime, const FVector& TargetLocation) override;
+	virtual void Reset() override;
 };

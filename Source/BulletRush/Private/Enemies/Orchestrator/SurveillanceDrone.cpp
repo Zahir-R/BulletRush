@@ -29,7 +29,6 @@ ASurveillanceDrone::ASurveillanceDrone()
 	}
 
 	// 2. ADJUNTAMOS LA MALLA A LA ESFERA
-	MeshEnemy = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshEnemy"));
 	MeshEnemy->SetupAttachment(CollisionComp); // <-- Asegúrate de adjuntarlo al CollisionComp
 	MeshEnemy->SetMobility(EComponentMobility::Movable);
 	MeshEnemy->SetCollisionEnabled(ECollisionEnabled::NoCollision);

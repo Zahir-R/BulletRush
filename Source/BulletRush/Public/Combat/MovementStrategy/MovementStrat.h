@@ -11,4 +11,7 @@ class BULLETRUSH_API UMovementStrat : public UObject
 
 public:
 	virtual FVector GetNextPosition(AActor* Enemy, float DeltaTime, const FVector& TargetLocation) PURE_VIRTUAL(UMovementStrat::GetNextPosition, return FVector::ZeroVector;);
+	virtual void Reset() { bCompleted = false; }
+
+	bool bCompleted = false;
 };

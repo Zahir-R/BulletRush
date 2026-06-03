@@ -13,5 +13,8 @@ public:
 	UPROPERTY()
 	FVector TargetLocation;
 
+	UPROPERTY()
+	int32 StrategyIndex = 0;
+
 	virtual void Execute(ASerXBoss* Boss) override;
 };

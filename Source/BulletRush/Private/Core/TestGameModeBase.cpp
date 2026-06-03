@@ -33,8 +33,8 @@ void ATestGameModeBase::BeginPlay()
 	Arquitect = GetWorld()->SpawnActor<ATestFacade>(ATestFacade::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
 	if (Arquitect)
 	{
-		Arquitect->SummonBoss(FVector(300.0f, 0.0f, 25.0f));
-		Arquitect->SummonEnemies(FVector(800.0f, -400.0f, 25.0f), 2);
+		//Arquitect->SummonBoss(FVector(300.0f, 0.0f, 25.0f));
+		//Arquitect->SummonEnemies(FVector(800.0f, -400.0f, 25.0f), 2);
 		Arquitect->SummonLinker(FVector(300, 100, 25));
 	}
 

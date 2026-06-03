@@ -24,7 +24,7 @@ public:
     void OnSecretLevelCompleted();
 
     UPROPERTY(EditAnywhere, Category="Portals")
-    FVector BossPortalSpawnLocation;
+    FVector BossPortalSpawnLocation = FVector(500,500,500);
 
     // Template class for the boss portal
     UPROPERTY(EditAnywhere, Category="Portals")

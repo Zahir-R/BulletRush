@@ -6,3 +6,8 @@ FVector UStaticMovement::GetNextPosition(AActor* Enemy, float DeltaTime, const F
     if (!Enemy) return FVector::ZeroVector;
     return Enemy->GetActorLocation();
 }
+
+void UStaticMovement::Reset()
+{
+	Super::Reset();
+}
