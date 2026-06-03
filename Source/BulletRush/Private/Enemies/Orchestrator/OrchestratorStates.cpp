@@ -9,7 +9,7 @@
 FVector GetScaleFromBPM(float CurrentBPM)
 {
 	FVector2D BPMRange(60.0f, 180.0f);     // De lento a rápido
-	FVector2D ScaleRange(2.6f, 0.4f);      // De gigante a pequeño (relación inversa)
+	FVector2D ScaleRange(2.6f, 1.0f);      // De gigante a pequeño (relación inversa)
 
 	// Interpola el valor de forma segura
 	float UniformScale = FMath::GetMappedRangeValueClamped(BPMRange, ScaleRange, CurrentBPM);
@@ -48,32 +48,29 @@ void UOrchestrator_Normal::HandleBeat()
 	FVector DynamicScale = GetScaleFromBPM(120.0f);
 	TArray<FAttackStep> CurrentBeatAttack;
 
-	int32 Compas = BeatCounter % 4;
+	// Cada 16 pulsos (4 compases completos), interrumpimos el patrón normal y lanzamos el gran ataque
+	if (BeatCounter % 16 == 0)
+	{
+		// Lanzamos el Pentagrama. Le ponemos un Delay ligeramente mayor para darle "peso" al ataque.
+		CurrentBeatAttack.Add(FAttackStep(EAttackType::Pentagram, 100, 500.0f, 0.5f, 0.0f, 10.0f, 0.05f, DynamicScale));
+	}
+	else
+	{
+		// Patrón clásico 4/4
+		int32 Compas = BeatCounter % 4;
 
-	if (Compas == 1)
-	{
-		// Pulso 1 (Fuerte): Anillo grande
-		CurrentBeatAttack.Add(FAttackStep(EAttackType::Circle, 12, 600.0f, 0.0f, 0.0f, 10.0f, 0.1f, DynamicScale));
-	}
-	else if (Compas == 2)
-	{
-		// Pulso 2 (Débil): Espacio para esquivar
-	}
-	else if (Compas == 3)
-	{
-		// Pulso 3 (Medio): Ráfaga directa
-		CurrentBeatAttack.Add(FAttackStep(EAttackType::Burst, 3, 800.0f, 0.0f, 0.0f, 10.0f, 0.2f, DynamicScale));
-	}
-	else if (Compas == 0)
-	{
-		// Pulso 4 (Débil): Espiral con SpecialParam de 15.0f
-		CurrentBeatAttack.Add(FAttackStep(EAttackType::Spiral, 20, 500.0f, 0.0f, 15.0f, 10.0f, 0.1f, DynamicScale));
+		if (Compas == 1) // Fuerte
+			CurrentBeatAttack.Add(FAttackStep(EAttackType::Circle, 12, 600.0f, 0.0f, 0.0f, 10.0f, 0.1f, DynamicScale));
+		else if (Compas == 2) // Débil (silencio estratégico)
+		{
+		}
+		else if (Compas == 3) // Medio
+			CurrentBeatAttack.Add(FAttackStep(EAttackType::Burst, 3, 800.0f, 0.0f, 0.0f, 10.0f, 0.2f, DynamicScale));
+		else if (Compas == 0) // Cierre
+			CurrentBeatAttack.Add(FAttackStep(EAttackType::Spiral, 20, 500.0f, 0.0f, 15.0f, 10.0f, 0.1f, DynamicScale));
 	}
 
-	if (CurrentBeatAttack.Num() > 0)
-	{
-		OrchestratorRef->BulletSpawner->StartSequence(CurrentBeatAttack);
-	}
+	if (CurrentBeatAttack.Num() > 0) OrchestratorRef->BulletSpawner->StartSequence(CurrentBeatAttack);
 }
 
 //----------------------------------------------------------------------
@@ -106,34 +103,23 @@ void UOrchestrator_Melancholy::HandleBeat()
 	if (!OrchestratorRef || !OrchestratorRef->BulletSpawner) return;
 
 	BeatCounter++;
-	FVector DynamicScale = GetScaleFromBPM(60.0f);
+	FVector DynamicScale = GetScaleFromBPM(60.0f); // Proyectiles GIGANTES
 	TArray<FAttackStep> CurrentBeatAttack;
 
 	int32 Compas = BeatCounter % 4;
 
 	if (Compas == 1)
 	{
-		// Pulso 1 (Fuerte)
-		CurrentBeatAttack.Add(FAttackStep(EAttackType::Circle, 12, 600.0f, 0.0f, 0.0f, 10.0f, 0.1f, DynamicScale));
-	}
-	else if (Compas == 2)
-	{
-		// Pulso 2 (Débil)
+		// Anillo muy lento y abrumador
+		CurrentBeatAttack.Add(FAttackStep(EAttackType::Circle, 16, 300.0f, 0.0f, 0.0f, 15.0f, 0.1f, DynamicScale));
 	}
 	else if (Compas == 3)
 	{
-		// Pulso 3 (Fuerte)
-		CurrentBeatAttack.Add(FAttackStep(EAttackType::Circle, 12, 600.0f, 0.0f, 0.0f, 10.0f, 0.1f, DynamicScale));
-	}
-	else if (Compas == 0)
-	{
-		// Pulso 4 (Débil)
+		// Un anillo ligeramente más rápido para atrapar al jugador si se confía
+		CurrentBeatAttack.Add(FAttackStep(EAttackType::Circle, 16, 450.0f, 0.0f, 0.0f, 15.0f, 0.1f, DynamicScale));
 	}
 
-	if (CurrentBeatAttack.Num() > 0)
-	{
-		OrchestratorRef->BulletSpawner->StartSequence(CurrentBeatAttack);
-	}
+	if (CurrentBeatAttack.Num() > 0) OrchestratorRef->BulletSpawner->StartSequence(CurrentBeatAttack);
 }
 
 //----------------------------------------------------------------------
@@ -166,13 +152,31 @@ void UOrchestrator_Frenetic::HandleBeat()
 {
 	if (!OrchestratorRef || !OrchestratorRef->BulletSpawner) return;
 
-	FVector DynamicScale = GetScaleFromBPM(160.0f);
+	BeatCounter++;
+	FVector DynamicScale = GetScaleFromBPM(160.0f); // Proyectiles medianos/pequeños rápidos
+	TArray<FAttackStep> CurrentBeatAttack;
 
-	TArray<FAttackStep> Phase3Combo;
-	Phase3Combo.Add(FAttackStep(EAttackType::Circle, 24, 900.0f, 0.0f, 0.0f, 10.0f, 0.1f, DynamicScale));
-	Phase3Combo.Add(FAttackStep(EAttackType::Spiral, 24, 900.0f, 0.0f, 0.0f, 10.0f, 0.1f, DynamicScale));
+	int32 Compas = BeatCounter % 4;
 
-	OrchestratorRef->BulletSpawner->StartSequence(Phase3Combo);
+	// La percusión constante no da respiro
+	if (Compas == 1 || Compas == 3)
+	{
+		// Ataques circulares masivos en los tiempos fuertes
+		CurrentBeatAttack.Add(FAttackStep(EAttackType::Circle, 24, 900.0f, 0.0f, 0.0f, 10.0f, 0.1f, DynamicScale));
+	}
+	else
+	{
+		// Disparos directos en los contratiempos
+		CurrentBeatAttack.Add(FAttackStep(EAttackType::Burst, 2, 1000.0f, 0.0f, 0.0f, 10.0f, 0.1f, DynamicScale));
+	}
+
+	// Adicional: Cada 8 pulsos (clímax menor), invoca una espiral sucia que se superpone a los círculos
+	if (BeatCounter % 8 == 0)
+	{
+		CurrentBeatAttack.Add(FAttackStep(EAttackType::Spiral, 24, 1000.0f, 0.0f, 25.0f, 10.0f, 0.1f, DynamicScale));
+	}
+
+	if (CurrentBeatAttack.Num() > 0) OrchestratorRef->BulletSpawner->StartSequence(CurrentBeatAttack);
 }
 
 //----------------------------------------------------------------------
@@ -205,13 +209,30 @@ void UOrchestrator_Furious::HandleBeat()
 {
 	if (!OrchestratorRef || !OrchestratorRef->BulletSpawner) return;
 
-	FVector DynamicScale = GetScaleFromBPM(180.0f);
+	BeatCounter++;
+	FVector DynamicScale = GetScaleFromBPM(180.0f); // Proyectiles diminutos y letales
+	TArray<FAttackStep> CurrentBeatAttack;
 
-	TArray<FAttackStep> Phase4Combo;
-	Phase4Combo.Add(FAttackStep(EAttackType::Burst, 3, 1000.0f, 0.1f, 0.0f, 10.0f, 0.1f, DynamicScale));
-	Phase4Combo.Add(FAttackStep(EAttackType::Circle, 16, 700.0f, 0.0f, 0.0f, 10.0f, 0.1f, DynamicScale));
+	// El Pentagrama de la Fase 1 vuelve, pero el doble de rápido y mortal
+	if (BeatCounter % 16 == 0)
+	{
+		CurrentBeatAttack.Add(FAttackStep(EAttackType::Pentagram, 60, 1200.0f, 0.0f, 0.0f, 20.0f, 0.05f, DynamicScale));
+	}
 
-	OrchestratorRef->BulletSpawner->StartSequence(Phase4Combo);
+	int32 Compas = BeatCounter % 4;
+
+	// Combinación de las fases anteriores por capas
+	if (Compas == 1)
+	{
+		CurrentBeatAttack.Add(FAttackStep(EAttackType::Circle, 16, 700.0f, 0.0f, 0.0f, 10.0f, 0.1f, DynamicScale));
+		CurrentBeatAttack.Add(FAttackStep(EAttackType::Burst, 3, 1200.0f, 0.0f, 0.0f, 10.0f, 0.1f, DynamicScale));
+	}
+	else if (Compas == 3)
+	{
+		CurrentBeatAttack.Add(FAttackStep(EAttackType::Spiral, 15, 800.0f, 0.0f, 30.0f, 10.0f, 0.1f, DynamicScale));
+	}
+
+	if (CurrentBeatAttack.Num() > 0) OrchestratorRef->BulletSpawner->StartSequence(CurrentBeatAttack);
 }
 
 //----------------------------------------------------------------------

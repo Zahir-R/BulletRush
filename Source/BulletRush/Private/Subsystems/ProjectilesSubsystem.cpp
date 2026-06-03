@@ -185,7 +185,6 @@ ABulletBase* UProjectilesSubsystem::RequestBullet(FVector Loc, FVector Dir, floa
 			}
 			if (Scale != FVector(0.4f))
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Escala ajustada"));
 				Bullet->SetActorRelativeScale3D(Scale);
 			}
 			return Bullet;
