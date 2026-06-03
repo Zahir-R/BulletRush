@@ -34,7 +34,7 @@ public:
     float Speed = 250.0f;
 
     UPROPERTY(EditDefaultsOnly, Category = "MechaKamikaze|Combat")
-    float ImpactDamage = 55.0f;
+    float ImpactDamage = 15.0f;
 
 private:
     bool bHasReachedTarget = false;

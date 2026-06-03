@@ -58,7 +58,7 @@ void ABatteryActor::LinkEnemy(AEnemyBase* Enemy)
 {
     if (!Enemy) return;
     LinkedEnemies.Add(Enemy);
-    Subscribe(Cast<AActor>(Enemy));
+    Subscribe(Cast<UObject>(Enemy));
 }
 
 void ABatteryActor::ApplyHeal()

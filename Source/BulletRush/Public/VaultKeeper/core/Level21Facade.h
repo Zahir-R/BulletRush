@@ -57,7 +57,7 @@ private:
   
 
     int32 EnemiesKilled = 0;
-    int32 TotalEnemies= 15;
+    int32 TotalEnemies= 5;
     bool bPlayerDied = false;
     bool bLevelComplete = false;
 

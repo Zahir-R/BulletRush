@@ -31,9 +31,7 @@ void ALevel2SFacade::BeginPlay()
 	PortalToBoss->SetActorHiddenInGame(true);
 }
 
-// ---------------------------------------------------------
-// START LEVEL
-// ---------------------------------------------------------
+
 void ALevel2SFacade::StartLevel()
 {
     APlayingPlayer* Player = Cast<APlayingPlayer>(
@@ -48,24 +46,28 @@ void ALevel2SFacade::StartLevel()
     SpawnHives();
 }
 
-// ---------------------------------------------------------
-// SPAWN 3 COLMENAS
-// ---------------------------------------------------------
+
 void ALevel2SFacade::SpawnHives()
 {
     // Centros de cada colmena separados en el mapa
+
     TArray<FVector> HiveCenters = {
         FVector(-1200.f,    0.f, 100.f),
         FVector(1200.f,    0.f, 100.f),
-        FVector(0.f, 1200.f, 100.f),
+        //FVector(0.f, 1200.f, 100.f),
     };
 
-    Hives.SetNum(3);
+    // Limpiamos antes de llenar
+    Hives.Empty();
 
-    for (int32 i = 0; i < 3; i++)
+    for (int32 i = 0; i < HiveCenters.Num(); i++)
+    {
+        Hives.Add(FHiveData()); // agregamos uno a uno en vez de SetNum
         SpawnHive(i, HiveCenters[i]);
+    }
 
-    UE_LOG(LogTemp, Warning, TEXT("[Level2SFacade] 3 colmenas spawneadas"));
+    UE_LOG(LogTemp, Warning, TEXT("[Level2SFacade] %d colmenas spawneadas"), Hives.Num());
+
 }
 
 void ALevel2SFacade::SpawnHive(int32 HiveIndex, FVector HiveCenter)
@@ -81,22 +83,22 @@ void ALevel2SFacade::SpawnHive(int32 HiveIndex, FVector HiveCenter)
 
     // Offsets relativos al centro de la colmena
     TArray<FVector> DroneOffsets = {
-        FVector(200.f,   0.f, 0.f), FVector(-200.f,   0.f, 0.f),
-        FVector(0.f,   200.f, 0.f), FVector(0.f,  -200.f, 0.f),
-        FVector(300.f, 150.f, 0.f), FVector(-300.f,  150.f, 0.f),
-        FVector(150.f, 300.f, 0.f), FVector(-150.f, -300.f, 0.f),
-        FVector(250.f,-150.f, 0.f), FVector(-250.f, -150.f, 0.f),
+        FVector(200.f,   0.f, 0.f), //FVector(-200.f,   0.f, 0.f),
+       // FVector(0.f,   200.f, 0.f), FVector(0.f,  -200.f, 0.f),
+        //FVector(300.f, 150.f, 0.f), FVector(-300.f,  150.f, 0.f),
+       // FVector(150.f, 300.f, 0.f), FVector(-150.f, -300.f, 0.f),
+        //FVector(250.f,-150.f, 0.f), FVector(-250.f, -150.f, 0.f),
     };
 
     TArray<FVector> ChargerOffsets = {
         FVector(400.f,   0.f, 0.f),
-        FVector(-400.f,  0.f, 0.f),
-        FVector(0.f,   400.f, 0.f),
+       // FVector(-400.f,  0.f, 0.f),
+       // FVector(0.f,   400.f, 0.f),
     };
 
     TArray<FVector> KamikazeOffsets = {
         FVector(350.f, -350.f, 0.f),
-        FVector(-350.f, 350.f, 0.f),
+        //FVector(-350.f, 350.f, 0.f),
     };
 
     // Spawn 10 drones
@@ -139,9 +141,7 @@ void ALevel2SFacade::SpawnHive(int32 HiveIndex, FVector HiveCenter)
         HiveIndex, Hive.Enemies.Num());
 }
 
-// ---------------------------------------------------------
-// ENEMY KILLED
-// ---------------------------------------------------------
+
 void ALevel2SFacade::OnEnemyKilled(AEnemyBase* DeadEnemy)
 {
     // Buscamos en qué colmena estaba
@@ -159,9 +159,7 @@ void ALevel2SFacade::OnEnemyKilled(AEnemyBase* DeadEnemy)
     CheckLevelComplete();
 }
 
-// ---------------------------------------------------------
-// CHECK COMPLETE
-// ---------------------------------------------------------
+
 void ALevel2SFacade::CheckLevelComplete()
 {
     // Contamos colmenas limpias
@@ -169,7 +167,7 @@ void ALevel2SFacade::CheckLevelComplete()
     for (const FHiveData& Hive : Hives)
         if (Hive.IsCleared()) ClearedCount++;
 
-    if (ClearedCount < 3) return;
+    if (ClearedCount < 2) return;
     if (bLevelComplete) return;
 
     bLevelComplete = true;
@@ -186,9 +184,7 @@ void ALevel2SFacade::CheckLevelComplete()
     OpenPortal();
 }
 
-// ---------------------------------------------------------
-// VENENO
-// ---------------------------------------------------------
+
 void ALevel2SFacade::ApplyVenom()
 {
     APlayingPlayer* Player = Cast<APlayingPlayer>(
@@ -206,18 +202,14 @@ void ALevel2SFacade::ApplyVenom()
     }
 }
 
-// ---------------------------------------------------------
-// PLAYER DEATH
-// ---------------------------------------------------------
+
 void ALevel2SFacade::OnPlayerDeath()
 {
     GetWorld()->GetTimerManager().ClearTimer(VenomTimer);
     UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()));
 }
 
-// ---------------------------------------------------------
-// PORTAL
-// ---------------------------------------------------------
+
 void ALevel2SFacade::OpenPortal()
 {
     if (PortalToBoss)

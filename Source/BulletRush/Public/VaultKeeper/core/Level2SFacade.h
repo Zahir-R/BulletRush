@@ -39,7 +39,7 @@ protected:
 
 public:
     UPROPERTY(EditDefaultsOnly, Category = "Level2S|Config")
-    float VenomDamagePerSecond = 5.0f;
+    float VenomDamagePerSecond = 1.0f;
 
     UPROPERTY(EditAnywhere, Category = "Level2S|References")
     ALevelPortal* PortalToBoss;

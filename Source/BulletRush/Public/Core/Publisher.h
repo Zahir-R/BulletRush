@@ -1,5 +1,4 @@
 #pragma once
-
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Core/Subscriber.h"
@@ -8,16 +7,15 @@
 UCLASS()
 class BULLETRUSH_API APublisher : public AActor
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	APublisher();
-
-	void NotifySubscribers();
-	void Subscribe(TScriptInterface<ISubscriber> Subscriber);
-	void Unsubscribe(TScriptInterface<ISubscriber> Subscriber);
+    APublisher();
+    void NotifySubscribers();
+    void Subscribe(UObject* Subscriber);
+    void Unsubscribe(UObject* Subscriber);
 
 protected:
-	UPROPERTY()
-	TArray<TScriptInterface<ISubscriber>> Subscribers;
+    UPROPERTY()
+    TArray<TWeakObjectPtr<UObject>> Subscribers;
 };

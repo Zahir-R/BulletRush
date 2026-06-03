@@ -52,10 +52,20 @@ UPlayerStatsDecorator* UBuffComponent::ApplyBuffAndReturn(TSubclassOf<UPlayerSta
 	Active.Decorator = NewDecorator;
 	if (Duration > 0.f)
 	{
-		GetWorld()->GetTimerManager().SetTimer(Active.Timer, [this, NewDecorator]()
+
+		TWeakObjectPtr<UPlayerStatsDecorator> WeakDecorator(NewDecorator);
+		TWeakObjectPtr<UBuffComponent> WeakThis(this);
+
+		FTimerDelegate TimerDelegate;
+		TimerDelegate.BindLambda([WeakThis, WeakDecorator]()
 			{
-				RemoveDecorator(NewDecorator);
-			}, Duration, false);
+				if (!WeakThis.IsValid() || !WeakDecorator.IsValid()) return;
+				UWorld* World = WeakThis->GetWorld();
+				if (!World || !World->IsGameWorld()) return;
+				WeakThis->RemoveDecorator(WeakDecorator.Get());
+			});
+
+		GetWorld()->GetTimerManager().SetTimer(Active.Timer, TimerDelegate, Duration, false);
 	}
 	ActiveDecorators.Add(Active);
 	return NewDecorator;
@@ -96,6 +106,10 @@ void UBuffComponent::RemoveDecorator(UPlayerStatsDecorator* Decorator)
 
 void UBuffComponent::ClearAllBuffs()
 {
-	while (ActiveDecorators.Num() > 0)
-		RemoveDecorator(ActiveDecorators[0].Decorator);
+	if (GetWorld())
+	{
+		for (FActiveDecorator& Active : ActiveDecorators)
+			GetWorld()->GetTimerManager().ClearTimer(Active.Timer);
+	}
+	ActiveDecorators.Empty();
 }
