@@ -2,7 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "BloodseekerEnemyFactory.h"
+#include "Core/Bloodseeker/BloodseekerEnemyFactoryBase.h"
+#include "Core/Bloodseeker/KamikazeFactory.h"
+#include "Core/Bloodseeker/LineWelderFactory.h"
+#include "Core/Bloodseeker/GravitySiphonFactory.h"
 #include "BloodseekerFacade.generated.h"
 
 class AEnemyBase;
@@ -66,7 +69,13 @@ private:
     FVector GetRandomSpawnLocation();
 
     UPROPERTY()
-    UBloodseekerEnemyFactory* EnemyFactory;
+    UKamikazeFactory* KamikazeFactory;
+
+    UPROPERTY()
+    ULineWelderFactory* LineWelderFactory;
+
+    UPROPERTY()
+    UGravitySiphonFactory* GravitySiphonFactory;
 
     UPROPERTY()
     TArray<FBloodseekerWaveConfig> HordasWaves;

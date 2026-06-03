@@ -2,6 +2,7 @@
 #include "Enemies/Bloodseeker/BloodseekerBoss.h"
 #include "Enemies/Bloodseeker/KamikazeEnemy.h"
 #include "Enemies/State/BossStateAttacking.h"
+#include "Enemies/State/BossStateUltimate.h"
 #include "Player/PlayingPlayer.h"
 #include "Components/BulletSpawnerComponent.h"
 #include "Components/HealthComponent.h"
@@ -41,6 +42,31 @@ ABloodseekerBoss::ABloodseekerBoss()
     TargetPlayer = nullptr;
 }
 
+void ABloodseekerBoss::ChangeState(UBossState* NewState)
+{
+    GetWorldTimerManager().ClearTimer(UltimateTransitionTimer);
+
+    Super::ChangeState(NewState);
+
+    if (NewState && NewState->GetStateTagName() == "Attacking")
+    {
+        TWeakObjectPtr<ABloodseekerBoss> WeakBoss(this);
+        GetWorldTimerManager().SetTimer(
+            UltimateTransitionTimer,
+            [WeakBoss]()
+            {
+                ABloodseekerBoss* Self = WeakBoss.Get();
+                if (Self && Self->IsValidLowLevel() && Self->GetWorld())
+                {
+                    Self->ChangeState(Self->UltimateState);
+                }
+            },
+            20.0f,
+            false
+        );
+    }
+}
+
 void ABloodseekerBoss::BeginPlay()
 {
     Super::BeginPlay();
@@ -65,6 +91,9 @@ void ABloodseekerBoss::BeginPlay()
         HealthComp->OnHealthChanged.AddDynamic(this, &ABloodseekerBoss::OnBossHealthChanged);
     }
 
+    // Crear estado Ultimate
+    UltimateState = NewObject<UBossStateUltimate>(this);
+
     // Auto-start attack cycle after 3s, bypassing weak point destruction requirement
     TWeakObjectPtr<ABloodseekerBoss> WeakBoss(this);
     GetWorld()->GetTimerManager().SetTimer(
@@ -80,15 +109,6 @@ void ABloodseekerBoss::BeginPlay()
         },
         3.0f,
         false
-    );
-
-    // Timer de Ultimate cada 20 segundos
-    GetWorld()->GetTimerManager().SetTimer(
-        UltimateTimerHandle,
-        this,
-        &ABloodseekerBoss::TryActivateUltimate,
-        20.0f,
-        true
     );
 }
 
@@ -110,27 +130,6 @@ void ABloodseekerBoss::Tick(float DeltaTime)
             * FMath::Sin(TimeSecs * MovementFrequency)
             * MovementAmplitude;
         SetActorLocation(NewLocation);
-    }
-
-    // ------- Calculo de sangrado Rupture 3 ejes
-    if (bIsRuptureActive)
-    {
-        FVector CurrentPlayerLocation = TargetPlayer->GetActorLocation();
-        float DistanceMoved = FVector::Distance(CurrentPlayerLocation, LastPlayerLocation);
-
-        if (DistanceMoved > 0.1f)
-        {
-            float CalculatedDamage = DistanceMoved * RuptureDamageMultiplier;
-            UGameplayStatics::ApplyDamage(
-                TargetPlayer,
-                CalculatedDamage,
-                GetController(),
-                this,
-                UDamageType::StaticClass()
-            );
-        }
-
-        LastPlayerLocation = CurrentPlayerLocation;
     }
 
     // ------- Láser rojo de debug (Malediction) -------
@@ -220,75 +219,6 @@ void ABloodseekerBoss::ExecuteRadialSphere()
     );
 }
 
-void ABloodseekerBoss::TryActivateUltimate()
-{
-    if (!IsValid(this) || !GetWorld()) return;
-    if (bIsMaledictionActive || bIsRuptureActive) return;
-    if (!HealthComp || HealthComp->CurrentHealth <= 0.0f) return;
-
-    SetInvulnerable(true);
-
-    UltimateCount = 0;
-    bIsMaledictionActive = true;
-    bIsRuptureActive = true;
-
-    if (TargetPlayer)
-    {
-        LastPlayerLocation = TargetPlayer->GetActorLocation();
-    }
-
-    if (BulletSpawner)
-    {
-        BulletSpawner->StopCurrentSequence();
-    }
-
-    if (FacadeRef)
-    {
-        FacadeRef->PauseBossWaves();
-    }
-
-    GetWorld()->GetTimerManager().SetTimer(
-        RuptureTimerHandle,
-        this,
-        &ABloodseekerBoss::DeactivateMalediction,
-        RuptureDuration,
-        false
-    );
-
-    SpawnKamikazeWave(3, 0.3f);
-
-    TWeakObjectPtr<ABloodseekerBoss> WeakBoss_KW1(this);
-    GetWorld()->GetTimerManager().SetTimer(
-        KamikazeWaveTimer,
-        [WeakBoss_KW1]()
-        {
-            ABloodseekerBoss* Self = WeakBoss_KW1.Get();
-            if (!Self || !Self->GetWorld() || !Self->bIsMaledictionActive) return;
-            Self->SpawnKamikazeWave(5, 0.25f);
-        },
-        5.0f,
-        false
-    );
-
-    TWeakObjectPtr<ABloodseekerBoss> WeakBoss_KW2(this);
-    GetWorld()->GetTimerManager().SetTimer(
-        KamikazeWaveTimer2,
-        [WeakBoss_KW2]()
-        {
-            ABloodseekerBoss* Self = WeakBoss_KW2.Get();
-            if (!Self || !Self->GetWorld() || !Self->bIsMaledictionActive) return;
-            Self->SpawnKamikazeWave(8, 0.2f);
-        },
-        10.0f,
-        false
-    );
-}
-
-void ABloodseekerBoss::ExecuteUltimateMalediction()
-{
-    TryActivateUltimate();
-}
-
 void ABloodseekerBoss::CycleNextAttack()
 {
     AttackCycleIndex = 1 - AttackCycleIndex;
@@ -300,49 +230,6 @@ void ABloodseekerBoss::CycleNextAttack()
         BulletSpawner->StartSequence(AttackSequence);
     }
 
-    GetWorld()->GetTimerManager().SetTimer(
-        AttackCycleTimer,
-        this,
-        &ABloodseekerBoss::CycleNextAttack,
-        TimeBetweenAttacks,
-        false
-    );
-}
-
-void ABloodseekerBoss::ActivateMalediction()
-{
-    bIsMaledictionActive = true;
-    bIsRuptureActive = true;
-    if (TargetPlayer)
-    {
-        LastPlayerLocation = TargetPlayer->GetActorLocation();
-    }
-}
-
-void ABloodseekerBoss::DeactivateMalediction()
-{
-    bIsMaledictionActive = false;
-    bIsRuptureActive = false;
-
-    // Boss vuelve a recibir daño
-    SetInvulnerable(false);
-
-    // Limpiar timers de oleadas
-    if (GetWorld())
-    {
-        GetWorld()->GetTimerManager().ClearTimer(RuptureTimerHandle);
-        GetWorld()->GetTimerManager().ClearTimer(WaveTimerHandle);
-        GetWorld()->GetTimerManager().ClearTimer(WaveTimerHandle2);
-        GetWorld()->GetTimerManager().ClearTimer(KamikazeWaveTimer);
-        GetWorld()->GetTimerManager().ClearTimer(KamikazeWaveTimer2);
-    }
-
-    if (FacadeRef)
-    {
-        FacadeRef->ResumeBossWaves();
-    }
-
-    // Reanudamos el ciclo de ataques normales
     GetWorld()->GetTimerManager().SetTimer(
         AttackCycleTimer,
         this,
@@ -423,21 +310,14 @@ void ABloodseekerBoss::OnBossHealthChanged(float NewHealth)
 
 void ABloodseekerBoss::Die()
 {
-    // Limpieza obligatoria de timers
     if (GetWorld())
     {
-        GetWorld()->GetTimerManager().ClearTimer(RuptureTimerHandle);
         GetWorld()->GetTimerManager().ClearTimer(AttackCycleTimer);
-        GetWorld()->GetTimerManager().ClearTimer(WaveTimerHandle);
-        GetWorld()->GetTimerManager().ClearTimer(WaveTimerHandle2);
-        GetWorld()->GetTimerManager().ClearTimer(UltimateTimerHandle);
-        GetWorld()->GetTimerManager().ClearTimer(KamikazeWaveTimer);
-        GetWorld()->GetTimerManager().ClearTimer(KamikazeWaveTimer2);
+        GetWorld()->GetTimerManager().ClearTimer(UltimateTransitionTimer);
     }
 
-    // Apagamos mecanicas activas
     bIsRuptureActive = false;
     bIsMaledictionActive = false;
-    
+
     Super::Die();
 }

@@ -13,7 +13,7 @@ AKamikazeEnemy::AKamikazeEnemy()
     AttackInterval = 0.0f;
 
     Speed = 600.0f;
-    ImpactDamage = 10.0f;
+    ImpactDamage = 5.0f;
 
     bHasReachedTarget = false;
 }
