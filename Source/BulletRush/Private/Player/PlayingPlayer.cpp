@@ -226,7 +226,7 @@ void APlayingPlayer::RefreshStatsFromChain()
 	HealthComp->MaxHealth = NewMaxHealth;
 	if (HealthComp->CurrentHealth > NewMaxHealth) HealthComp->CurrentHealth = NewMaxHealth;
 
-	UE_LOG(LogTemp, Warning, TEXT("STATS: SPEED: %f, MAXHEALTH: %f"), NewSpeed, NewMaxHealth);
+	UE_LOG(LogTemp, Warning, TEXT("STATS: SPEED: %f, MAXHEALTH: %f, CURRENT HEALTH: %f"), NewSpeed, NewMaxHealth, HealthComp->CurrentHealth);
 }
 
 void APlayingPlayer::RemoveDecorator(UPlayerStatsDecorator* Decorator)
