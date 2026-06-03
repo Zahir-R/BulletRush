@@ -59,8 +59,7 @@ void ALevel21Facade::StartLevel()
     APlayingPlayer* Player = Cast<APlayingPlayer>(
         UGameplayStatics::GetPlayerPawn(this, 0));
 
-    if (Player && Player->HealthComp)
-        Player->HealthComp->OnDeath.AddDynamic(this, &ALevel21Facade::OnPlayerDeath);
+    
 
     // Timer de 3 minutos
     GetWorld()->GetTimerManager().SetTimer(
@@ -79,51 +78,75 @@ void ALevel21Facade::SpawnWave()
 {
     if (!Factory) return;
 
-    for (int32 i = 0; i < TotalDrones; i++)
+    // 8 Drones
+    
+    TArray<FVector> DronePositions = {
+        FVector(500.f,   0.f, 100.f), FVector(-500.f,  0.f, 100.f),
+        FVector(0.f,   500.f, 100.f), FVector(0.f,  -500.f, 100.f),
+        FVector(700.f, 300.f, 100.f), FVector(-700.f, 300.f, 100.f),
+        FVector(300.f, 700.f, 100.f), FVector(-300.f,-700.f, 100.f),
+    };
+
+    // 4 Chargers
+    TArray<FVector> ChargerPositions = {
+        FVector(1900.f,   0.f, 300.f), FVector(-1900.f,   0.f, 300.f),
+        FVector(0.f,   1900.f, 100.f), FVector(0.f,   -1900.f, 100.f),
+    };
+
+    // 3 Kamikazes
+    TArray<FVector> KamikazePositions = {
+        FVector(1600.f, -600.f, 100.f),
+        FVector(-600.f, 600.f, 1100.f),
+        FVector(1000.f, 1400.f, 100.f),
+    };
+
+    // Spawn drones
+    
+    for (FVector Loc : DronePositions)
     {
-        FVector SpawnLoc = DroneSpawnLocations.IsValidIndex(i)
-            ? DroneSpawnLocations[i]
-            : FVector(i * 200.f, 0.f, 100.f);
-
-        // Spawn drone
         ADronMecha* Drone = Cast<ADronMecha>(
-            Factory->CreateEnemy(EMechaEnemyType::DroneMecha, SpawnLoc, FRotator::ZeroRotator));
-
+            Factory->CreateEnemy(EMechaEnemyType::DroneMecha, Loc, FRotator::ZeroRotator));
         if (!Drone) continue;
-
-        // Spawn bateria cerca del drone
-        FVector BatteryLoc = SpawnLoc + FVector(BatteryOffset, 0.f, 0.f);
-        ABatteryActor* Battery = Cast<ABatteryActor>(
-            Factory->CreateEnemy(EMechaEnemyType::BatteryActor, BatteryLoc, FRotator::ZeroRotator));
-
-        // Vinculamos drone y bateria
-        if (Battery)
-        {
-            Battery->LinkDrone(Drone);
-            Drone->LinkBattery(Battery);
-        }
-
-        // Suscribimos la muerte del drone
-        Drone->OnEnemyDeath.AddDynamic(this, &ALevel21Facade::OnDroneKilled);
-        ActiveDrones.Add(Drone);
+        Drone->OnEnemyDeath.AddDynamic(this, &ALevel21Facade::OnEnemyKilled);
+        ActiveEnemies.Add(Drone);
     }
 
-    UE_LOG(LogTemp, Warning, TEXT("[Level21Facade] Wave spawneada: %d drones"), TotalDrones);
+    // Spawn chargers
+    for (FVector Loc : ChargerPositions)
+    {
+        AMechaChargerEnemy* Charger = Cast<AMechaChargerEnemy>(
+            Factory->CreateEnemy(EMechaEnemyType::MechaCharger, Loc, FRotator::ZeroRotator));
+        if (!Charger) continue;
+        Charger->OnEnemyDeath.AddDynamic(this, &ALevel21Facade::OnEnemyKilled);
+        ActiveEnemies.Add(Charger);
+    }
+
+    // Spawn kamikazes
+    for (FVector Loc : KamikazePositions)
+    {
+        AMechaKamikazeEnemy* Kamikaze = Cast<AMechaKamikazeEnemy>(
+            Factory->CreateEnemy(EMechaEnemyType::MechaKamikaze, Loc, FRotator::ZeroRotator));
+        if (!Kamikaze) continue;
+        Kamikaze->OnEnemyDeath.AddDynamic(this, &ALevel21Facade::OnEnemyKilled);
+        ActiveEnemies.Add(Kamikaze);
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("[Level21Facade] Wave spawneada: %d enemigos"), ActiveEnemies.Num());
 }
 
 
-void ALevel21Facade::OnDroneKilled(AEnemyBase* DeadEnemy)
+void ALevel21Facade::OnEnemyKilled(AEnemyBase* DeadEnemy)
 {
-    DronesKilled++;
-    UE_LOG(LogTemp, Warning, TEXT("[Level21Facade] Drones eliminados: %d / %d"),
-        DronesKilled, TotalDrones);
+    EnemiesKilled++;
+    UE_LOG(LogTemp, Warning, TEXT("[Level21Facade] Enemigos eliminados: %d / %d"),
+        EnemiesKilled, TotalEnemies);
 
     CheckLevelComplete();
 }
 
 void ALevel21Facade::CheckLevelComplete()
 {
-    if (DronesKilled < TotalDrones) return;
+    if (EnemiesKilled < TotalEnemies) return;
     if (bLevelComplete) return;
 
     bLevelComplete = true;

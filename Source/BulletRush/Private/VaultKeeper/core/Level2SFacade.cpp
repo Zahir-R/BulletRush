@@ -1,12 +1,13 @@
 #include "VaultKeeper/core/Level2SFacade.h"
 #include "VaultKeeper/core/MechaEnemyFactory.h"
 #include "VaultKeeper/enemies/DronMecha.h"
-#include "VaultKeeper/enemies/VaultKeeper.h"
+#include "VaultKeeper/enemies/MechaKamikazeEnemy.h"
+#include "VaultKeeper/enemies/MechaChargerEnemy.h"
 #include "VaultKeeper/objets/BatteryActor.h"
 #include "Map/LevelPortal.h"
-#include "Core/BulletRushGameInstance.h"
 #include "Components/HealthComponent.h"
 #include "Components/BoxComponent.h"
+#include "Core/BulletRushGameInstance.h"
 #include "Player/PlayingPlayer.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
@@ -14,24 +15,6 @@
 ALevel2SFacade::ALevel2SFacade()
 {
     PrimaryActorTick.bCanEverTick = false;
-
-    DroneSpawnLocations = {
-        FVector(500.f,    0.f, 100.f),
-        FVector(-500.f,   0.f, 100.f),
-        FVector(0.f,    500.f, 100.f),
-        FVector(0.f,   -500.f, 100.f),
-        FVector(700.f,  300.f, 100.f),
-        FVector(-700.f, 300.f, 100.f),
-        FVector(300.f,  700.f, 100.f),
-        FVector(-300.f,-700.f, 100.f),
-        FVector(900.f,    0.f, 100.f),
-        FVector(-900.f,   0.f, 100.f),
-        FVector(0.f,    900.f, 100.f),
-        FVector(0.f,   -900.f, 100.f),
-        FVector(600.f, -600.f, 100.f),
-        FVector(-600.f, 600.f, 100.f),
-        FVector(1000.f, 400.f, 100.f),
-    };
 }
 
 void ALevel2SFacade::BeginPlay()
@@ -40,105 +23,153 @@ void ALevel2SFacade::BeginPlay()
 
     Factory = GetWorld()->SpawnActor<AMechaEnemyFactory>(
         AMechaEnemyFactory::StaticClass(),
-        FVector::ZeroVector,
-        FRotator::ZeroRotator
-    );
+        FVector::ZeroVector, FRotator::ZeroRotator);
 
-    //StartLevel();
     PortalToBoss = GetWorld()->SpawnActor<ALevelPortal>(
         ALevelPortal::StaticClass(),
-        FVector(0.f, 0.f, 100.f), FRotator::ZeroRotator);
-    PortalToBoss->SetActorHiddenInGame(true);
+        FVector(0.f, 0.f, 0.f), FRotator::ZeroRotator);
+	PortalToBoss->SetActorHiddenInGame(true);
 }
 
+// ---------------------------------------------------------
+// START LEVEL
+// ---------------------------------------------------------
 void ALevel2SFacade::StartLevel()
 {
     APlayingPlayer* Player = Cast<APlayingPlayer>(
         UGameplayStatics::GetPlayerPawn(this, 0));
 
-    if (Player && Player->HealthComp)
-        Player->HealthComp->OnDeath.AddDynamic(this, &ALevel2SFacade::OnPlayerDeath);
+    
 
     // Veneno cada segundo
     GetWorld()->GetTimerManager().SetTimer(
-        VenomTimer,
-        this,
-        &ALevel2SFacade::ApplyVenom,
-        1.0f,
-        true
-    );
+        VenomTimer, this, &ALevel2SFacade::ApplyVenom, 1.0f, true);
 
-    SpawnWave();
+    SpawnHives();
 }
 
-void ALevel2SFacade::SpawnWave()
+// ---------------------------------------------------------
+// SPAWN 3 COLMENAS
+// ---------------------------------------------------------
+void ALevel2SFacade::SpawnHives()
+{
+    // Centros de cada colmena separados en el mapa
+    TArray<FVector> HiveCenters = {
+        FVector(-1200.f,    0.f, 100.f),
+        FVector(1200.f,    0.f, 100.f),
+        FVector(0.f, 1200.f, 100.f),
+    };
+
+    Hives.SetNum(3);
+
+    for (int32 i = 0; i < 3; i++)
+        SpawnHive(i, HiveCenters[i]);
+
+    UE_LOG(LogTemp, Warning, TEXT("[Level2SFacade] 3 colmenas spawneadas"));
+}
+
+void ALevel2SFacade::SpawnHive(int32 HiveIndex, FVector HiveCenter)
 {
     if (!Factory) return;
 
-    for (int32 i = 0; i < TotalDrones; i++)
-    {
-        FVector SpawnLoc = DroneSpawnLocations.IsValidIndex(i)
-            ? DroneSpawnLocations[i]
-            : FVector(i * 200.f, 0.f, 100.f);
+    FHiveData& Hive = Hives[HiveIndex];
 
+    // Bateria central de la colmena
+    Hive.Battery = Cast<ABatteryActor>(
+        Factory->CreateEnemy(EMechaEnemyType::BatteryActor,
+            HiveCenter, FRotator::ZeroRotator));
+
+    // Offsets relativos al centro de la colmena
+    TArray<FVector> DroneOffsets = {
+        FVector(200.f,   0.f, 0.f), FVector(-200.f,   0.f, 0.f),
+        FVector(0.f,   200.f, 0.f), FVector(0.f,  -200.f, 0.f),
+        FVector(300.f, 150.f, 0.f), FVector(-300.f,  150.f, 0.f),
+        FVector(150.f, 300.f, 0.f), FVector(-150.f, -300.f, 0.f),
+        FVector(250.f,-150.f, 0.f), FVector(-250.f, -150.f, 0.f),
+    };
+
+    TArray<FVector> ChargerOffsets = {
+        FVector(400.f,   0.f, 0.f),
+        FVector(-400.f,  0.f, 0.f),
+        FVector(0.f,   400.f, 0.f),
+    };
+
+    TArray<FVector> KamikazeOffsets = {
+        FVector(350.f, -350.f, 0.f),
+        FVector(-350.f, 350.f, 0.f),
+    };
+
+    // Spawn 10 drones
+    for (FVector Offset : DroneOffsets)
+    {
         ADronMecha* Drone = Cast<ADronMecha>(
-            Factory->CreateEnemy(EMechaEnemyType::DroneMecha, SpawnLoc, FRotator::ZeroRotator));
-
+            Factory->CreateEnemy(EMechaEnemyType::DroneMecha,
+                HiveCenter + Offset, FRotator::ZeroRotator));
         if (!Drone) continue;
-
-        // Doble balas
-        //Drone->BulletMultiplier = 2.0f;
-
-        FVector BatteryLoc = SpawnLoc + FVector(BatteryOffset, 0.f, 0.f);
-        ABatteryActor* Battery = Cast<ABatteryActor>(
-            Factory->CreateEnemy(EMechaEnemyType::BatteryActor, BatteryLoc, FRotator::ZeroRotator));
-
-        if (Battery)
-        {
-            Battery->LinkDrone(Drone);
-            Drone->LinkBattery(Battery);
-        }
-
-        Drone->OnEnemyDeath.AddDynamic(this, &ALevel2SFacade::OnDroneKilled);
-        ActiveDrones.Add(Drone);
+        if (Hive.Battery) Hive.Battery->LinkEnemy(Drone);
+        Drone->OnEnemyDeath.AddDynamic(this, &ALevel2SFacade::OnEnemyKilled);
+        Hive.Enemies.Add(Drone);
     }
 
-    UE_LOG(LogTemp, Warning, TEXT("[Level2SFacade] Wave spawneada con doble balas"));
-}
-
-void ALevel2SFacade::ApplyVenom()
-{
-    APlayingPlayer* Player = Cast<APlayingPlayer>(
-        UGameplayStatics::GetPlayerPawn(this, 0));
-
-    if (Player && Player->HealthComp && !Player->HealthComp->bDead)
+    // Spawn 3 chargers
+    for (FVector Offset : ChargerOffsets)
     {
-        Player->HealthComp->CurrentHealth -= VenomDamagePerSecond;
-        UE_LOG(LogTemp, Warning, TEXT("[Level2SFacade] Veneno aplicado. Vida: %f"),
-            Player->HealthComp->CurrentHealth);
-
-        if (Player->HealthComp->CurrentHealth <= 0.f)
-        {
-            Player->HealthComp->CurrentHealth = 0.f;
-            OnPlayerDeath();
-        }
+        AMechaChargerEnemy* Charger = Cast<AMechaChargerEnemy>(
+            Factory->CreateEnemy(EMechaEnemyType::MechaCharger,
+                HiveCenter + Offset, FRotator::ZeroRotator));
+        if (!Charger) continue;
+        if (Hive.Battery) Hive.Battery->LinkEnemy(Charger);
+        Charger->OnEnemyDeath.AddDynamic(this, &ALevel2SFacade::OnEnemyKilled);
+        Hive.Enemies.Add(Charger);
     }
+
+    // Spawn 2 kamikazes
+    for (FVector Offset : KamikazeOffsets)
+    {
+        AMechaKamikazeEnemy* Kamikaze = Cast<AMechaKamikazeEnemy>(
+            Factory->CreateEnemy(EMechaEnemyType::MechaKamikaze,
+                HiveCenter + Offset, FRotator::ZeroRotator));
+        if (!Kamikaze) continue;
+        if (Hive.Battery) Hive.Battery->LinkEnemy(Kamikaze);
+        Kamikaze->OnEnemyDeath.AddDynamic(this, &ALevel2SFacade::OnEnemyKilled);
+        Hive.Enemies.Add(Kamikaze);
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("[Level2SFacade] Colmena %d spawneada: %d enemigos"),
+        HiveIndex, Hive.Enemies.Num());
 }
 
 // ---------------------------------------------------------
-// DRONE KILLED
+// ENEMY KILLED
 // ---------------------------------------------------------
-void ALevel2SFacade::OnDroneKilled(AEnemyBase* DeadEnemy)
+void ALevel2SFacade::OnEnemyKilled(AEnemyBase* DeadEnemy)
 {
-    DronesKilled++;
-    UE_LOG(LogTemp, Warning, TEXT("[Level2SFacade] Drones: %d / %d"),
-        DronesKilled, TotalDrones);
+    // Buscamos en qué colmena estaba
+    for (FHiveData& Hive : Hives)
+    {
+        if (Hive.Enemies.Contains(DeadEnemy))
+        {
+            Hive.Enemies.Remove(DeadEnemy);
+            UE_LOG(LogTemp, Warning, TEXT("[Level2SFacade] Enemigo eliminado. Quedan en colmena: %d"),
+                Hive.Enemies.Num());
+            break;
+        }
+    }
+
     CheckLevelComplete();
 }
 
+// ---------------------------------------------------------
+// CHECK COMPLETE
+// ---------------------------------------------------------
 void ALevel2SFacade::CheckLevelComplete()
 {
-    if (DronesKilled < TotalDrones) return;
+    // Contamos colmenas limpias
+    int32 ClearedCount = 0;
+    for (const FHiveData& Hive : Hives)
+        if (Hive.IsCleared()) ClearedCount++;
+
+    if (ClearedCount < 3) return;
     if (bLevelComplete) return;
 
     bLevelComplete = true;
@@ -149,12 +180,44 @@ void ALevel2SFacade::CheckLevelComplete()
     {
         GI->bVaultKeeperWeakened = true;
         GI->Level2State = ELevelState::Boss;
-        UE_LOG(LogTemp, Warning, TEXT("[Level2SFacade] Completado — VK debilitado, estado ? Boss"));
     }
 
+    UE_LOG(LogTemp, Warning, TEXT("[Level2SFacade] Todas las colmenas limpias — VK debilitado"));
     OpenPortal();
 }
 
+// ---------------------------------------------------------
+// VENENO
+// ---------------------------------------------------------
+void ALevel2SFacade::ApplyVenom()
+{
+    APlayingPlayer* Player = Cast<APlayingPlayer>(
+        UGameplayStatics::GetPlayerPawn(this, 0));
+
+    if (Player && Player->HealthComp && !Player->HealthComp->bDead)
+    {
+        Player->HealthComp->CurrentHealth -= VenomDamagePerSecond;
+
+        if (Player->HealthComp->CurrentHealth <= 0.f)
+        {
+            Player->HealthComp->CurrentHealth = 0.f;
+            OnPlayerDeath();
+        }
+    }
+}
+
+// ---------------------------------------------------------
+// PLAYER DEATH
+// ---------------------------------------------------------
+void ALevel2SFacade::OnPlayerDeath()
+{
+    GetWorld()->GetTimerManager().ClearTimer(VenomTimer);
+    UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()));
+}
+
+// ---------------------------------------------------------
+// PORTAL
+// ---------------------------------------------------------
 void ALevel2SFacade::OpenPortal()
 {
     if (PortalToBoss)
@@ -166,12 +229,3 @@ void ALevel2SFacade::OpenPortal()
     else
         UE_LOG(LogTemp, Error, TEXT("[Level2SFacade] Portal no asignado"));
 }
-
-void ALevel2SFacade::OnPlayerDeath()
-{
-    GetWorld()->GetTimerManager().ClearTimer(VenomTimer);
-    UE_LOG(LogTemp, Warning, TEXT("[Level2SFacade] Jugador murio — reintento"));
-    UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()));
-}
-
-

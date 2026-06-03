@@ -16,11 +16,18 @@ ALevel2GameMode::ALevel2GameMode()
 void ALevel2GameMode::BeginPlay()
 {
     Super::BeginPlay();
+    
+    APlayingPlayer* Player = Cast<APlayingPlayer>(
+        UGameplayStatics::GetPlayerPawn(this, 0));
+
+    if (Player && Player->HealthComp)
+        Player->HealthComp->OnDeath.AddDynamic(this, &ALevel2GameMode::OnPlayerDeath);
+
     DetectAndActivateFacade();
+
     if (GetWorld())
-    {
-        ABulletRushGameModeBase::SpawnPowerUpsForLevel(GetWorld(), FName(GetWorld()->GetMapName()));
-    }
+        ABulletRushGameModeBase::SpawnPowerUpsForLevel(
+            GetWorld(), FName(GetWorld()->GetMapName()));
 }
 
 void ALevel2GameMode::DetectAndActivateFacade()
@@ -57,5 +64,28 @@ void ALevel2GameMode::DetectAndActivateFacade()
         if (FacadeVK) FacadeVK->StartLevel();
         UE_LOG(LogTemp, Warning, TEXT("[Level2GameMode] Modo: 2-2 Boss"));
         break;
+    }
+}
+void ALevel2GameMode::OnPlayerDeath()
+{
+    UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
+    if (!GI) return;
+
+    FName MapName = FName(*GetWorld()->GetName());
+    int32 VidasRestantes = GI->DecrementarVida(MapName);
+
+    UE_LOG(LogTemp, Warning, TEXT("[Level2GameMode] Jugador murio. Vidas restantes: %d"),
+        VidasRestantes);
+
+    if (VidasRestantes > 0)
+    {
+        // Recarga el mismo nivel
+        UGameplayStatics::OpenLevel(this, MapName);
+    }
+    else
+    {
+        // Sin vidas ? resetea estado y vuelve al mapa
+        GI->Level2State = ELevelState::Normal;
+        UGameplayStatics::OpenLevel(this, FName("Map_CupHeadMap"));
     }
 }

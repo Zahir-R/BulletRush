@@ -3,6 +3,8 @@
 #include "VaultKeeper/enemies/VaultKeeper.h"
 #include "VaultKeeper/enemies/DronMecha.h"
 #include "VaultKeeper/objets/BatteryActor.h"
+#include "VaultKeeper/enemies/MechaKamikazeEnemy.h"
+#include "VaultKeeper/enemies/MechaChargerEnemy.h"
 #include "Core/BulletRushGameInstance.h"
 #include "Map/LevelPortal.h"
 #include "Components/BoxComponent.h"
@@ -89,34 +91,39 @@ void AVaultKeeperFacade::SpawnDroneWave()
 
     for (int32 i = 0; i < DronesPerSpawn; i++)
     {
-        // Rotamos las posiciones disponibles
         int32 Index = (DroneSpawnCount + i) % DroneSpawnLocations.Num();
         FVector SpawnLoc = DroneSpawnLocations[Index];
 
-        ADronMecha* Drone = Cast<ADronMecha>(
-            Factory->CreateEnemy(EMechaEnemyType::DroneMecha,
-                SpawnLoc, FRotator::ZeroRotator));
+        // Enemigo aleatorio entre los 3 tipos
+        int32 RandType = FMath::RandRange(0, 2);
+        AEnemyBase* SpawnedEnemy = nullptr;
 
-        if (!Drone) continue;
-
-        // Bateria vinculada
-        FVector BatteryLoc = SpawnLoc + FVector(150.f, 0.f, 0.f);
-        ABatteryActor* Battery = Cast<ABatteryActor>(
-            Factory->CreateEnemy(EMechaEnemyType::BatteryActor,
-                BatteryLoc, FRotator::ZeroRotator));
-
-        if (Battery)
+        switch (RandType)
         {
-            Battery->LinkDrone(Drone);
-            Drone->LinkBattery(Battery);
+        case 0:
+            SpawnedEnemy = Cast<AEnemyBase>(
+                Factory->CreateEnemy(EMechaEnemyType::DroneMecha,
+                    SpawnLoc, FRotator::ZeroRotator));
+            break;
+        case 1:
+            SpawnedEnemy = Cast<AEnemyBase>(
+                Factory->CreateEnemy(EMechaEnemyType::MechaCharger,
+                    SpawnLoc, FRotator::ZeroRotator));
+            break;
+        case 2:
+            SpawnedEnemy = Cast<AEnemyBase>(
+                Factory->CreateEnemy(EMechaEnemyType::MechaKamikaze,
+                    SpawnLoc, FRotator::ZeroRotator));
+            break;
         }
 
-        Drone->OnEnemyDeath.AddDynamic(this, &AVaultKeeperFacade::OnDroneKilled);
-        ActiveDrones.Add(Drone);
+        if (!SpawnedEnemy) continue;
+        SpawnedEnemy->OnEnemyDeath.AddDynamic(this, &AVaultKeeperFacade::OnDroneKilled);
+        ActiveEnemies.Add(SpawnedEnemy); // Cast puede ser null para Charger/Kamikaze
     }
 
     DroneSpawnCount += DronesPerSpawn;
-    UE_LOG(LogTemp, Warning, TEXT("[VaultKeeperFacade] Drones spawneados: %d"), DronesPerSpawn);
+    UE_LOG(LogTemp, Warning, TEXT("[VaultKeeperFacade] Enemigos spawneados: %d"), DronesPerSpawn);
 }
 
 void AVaultKeeperFacade::OnBossDeath(AEnemyBase* DeadEnemy)
@@ -126,22 +133,26 @@ void AVaultKeeperFacade::OnBossDeath(AEnemyBase* DeadEnemy)
 
     GetWorld()->GetTimerManager().ClearTimer(DroneSpawnTimer);
 
-    for (ADronMecha* Drone : ActiveDrones)
-        if (Drone && IsValid(Drone))
-            Drone->Destroy();
-    ActiveDrones.Empty();
+    for (AEnemyBase* Enemy : ActiveEnemies)
+        if (Enemy && IsValid(Cast<UObject>(Enemy)))
+            Enemy->Destroy();
+    ActiveEnemies.Empty();
 
-    // Marcamos el mapa como completado
     UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
     if (GI)
     {
         GI->MarcarMapaCompletado(FName("Map_02Boss"));
-        GI->Level2State = ELevelState::Normal; // reseteamos para proxima vez
-        UE_LOG(LogTemp, Warning, TEXT("[VaultKeeperFacade] Nivel completo — mapa marcado"));
+        GI->Level2State = ELevelState::Normal;
     }
 
-    UE_LOG(LogTemp, Warning, TEXT("[VaultKeeperFacade] Boss derrotado"));
     OpenPortal();
+}
+
+void AVaultKeeperFacade::OnDroneKilled(AEnemyBase* DeadEnemy)
+{
+    ActiveEnemies.Remove(DeadEnemy);
+    UE_LOG(LogTemp, Warning, TEXT("[VaultKeeperFacade] Enemigo eliminado. Activos: %d"),
+        ActiveEnemies.Num());
 }
 
 void AVaultKeeperFacade::OpenPortal()
@@ -157,11 +168,5 @@ void AVaultKeeperFacade::OpenPortal()
         UE_LOG(LogTemp, Error, TEXT("[VaultKeeperFacade] PortalToMap no asignado"));
 }
 
-void AVaultKeeperFacade::OnDroneKilled(AEnemyBase* DeadEnemy)
-{
-    ADronMecha* Drone = Cast<ADronMecha>(DeadEnemy);
-    if (Drone) ActiveDrones.Remove(Drone);
-    UE_LOG(LogTemp, Warning, TEXT("[VaultKeeperFacade] Drone eliminado. Activos: %d"),
-        ActiveDrones.Num());
-}
+
 

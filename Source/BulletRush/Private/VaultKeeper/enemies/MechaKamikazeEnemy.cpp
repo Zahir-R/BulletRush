@@ -70,5 +70,5 @@ void AMechaKamikazeEnemy::OnOverlapPlayer(UPrimitiveComponent* OverlappedComp, A
 void AMechaKamikazeEnemy::Die()
 {
     bHasReachedTarget = true;
-	Destroy();
+	Super::Die();
 }

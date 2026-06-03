@@ -30,7 +30,7 @@ protected:
 
 public:
     UPROPERTY(EditDefaultsOnly, Category = "MechaCharger|Movement")
-    float ChargeSpeed = 1500.0f;
+    float ChargeSpeed = 500.0f;
 
     // Cuánto dura el slow que aplica al jugador al impactar
     UPROPERTY(EditDefaultsOnly, Category = "MechaCharger|Combat")

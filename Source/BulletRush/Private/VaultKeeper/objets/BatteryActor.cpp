@@ -54,17 +54,19 @@ float ABatteryActor::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
     return RealDamage;
 }
 
-void ABatteryActor::LinkDrone(ADronMecha* Drone)
+void ABatteryActor::LinkEnemy(AEnemyBase* Enemy)
 {
-    LinkedDrone = Drone;
-    Subscribe(Cast<AActor>(Drone)); // APublisher::Subscribe
+    if (!Enemy) return;
+    LinkedEnemies.Add(Enemy);
+    Subscribe(Cast<AActor>(Enemy));
 }
 
 void ABatteryActor::ApplyHeal()
 {
-    if (LinkedDrone && IsValid(LinkedDrone))
+    for (AEnemyBase* Enemy : LinkedEnemies)
     {
-        LinkedDrone->HealthComp->Heal(HealRate);
+        if (Enemy && IsValid(Cast<UObject>(Enemy)) && Enemy->HealthComp)
+            Enemy->HealthComp->Heal(HealRate);
     }
 }
 
