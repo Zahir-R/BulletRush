@@ -5,6 +5,7 @@
 #include "Enemies/Orchestrator/Orchestrator.h"
 #include "Enemies/EnemyBase.h"
 #include "Core/Orchestrator/OrchestratorGameMode.h"
+#include "Enemies/Bloodseeker/KamikazeEnemy.h"
 #include "TimerManager.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
@@ -20,6 +21,8 @@ AOrchestratorFacade::AOrchestratorFacade()
 	GeneratorsDestroyed = 0;
 	GuardiansDefeated = 0;
 	TotalGuardiansToSpawn = 3;
+	ReinforcementClass = AKamikazeEnemy::StaticClass();
+	SecretGuardianClass = AKamikazeEnemy::StaticClass();
 }
 
 void AOrchestratorFacade::BeginPlay()
@@ -77,19 +80,15 @@ void AOrchestratorFacade::ReportGuardianDefeated()
 
 void AOrchestratorFacade::PrepareBossArena(FTransform BossSpawnTransform)
 {
+	// 1. Evitamos dobles ejecuciones
 	if (bBossFightStarted) return;
 	bBossFightStarted = true;
 
-	UE_LOG(LogTemp, Warning, TEXT("Fachada: Iniciando Combate de Jefe."));
+	UE_LOG(LogTemp, Warning, TEXT("Fachada: Combate de Jefe Registrado."));
 
 	if (GetWorld())
 	{
 		AOrchestrator* TheBoss = GetWorld()->SpawnActor<AOrchestrator>(AOrchestrator::StaticClass(), BossSpawnTransform);
-		if (TheBoss)
-		{
-			// Aplicamos la resolución del puzzle 5-1-S al jefe para saltar fases
-			TheBoss->bSecretLevelCleared = bSecretPuzzleSolved;
-		}
 	}
 }
 
@@ -118,13 +117,14 @@ void AOrchestratorFacade::SpawnSecretGuardians()
 	for (int i = 0; i < TotalGuardiansToSpawn; i++)
 	{
 		// Aparecen frente al jugador en la sala de energía
-		FVector SpawnLoc = GetActorLocation() + FVector(200.0f * i, 300.0f, 0.0f);
+		//FVector SpawnLoc = GetActorLocation() + FVector(200.0f * i, 300.0f, 0.0f);
+		FVector SpawnLoc = FVector(0.0f, -4730.0f, 500.0f);
 		AEnemyBase* Guardian = GetWorld()->SpawnActor<AEnemyBase>(SecretGuardianClass, SpawnLoc, FRotator::ZeroRotator, SpawnParams);
 
 		if (Guardian)
 		{
 			// Nos suscribimos a su muerte para llevar la cuenta
-			//Guardian->OnEnemyDeath.AddDynamic(this, &AOrchestratorFacade::ReportGuardianDefeated);
+			Guardian->HealthComp->OnDeath.AddDynamic(this, &AOrchestratorFacade::ReportGuardianDefeated);
 		}
 	}
 }

@@ -39,13 +39,14 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Facade|Classes")
 	TSubclassOf<AEnemyBase> SecretGuardianClass;
 
+	bool bSecretPuzzleSolved;
+
 protected:
 	virtual void BeginPlay() override;
 
 private:
 	// Variables de estado
 	bool bIsPlayerDetected;
-	bool bSecretPuzzleSolved;
 	bool bBossFightStarted;
 
 	// Variables del Puzzle 5-1-S

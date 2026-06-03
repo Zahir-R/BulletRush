@@ -18,15 +18,13 @@ ASurveillanceDrone::ASurveillanceDrone()
 	CollisionComp->SetCollisionProfileName(TEXT("Pawn"));
 	CollisionComp->SetCanEverAffectNavigation(false);
 
+	SetRootComponent(CollisionComp);
 	// Protección de Jerarquía
-	if (RootComponent)
+	if (MeshEnemy)
 	{
-		CollisionComp->SetupAttachment(RootComponent);
+		MeshEnemy->SetupAttachment(CollisionComp);
 	}
-	else
-	{
-		RootComponent = CollisionComp;
-	}
+	
 
 	// 2. ADJUNTAMOS LA MALLA A LA ESFERA
 	MeshEnemy->SetupAttachment(CollisionComp); // <-- Asegúrate de adjuntarlo al CollisionComp
@@ -34,6 +32,7 @@ ASurveillanceDrone::ASurveillanceDrone()
 	MeshEnemy->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	MeshEnemy->SetSimulatePhysics(false);
 	MeshEnemy->SetCanEverAffectNavigation(false);
+	MeshEnemy->SetRelativeLocation(FVector(0.0f, 0.0f, 70.0f)); // Centrado en la esfera
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
 	if (MeshAsset.Succeeded()) MeshEnemy->SetStaticMesh(MeshAsset.Object);
@@ -90,15 +89,22 @@ void ASurveillanceDrone::BeginPlay()
 		float Distance = VisionComp->VisionDistance;
 		float FOV = VisionComp->FieldOfViewDegrees;
 
-		float ScaleX = Distance / 100.0f;
-		float ScaleYZ = ScaleX * FMath::Tan(FMath::DegreesToRadians(FOV));
-		VisionConeMesh->SetRelativeScale3D(FVector(ScaleX, ScaleYZ, ScaleYZ));
+		// 1. ESCALA Z: La profundidad/altura real del Shape_Cone de Unreal
+		float ScaleZ = Distance / 100.0f;
 
-		// CORRECCIÓN: Rotamos a +90 positivo (nariz hacia arriba). 
-		// Esto invierte el cono: la punta se queda en el dron y la base se va lejos.
+		// 2. ESCALA X e Y: El radio real calculado trigonométricamente
+		float Radius = Distance * FMath::Tan(FMath::DegreesToRadians(FOV));
+		// Dividimos entre 50.0f porque el radio por defecto del Shape_Cone es 50
+		float ScaleXY = Radius / 50.0f;
+
+		// Aplicamos la escala respetando los ejes del modelo nativo
+		VisionConeMesh->SetRelativeScale3D(FVector(ScaleXY, ScaleXY, ScaleZ));
+
+		// 3. ROTACIÓN: Acostamos el cono de forma que la punta mire hacia el dron (Local -X)
 		VisionConeMesh->SetRelativeRotation(FRotator(90.0f, 0.0f, 0.0f));
 
-		// Compensación para que la punta nazca exactamente del centro del dron
+		// 4. POSICIÓN: Como el pivote está en el centro geométrico del cono,
+		// solo debemos empujarlo LA MITAD de la distancia para que la punta se ancle en el dron.
 		VisionConeMesh->SetRelativeLocation(FVector(Distance, 0.0f, 0.0f));
 	}
 

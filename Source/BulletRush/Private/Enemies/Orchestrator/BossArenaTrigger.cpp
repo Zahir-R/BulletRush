@@ -20,7 +20,6 @@ ABossArenaTrigger::ABossArenaTrigger()
 	TriggerBox->SetupAttachment(RootComponent);
 	TriggerBox->SetCollisionProfileName(TEXT("Trigger"));
 
-	// 3. Le damos un tamaño inicial grande para que lo veas en el editor
 	TriggerBox->InitBoxExtent(FVector(100.0f, 100.0f, 100.0f));
 
 	BossSpawnOffset = FVector(8200.0f, -2250.0f, 1000.0f);

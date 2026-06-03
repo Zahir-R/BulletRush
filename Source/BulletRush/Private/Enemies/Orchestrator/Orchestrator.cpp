@@ -10,6 +10,9 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/RhytmConductorComponent.h"
+#include "Core/Orchestrator/OrchestratorGameMode.h"
+#include "Core/Orchestrator/OrchestratorFacade.h"
+#include "Kismet/GameplayStatics.h"
 #include "PhysicsEngine/PhysicsAsset.h"
 
 AOrchestrator::AOrchestrator()
@@ -65,6 +68,14 @@ AOrchestrator::AOrchestrator()
 void AOrchestrator::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (AOrchestratorGameMode* GM = Cast<AOrchestratorGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
+	{
+		if (GM->LevelFacade && GM->LevelFacade->bSecretPuzzleSolved) // Asegúrate de hacer pública bSecretPuzzleSolved en la fachada
+		{
+			bSecretLevelCleared = true;
+		}
+	}
 	HealthComp->CurrentHealth = HealthComp->MaxHealth;
 	Phase1State = NewObject<UOrchestrator_Normal>(this);
 	Phase2State = NewObject<UOrchestrator_Melancholy>(this);
