@@ -9,7 +9,7 @@
 FVector GetScaleFromBPM(float CurrentBPM)
 {
 	FVector2D BPMRange(60.0f, 180.0f);     // De lento a rápido
-	FVector2D ScaleRange(2.6f, 0.4f);      // De gigante a pequeño (relación inversa)
+	FVector2D ScaleRange(2.6f, 1.0f);      // De gigante a pequeño (relación inversa)
 
 	// Interpola el valor de forma segura
 	float UniformScale = FMath::GetMappedRangeValueClamped(BPMRange, ScaleRange, CurrentBPM);
