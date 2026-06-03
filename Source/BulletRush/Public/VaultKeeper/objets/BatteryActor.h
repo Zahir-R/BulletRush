@@ -24,8 +24,10 @@ public:
     virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
         class AController* EventInstigator, AActor* DamageCauser) override;
 
-    // Vincula un drone a esta bater?a
-    void LinkDrone(ADronMecha* Drone);
+    UPROPERTY()
+    TArray<AEnemyBase*> LinkedEnemies;
+
+    void LinkEnemy(AEnemyBase* Enemy);
 
     UPROPERTY(VisibleAnywhere, Category = "Components")
     UStaticMeshComponent* BatteryMesh;
@@ -39,7 +41,7 @@ public:
 	UBulletSpawnerComponent* BulletSpawner;
 
 private:
-    ADronMecha* LinkedDrone = nullptr;
+    
     FTimerHandle HealLoop;
 
     UFUNCTION()

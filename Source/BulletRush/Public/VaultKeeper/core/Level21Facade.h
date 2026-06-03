@@ -42,18 +42,22 @@ public:
     // --- API publica ---
     void StartLevel();
 
+ 
     UFUNCTION()
-    void OnDroneKilled(AEnemyBase* DeadEnemy);
+    void OnEnemyKilled(AEnemyBase* DeadEnemy);
+
+
+    UPROPERTY()
+    TArray<AEnemyBase*> ActiveEnemies;
 
 private:
     UPROPERTY()
     AMechaEnemyFactory* Factory;
 
-    UPROPERTY()
-    TArray<ADronMecha*> ActiveDrones;
+  
 
-    int32 DronesKilled = 0;
-    int32 TotalDrones = 15;
+    int32 EnemiesKilled = 0;
+    int32 TotalEnemies= 5;
     bool bPlayerDied = false;
     bool bLevelComplete = false;
 

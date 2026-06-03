@@ -12,7 +12,9 @@ enum class EMechaEnemyType : uint8
 {
 	DroneMecha    UMETA(DisplayName = "Dron Mecha"),
 	BatteryActor  UMETA(DisplayName = "Bateria de Soporte"),
-	VaultKeeper   UMETA(DisplayName = "Jefe Vault-Keeper")
+	VaultKeeper   UMETA(DisplayName = "Jefe Vault-Keeper"),
+	MechaKamikaze UMETA(DisplayName = "Mecha Kamikaze"),
+	MechaCharger  UMETA(DisplayName = "Mecha Cargador")
 };
 
 UCLASS()
@@ -43,4 +45,11 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "MechaFactory|Classes")
 	TSubclassOf<AActor> VaultKeeperClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "MechaFactory|Classes")
+	TSubclassOf<AActor> MechaKamikazeClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "MechaFactory|Classes")
+	TSubclassOf<AActor> MechaChargerClass;
+
 };

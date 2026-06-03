@@ -10,6 +10,13 @@
 AVaultKeeper::AVaultKeeper()
 {
     PrimaryActorTick.bCanEverTick = true;
+	MeshEnemy->Deactivate();
+	MeshEnemy->SetHiddenInGame(true);
+    //mesh del boss
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/AccuCities/meshes/VaultKeeper.VaultKeeper'"));
+	VaultMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VaultMesh"));
+	RootComponent = VaultMesh;
+	if (MeshAsset.Succeeded()) VaultMesh->SetStaticMesh(MeshAsset.Object);
 
     UWeakPointComponent* WP1 = CreateDefaultSubobject<UWeakPointComponent>(TEXT("WeakPoint_Left"));
     WP1->SetupAttachment(RootComponent);

@@ -16,6 +16,9 @@ protected:
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
 
+    UPROPERTY(EditAnywhere, Category = "VaultKeeper|Visuals")
+    UStaticMeshComponent* VaultMesh;
+
     // --- Ciclo ---
     UPROPERTY(EditDefaultsOnly, Category = "VaultKeeper|Cycle")
     float OpenDuration = 5.0f;

@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Enemies/EnemyDecorators/IMechaEnemy.h"
 #include "EnemyDecorator.generated.h"
 
 class AEnemyBase;
 class UStaticMesh;
 
 UCLASS(Blueprintable)
-class BULLETRUSH_API AEnemyDecorator : public AActor
+class BULLETRUSH_API AEnemyDecorator : public AActor, public IMechaEnemy
 {
 	GENERATED_BODY()
 	
@@ -27,4 +28,7 @@ public:
 	virtual void ApplyDecoration();
 
 	void Decorate(AEnemyBase* NewEnemy);
+
+	virtual void StartAttack() override;
+	virtual void Die() override;
 };

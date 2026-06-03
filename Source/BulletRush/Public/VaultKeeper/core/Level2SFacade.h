@@ -7,8 +7,24 @@
 
 class AMechaEnemyFactory;
 class ADronMecha;
+class AMechaChargerEnemy;
+class AMechaKamikazeEnemy;
 class ABatteryActor;
 class ALevelPortal;
+
+USTRUCT()
+struct FHiveData
+{
+    GENERATED_BODY()
+
+    UPROPERTY()
+    ABatteryActor* Battery = nullptr;
+
+    UPROPERTY()
+    TArray<AEnemyBase*> Enemies;
+
+    bool IsCleared() const { return Enemies.Num() == 0; }
+};
 
 UCLASS()
 class BULLETRUSH_API ALevel2SFacade : public AActor
@@ -22,14 +38,8 @@ protected:
     virtual void BeginPlay() override;
 
 public:
-    UPROPERTY(EditAnywhere, Category = "Level2S|Spawn")
-    TArray<FVector> DroneSpawnLocations;
-
     UPROPERTY(EditDefaultsOnly, Category = "Level2S|Config")
-    float VenomDamagePerSecond = 5.0f;
-
-    UPROPERTY(EditDefaultsOnly, Category = "Level2S|Config")
-    float BatteryOffset = 150.0f;
+    float VenomDamagePerSecond = 1.0f;
 
     UPROPERTY(EditAnywhere, Category = "Level2S|References")
     ALevelPortal* PortalToBoss;
@@ -37,22 +47,22 @@ public:
     void StartLevel();
 
     UFUNCTION()
-    void OnDroneKilled(AEnemyBase* DeadEnemy);
+    void OnEnemyKilled(AEnemyBase* DeadEnemy);
 
 private:
     UPROPERTY()
     AMechaEnemyFactory* Factory;
 
     UPROPERTY()
-    TArray<ADronMecha*> ActiveDrones;
+    TArray<FHiveData> Hives;
 
-    int32 DronesKilled = 0;
-    int32 TotalDrones = 15;
+    int32 HivesCleared = 0;
     bool bLevelComplete = false;
 
     FTimerHandle VenomTimer;
 
-    void SpawnWave();
+    void SpawnHives();
+    void SpawnHive(int32 HiveIndex, FVector HiveCenter);
     void ApplyVenom();
     void CheckLevelComplete();
     void OpenPortal();
