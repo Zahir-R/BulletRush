@@ -2,6 +2,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Core/Chronostasis/ChronostasisFacade.h"
 #include "Core/Requirements/RequirementManager.h"
+#include "Core/Requirements/NoDamageRequirement.h"
+#include "Core/Requirements/TimeStopRequirement.h"
 #include "Core/BulletRushHUD.h"
 #include "Core/BulletRushGameInstance.h"
 #include "Core/PlayerHealthPublisher.h"
@@ -9,16 +11,26 @@
 #include "Core/PowerUpUsagePublisher.h"
 #include "Core/PuzzleEventPublisher.h"
 #include "Map/PortalTrigger.h"
+#include "Map/MapChronoTesting.h"
 
 AGameModeChronostasis::AGameModeChronostasis()
 {
     HUDClass = ABulletRushHUD::StaticClass();
 
-    // Define secret level waves
-    FWaveConfig SW1; SW1.DroneCount = 4; SW1.ChargerCount = 2; SW1.SpawnPoints = { FVector(500,0,0), FVector(-500,0,0), FVector(0,500,0), FVector(0,-500,0), FVector(700,300,0), FVector(-700,-300,0) };
-    FWaveConfig SW2; SW2.MassCount = 2; SW2.LinkerCount = 1; SW2.SpawnPoints = { FVector(300,300,0), FVector(-300,-300,0), FVector(400,-400,0) };
-    FWaveConfig SW3; SW3.DroneCount = 3; SW3.MassCount = 1; SW3.ChargerCount = 2; SW3.LinkerCount = 1; SW3.SpawnPoints = { FVector(200,0,0), FVector(-200,0,0), FVector(0,200,0), FVector(0,-200,0), FVector(400,0,0), FVector(-400,0,0), FVector(300,-300,0) };
+    // Define normal waves (5 enemies each, pentagram-spawned)
+    FWaveConfig NW1; NW1.DroneCount = 3; NW1.MassCount = 2;
+    FWaveConfig NW2; NW2.DroneCount = 3; NW2.MassCount = 1; NW2.ExpansiveCount = 1;
+    FWaveConfig NW3; NW3.DroneCount = 3; NW3.ExpansiveCount = 2;
+    NormalWaves = { NW1, NW2, NW3 };
+
+    // Define secret level waves (5 enemies each, pentagram-spawned)
+    FWaveConfig SW1; SW1.DroneCount = 5;
+    FWaveConfig SW2; SW2.DroneCount = 3; SW2.ExpansiveCount = 2;
+    FWaveConfig SW3; SW3.DroneCount = 2; SW3.MassCount = 3;
     SecretWaves = { SW1, SW2, SW3 };
+
+    FActorSpawnParameters SpawnInfo;
+    if (GetWorld()) GetWorld()->SpawnActor<AMapChronoTesting>(AMapChronoTesting::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnInfo);
 }
 
 void AGameModeChronostasis::BeginPlay()
@@ -73,8 +85,16 @@ void AGameModeChronostasis::BeginPlay()
                 ReqMgr = NewObject<URequirementManager>(PC);
                 ReqMgr->RegisterComponent();
             }
+
+            UNoDamageRequirement* NoDamageReq = NewObject<UNoDamageRequirement>(ReqMgr);
+            UTimeStopRequirement* TimeStopReq = NewObject<UTimeStopRequirement>(ReqMgr);
+            TimeStopReq->RequiredStops = 3;
+            ReqMgr->SecretRequirements.Add(NoDamageReq);
+            ReqMgr->SecretRequirements.Add(TimeStopReq);
+
             ReqMgr->InitializeRequirements(PC);
         }
+        Facade->SetNormalWaves(NormalWaves);
         Facade->SetRequirementManager(ReqMgr);
         CachedFacade = Facade;
         Facade->StartGame();

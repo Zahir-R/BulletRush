@@ -79,7 +79,7 @@ void AChronostasisLinker::Tick(float DeltaSeconds)
 		UBuffComponent* Buff = PlayerPawn->FindComponentByClass<UBuffComponent>();
 		if (Buff)
 		{
-			AppliedPlayerDebuff = Buff->ApplyBuffAndReturn(UPlayerSlowDecorator::StaticClass(), -1.0f, 0.7f);
+			AppliedPlayerDebuff = Buff->ApplyBuff(UPlayerSlowDecorator::StaticClass(), -1.0f, 0.7f);
 		}
 	}
 	else if (!bOnLine && AppliedPlayerDebuff)

@@ -15,9 +15,6 @@
 #include "Components/Weapons/VolleyStrategy.h"
 ////////Buffs////////
 #include "Buffs/PlayerStatsDecorator.h"
-#include "Buffs/DoubleDamage.h"
-#include "Buffs/SpeedBoost.h"
-#include "Buffs/HealthBonus.h"
 #include "Core/BulletRushGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -35,15 +32,15 @@ APlayingPlayer::APlayingPlayer()
 	if (MeshAsset.Succeeded())
 	{
 		VisualMesh->SetStaticMesh(MeshAsset.Object);
-		VisualMesh->SetRelativeLocation(FVector(0, 0, -45)); // Donde se creará la malla en el objeto
+		VisualMesh->SetRelativeLocation(FVector(0, 0, -45)); // Donde se crearï¿½ la malla en el objeto
 	}
 
-	// Cámara
+	// Cï¿½mara
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 
-	CameraBoom->TargetArmLength = 400.0f; // Distancia a la que se colocará la cámara
-	CameraBoom->bUsePawnControlRotation = true; // Cámara rota con los controles
+	CameraBoom->TargetArmLength = 400.0f; // Distancia a la que se colocarï¿½ la cï¿½mara
+	CameraBoom->bUsePawnControlRotation = true; // Cï¿½mara rota con los controles
 	CameraBoom->SocketOffset = FVector(0.0f, 0.0f, 50.0f);
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
@@ -227,31 +224,6 @@ void APlayingPlayer::RefreshStatsFromChain()
 	if (HealthComp->CurrentHealth > NewMaxHealth) HealthComp->CurrentHealth = NewMaxHealth;
 
 	UE_LOG(LogTemp, Warning, TEXT("STATS: SPEED: %f, MAXHEALTH: %f"), NewSpeed, NewMaxHealth);
-}
-
-void APlayingPlayer::RemoveDecorator(UPlayerStatsDecorator* Decorator)
-{
-	if (!Decorator) return;
-
-	UPlayerStatsDecorator* Current = Cast<UPlayerStatsDecorator>(CurrentStats.GetObject());
-	TScriptInterface<IPlayerStatsInterface> Prev = nullptr;
-
-	while (Current)
-	{
-		if (Current == Decorator)
-		{
-			if (Prev == nullptr) CurrentStats = Current->GetInnerStats();
-			else
-			{
-				UPlayerStatsDecorator* PrevDec = Cast<UPlayerStatsDecorator>(Prev.GetObject());
-				if (PrevDec) PrevDec->SetInner(Current->GetInnerStats());
-			}
-			break;
-		}
-		Prev = Current;
-		Current = Cast<UPlayerStatsDecorator>(Current->GetInnerStats().GetObject());
-	}
-	RefreshStatsFromChain();
 }
 
 float APlayingPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)

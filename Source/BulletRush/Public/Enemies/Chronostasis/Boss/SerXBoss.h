@@ -20,11 +20,14 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void Die() override;
 
-	void SetChargerFactory(UChronostasisFactoryEnemy* Factory);
 	void SetLinkerFactory(UChronostasisFactoryEnemy* Factory);
 
 	void ExecuteAttack(int32 PatternIndex);
+<<<<<<< Updated upstream
 	void DoSpawnCharger();
+=======
+	void ExecuteMovement(int32 StrategyIndex, FVector Target);
+>>>>>>> Stashed changes
 	void DoSpawnLinker();
 	void ActivateZone();
 	void MoveTo(FVector Target);
@@ -71,8 +74,6 @@ protected:
 	FTimerHandle ZoneSpawnTimerHandle;
 
 	UPROPERTY()
-	UChronostasisFactoryEnemy* ChargerFactory;
-	UPROPERTY()
 	UChronostasisFactoryEnemy* LinkerFactory;
 
 	UPROPERTY(EditAnywhere, Category = "Boss")
@@ -81,8 +82,7 @@ protected:
 	float ZoneSpawnInterval = 30.f;
 	float LinkerSpawnInterval = 10.f;
 
-	int32 AttackCount = 0;
-	int32 AttacksSinceChargerSpawn = 0;
+	int32 StepsSinceMinionSpawn = 0;
 	int32 ActiveLinkerCount = 0;
 	int32 MaxLinkers = 3;
 

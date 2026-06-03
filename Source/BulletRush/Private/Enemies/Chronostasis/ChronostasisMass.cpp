@@ -1,5 +1,5 @@
 #include "Enemies/Chronostasis/ChronostasisMass.h"
-#include "Buffs/MassSlowDecorator.h"
+#include "Buffs/SlowDecorator.h"
 #include "Components/SphereComponent.h"
 #include "Components/BuffComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -53,7 +53,7 @@ void AChronostasisMass::OnSlowZoneBeginOverlap(UPrimitiveComponent* OverlappedCo
         UBuffComponent* BuffComp = OtherActor->FindComponentByClass<UBuffComponent>();
         if (BuffComp) {
             // Apply mass slow decorator via player's buff component
-            AppliedDecorator = BuffComp->ApplyBuffAndReturn(UMassSlowDecorator::StaticClass(), -1.0f, 0.0f);
+            AppliedDecorator = BuffComp->ApplyBuff(USlowDecorator::StaticClass(), -1.0f, 0.0f);
 
             if (AppliedDecorator) bHasAppliedBuff = true;
         }

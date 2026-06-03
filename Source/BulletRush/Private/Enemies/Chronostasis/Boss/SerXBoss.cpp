@@ -18,13 +18,21 @@ ASerXBoss::ASerXBoss()
 
 	AttackInterval = 2.5f;
 
-	HealthComp->MaxHealth = 6000.f;
+	HealthComp->MaxHealth = 6000.0f;
 
 	AlteredZoneClass = AAlteredZone::StaticClass();
 
 	MovementStrategy = CreateDefaultSubobject<USeekMovement>(TEXT("SeekMovement"));
+<<<<<<< Updated upstream
 	USeekMovement* Seek = Cast<USeekMovement>(MovementStrategy);
 	if (Seek) Seek->Speed = 400.f;
+=======
+	SeekStrat = Cast<USeekMovement>(MovementStrategy);
+	if (SeekStrat) SeekStrat->Speed = 4000.0f;
+
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cone.Shape_Cone'"));
+	if (MeshAsset.Succeeded()) MeshEnemy->SetStaticMesh(MeshAsset.Object);
+>>>>>>> Stashed changes
 }
 
 void ASerXBoss::BeginPlay()
@@ -89,6 +97,65 @@ void ASerXBoss::BeginDestroy()
 	Super::BeginDestroy();
 }
 
+<<<<<<< Updated upstream
+=======
+void ASerXBoss::SetupMovementStrategies()
+{
+	if (!MoveBehindStrat)
+	{
+		MoveBehindStrat = NewObject<UMoveBehindMovement>(this);
+		MoveBehindStrat->Speed = 3000.f;
+		MoveBehindStrat->Distance = 200.f;
+	}
+	if (!TriangulationStrat)
+	{
+		TriangulationStrat = NewObject<UTriangulationMovement>(this);
+		TriangulationStrat->Speed = 3000.f;
+		TriangulationStrat->TriangleSize = 1000.f;
+	}
+	if (!AscendStrat)
+	{
+		AscendStrat = NewObject<UAscendMovement>(this);
+		AscendStrat->Speed = 4000.f;
+		AscendStrat->MaxDelta = 700.f;
+	}
+	if (!DescendStrat)
+	{
+		DescendStrat = NewObject<UDescendMovement>(this);
+		DescendStrat->Speed = 4000.f;
+		DescendStrat->MaxDelta = 700.f;
+	}
+	if (!StaticStrat)
+	{
+		StaticStrat = NewObject<UStaticMovement>(this);
+	}
+}
+
+void ASerXBoss::ExecuteMovement(int32 StrategyIndex, FVector Target)
+{
+	CurrentStrategyIndex = StrategyIndex;
+	MovementTarget = Target;
+	bIsMoving = true;
+
+	UMovementStrat* NewStrat = nullptr;
+	switch (StrategyIndex)
+	{
+	case 0: NewStrat = SeekStrat; break;
+	case 1: NewStrat = MoveBehindStrat; break;
+	case 2: NewStrat = TriangulationStrat; break;
+	case 3: NewStrat = AscendStrat; break;
+	case 4: NewStrat = DescendStrat; break;
+	case 5: NewStrat = StaticStrat; break;
+	}
+
+	if (NewStrat)
+	{
+		NewStrat->Reset();
+		MovementStrategy = NewStrat;
+	}
+}
+
+>>>>>>> Stashed changes
 void ASerXBoss::SetupAttackCombos()
 {
 	CircleCombo.Empty();
@@ -109,6 +176,7 @@ void ASerXBoss::SetupPhase2Combos()
 	CircleCombo2.Empty();
 	CircleCombo2.Add(FAttackStep(EAttackType::Circle, 24, 600.f, 1.2f, 0.f, 12.f));
 
+<<<<<<< Updated upstream
 	SphereCombo2.Empty();
 	SphereCombo2.Add(FAttackStep(EAttackType::Sphere, 80, 800.f, 1.6f, 0.f, 10.f));
 
@@ -117,12 +185,50 @@ void ASerXBoss::SetupPhase2Combos()
 
 	SurroundCombo2.Empty();
 	SurroundCombo2.Add(FAttackStep(EAttackType::SurroundingBullets, 40, 0.f, 1.8f, 0.f, 0.f));
+=======
+	// MoveCombo 0: Static(3s), Static(3s), Seek(2s), Triangulation(complete), Static(3s)
+	{
+		TArray<FMovementComboStep> Steps;
+		Steps.Reserve(5);
+		Steps.Add({ 5, 1.5f });
+		Steps.Add({ 5, 1.5f });
+		Steps.Add({ 2, 0.0f });
+		Steps.Add({ 2, 0.0f });
+		Steps.Add({ 5, 1.5f });
+		MoveCombos.Add(MoveTemp(Steps));
+	}
+
+	// MoveCombo 1: Static(3s), Triangulation(complete), Static(3s), Ascend(2s), Descend(2s)
+	{
+		TArray<FMovementComboStep> Steps;
+		Steps.Reserve(5);
+		Steps.Add({ 5, 1.5f });
+		Steps.Add({ 2, 0.0f });
+		Steps.Add({ 5, 0.5f });
+		Steps.Add({ 3, 2.0f });
+		Steps.Add({ 4, 2.0f });
+		MoveCombos.Add(MoveTemp(Steps));
+	}
+
+	// MoveCombo 2: Descend(2s), MoveBehind(complete), Static(3s), MoveBehind(complete), Static(3s)
+	{
+		TArray<FMovementComboStep> Steps;
+		Steps.Reserve(5);
+		Steps.Add({ 4, 2.f });
+		Steps.Add({ 1, 0.f });
+		Steps.Add({ 5, 0.5f });
+		Steps.Add({ 1, 0.f });
+		Steps.Add({ 5, 3.f });
+		MoveCombos.Add(MoveTemp(Steps));
+	}
+>>>>>>> Stashed changes
 }
 
 void ASerXBoss::Attack()
 {
 	if (!BulletSpawner || bIsDead) return;
 
+<<<<<<< Updated upstream
 	AttackCount++;
 	AttacksSinceChargerSpawn++;
 
@@ -141,12 +247,134 @@ void ASerXBoss::Attack()
 		AttacksSinceChargerSpawn = 0;
 		DoSpawnCharger();
 	}
+=======
+	int32 ComboIndex = FMath::RandRange(0, 3);
+	StartAttackCombo(ComboIndex);
+
+	int32 MovChoice = FMath::RandRange(0, 2);
+	StartMovementCombo(MovChoice);
+>>>>>>> Stashed changes
 }
 
 void ASerXBoss::ExecuteAttack(int32 PatternIndex)
 {
 	if (!BulletSpawner || bIsDead) return;
 
+<<<<<<< Updated upstream
+=======
+	TArray<FAttackStep> Single = { Step };
+	BulletSpawner->StartSequence(Single);
+
+	if (RecorderComponent)
+	{
+		int32 PatternIndex = 0;
+		switch (Step.Type)
+		{
+		case EAttackType::Circle: PatternIndex = 0; break;
+		case EAttackType::Sphere: PatternIndex = 1; break;
+		case EAttackType::Spiral: PatternIndex = 2; break;
+		case EAttackType::SurroundingBullets: PatternIndex = 3; break;
+		}
+		RecorderComponent->RecordAttack(PatternIndex);
+	}
+
+	if (!bIsClone)
+	{
+		StepsSinceMinionSpawn++;
+		if (StepsSinceMinionSpawn >= 3)
+		{
+			StepsSinceMinionSpawn = 0;
+			SpawnRandomMinion();
+			SpawnRandomMinion();
+		}
+	}
+}
+
+void ASerXBoss::StartMovementCombo(int32 ComboIndex)
+{
+	if (!MoveCombos.IsValidIndex(ComboIndex) || MoveCombos[ComboIndex].Num() == 0) return;
+
+	if (MovementStrategy)
+		MovementStrategy->Reset();
+	bIsMoving = false;
+
+	CurrentMovementCombo = ComboIndex;
+	CurrentMovementStep = 0;
+	MovementStepElapsed = 0.f;
+	bExecutingMovementCombo = true;
+
+	StartMovementStep(0);
+}
+
+void ASerXBoss::AdvanceMovementCombo()
+{
+	if (MovementStrategy)
+		MovementStrategy->Reset();
+
+	CurrentMovementStep++;
+
+	if (MoveCombos.IsValidIndex(CurrentMovementCombo) && CurrentMovementStep < MoveCombos[CurrentMovementCombo].Num())
+	{
+		StartMovementStep(CurrentMovementStep);
+	}
+	else
+	{
+		bExecutingMovementCombo = false;
+		bIsMoving = false;
+	}
+}
+
+void ASerXBoss::StartMovementStep(int32 StepIndex)
+{
+	if (!MoveCombos.IsValidIndex(CurrentMovementCombo)) return;
+	if (!MoveCombos[CurrentMovementCombo].IsValidIndex(StepIndex)) return;
+
+	if (RecorderComponent)
+	{
+		RecorderComponent->OnMovementStepFinished();
+	}
+
+	const FMovementComboStep& Step = MoveCombos[CurrentMovementCombo][StepIndex];
+	MovementStepElapsed = 0.f;
+
+	if (Step.StrategyIndex == 5)
+	{
+		bIsMoving = false;
+		return;
+	}
+
+	FVector Target = GetMovementTargetForStrategy(Step.StrategyIndex);
+	MoveTo(Target, Step.StrategyIndex);
+}
+
+FVector ASerXBoss::GetMovementTargetForStrategy(int32 StrategyIndex)
+{
+	APawn* PlayerPawn = GetWorld() ? UGameplayStatics::GetPlayerPawn(GetWorld(), 0) : nullptr;
+	if (!PlayerPawn) return GetActorLocation();
+
+	switch (StrategyIndex)
+	{
+	case 0:
+		return PlayerPawn->GetActorLocation();
+
+	case 1:
+	{
+		FVector PlayerLoc = PlayerPawn->GetActorLocation();
+		FVector PlayerForward = PlayerPawn->GetActorForwardVector();
+		return PlayerLoc - PlayerForward * 200.f;
+	}
+
+	default:
+		return GetActorLocation();
+	}
+}
+
+void ASerXBoss::ExecuteAttack(int32 PatternIndex)
+{
+	if (!BulletSpawner || bIsDead || PatternIndex < 0 || PatternIndex > 3) return;
+
+	FAttackStep Step;
+>>>>>>> Stashed changes
 	if (AttackIdentifier >= 1)
 	{
 		switch (PatternIndex)
@@ -167,15 +395,6 @@ void ASerXBoss::ExecuteAttack(int32 PatternIndex)
 		case 3: BulletSpawner->StartSequence(SurroundCombo); break;
 		}
 	}
-}
-
-void ASerXBoss::DoSpawnCharger()
-{
-	if (!ChargerFactory || !GetWorld() || bIsDead) return;
-
-	FVector SpawnLoc = GetActorLocation() + FMath::VRand() * 300.f;
-	SpawnLoc.Z = GetActorLocation().Z;
-	ChargerFactory->CreateEnemy(GetWorld(), SpawnLoc);
 }
 
 void ASerXBoss::DoSpawnLinker()
@@ -332,11 +551,6 @@ void ASerXBoss::RecordCommand(UBossCommand* Cmd)
 		RecordedCommands.Add(Cmd);
 		UE_LOG(LogTemp, Log, TEXT("SerXBoss recorded command: %s at time %.2f"), *Cmd->GetClass()->GetName(), Cmd->Timestamp);
 	}
-}
-
-void ASerXBoss::SetChargerFactory(UChronostasisFactoryEnemy* Factory)
-{
-	ChargerFactory = Factory;
 }
 
 void ASerXBoss::SetLinkerFactory(UChronostasisFactoryEnemy* Factory)

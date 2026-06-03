@@ -67,10 +67,17 @@ void AChronostasisFacade::BeginPlay()
 
 void AChronostasisFacade::StartGame()
 {
+<<<<<<< Updated upstream
     CurrentWaveIndex = 0;
     SlowTriggerCount = 0;
     bPlayerTookDamage = false;
     // Observe player health changes (Observer pattern)
+=======
+    WaveManager->SetWaves(Waves);
+    SlowSystem->Start();
+    WaveManager->StartGame();
+
+>>>>>>> Stashed changes
     APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
     if (PlayerPawn)
     {
@@ -271,6 +278,7 @@ void AChronostasisFacade::OnAllWavesComplete()
 
     if (OwningGameMode)
     {
+<<<<<<< Updated upstream
         bool bSecretUnlocked = false;
         if (RequirementManagerRef.IsValid() && RequirementManagerRef->HasRequirements())
         {
@@ -280,6 +288,9 @@ void AChronostasisFacade::OnAllWavesComplete()
         {
             bSecretUnlocked = (SlowTriggerCount >= 3) && !bPlayerTookDamage;
         }
+=======
+        bool bSecretUnlocked = RequirementManagerRef.IsValid() && RequirementManagerRef->AreSecretRequirementsMet();
+>>>>>>> Stashed changes
 
         AGameModeChronostasis* GM = Cast<AGameModeChronostasis>(OwningGameMode);
         if (GM)
@@ -321,6 +332,11 @@ void AChronostasisFacade::ActivatePortalToBoss()
         AGameModeChronostasis* GM = Cast<AGameModeChronostasis>(OwningGameMode);
         if (GM) GM->ActivateBossPortal();
     }
+}
+
+void AChronostasisFacade::SetNormalWaves(const TArray<FWaveConfig>& NewWaves)
+{
+    Waves = NewWaves;
 }
 
 void AChronostasisFacade::SetRequirementManager(URequirementManager* Manager)

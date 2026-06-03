@@ -29,11 +29,6 @@ public:
 	// TESTING
 	UBulletSpawnerComponent* Spawner;
 
-	void TestCircle();
-	void TestSpiral();
-	void TestBurst();
-
-
 protected:
 	virtual void BeginPlay() override;
 	UPROPERTY()
@@ -72,7 +67,6 @@ public:
 	float GetTotalProjectileSpeedMultiplier() const { return CurrentStats->GetProjectileSpeedMultiplier(); }
 
 	void UpdateMovementSpeed();
-	void RemoveDecorator(UPlayerStatsDecorator* Decorator);
 
 	void RefreshStatsFromChain();
 };

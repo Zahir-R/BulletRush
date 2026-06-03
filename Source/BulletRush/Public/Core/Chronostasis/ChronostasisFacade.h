@@ -44,6 +44,7 @@ public:
     void ActivatePortalToSecret();
     void ActivatePortalToBoss();
 
+    void SetNormalWaves(const TArray<FWaveConfig>& NewWaves);
     void SetRequirementManager(class URequirementManager* Manager);
     void StartSecretWaves(const TArray<FWaveConfig>& NewWaves);
 
