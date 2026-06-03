@@ -26,4 +26,15 @@ void AEnemyDecorator::ApplyDecoration() {
 		Enemy->MeshEnemy->SetStaticMesh(CustomMesh);
 	}
 }
+void AEnemyDecorator::StartAttack()
+{
+	if (Enemy)
+		Enemy->StartAttack();
+}
+
+void AEnemyDecorator::Die()
+{
+	if (Enemy)
+		Enemy->Die();
+}
 

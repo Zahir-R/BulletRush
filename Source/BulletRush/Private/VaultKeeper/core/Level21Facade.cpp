@@ -2,6 +2,8 @@
 #include "VaultKeeper/core/MechaEnemyFactory.h"
 #include "VaultKeeper/enemies/DronMecha.h"
 #include "VaultKeeper/objets/BatteryActor.h"
+#include "VaultKeeper/enemies/MechaKamikazeEnemy.h"
+#include "VaultKeeper/enemies/MechaChargerEnemy.h"
 #include "Map/LevelPortal.h"
 #include "Core/BulletRushGameInstance.h"
 #include "Components/HealthComponent.h"
@@ -13,6 +15,7 @@ ALevel21Facade::ALevel21Facade()
 {
     PrimaryActorTick.bCanEverTick = false;
 
+   
     // Spawn locations por defecto si no se asignan en el editor
     DroneSpawnLocations = {
         FVector(500.f,    0.f, 100.f),
@@ -43,10 +46,10 @@ void ALevel21Facade::BeginPlay()
         FVector::ZeroVector,
         FRotator::ZeroRotator
     );
-
     PortalToBoss = GetWorld()->SpawnActor<ALevelPortal>(
         ALevelPortal::StaticClass(),
         FVector(0.f, 0.f, 100.f), FRotator::ZeroRotator);
+    PortalToBoss->SetActorHiddenInGame(true);
 }
 
 

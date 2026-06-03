@@ -36,6 +36,7 @@ void AVaultKeeperFacade::BeginPlay()
     PortalToMap = GetWorld()->SpawnActor<ALevelPortal>(
         ALevelPortal::StaticClass(),
         FVector(0.f, 0.f, 100.f), FRotator::ZeroRotator);
+    PortalToMap->SetActorHiddenInGame(true);
 }
 
 void AVaultKeeperFacade::StartLevel()
