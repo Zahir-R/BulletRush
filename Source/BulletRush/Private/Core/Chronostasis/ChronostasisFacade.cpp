@@ -54,6 +54,7 @@ void AChronostasisFacade::BeginPlay()
 
 void AChronostasisFacade::StartGame()
 {
+    WaveManager->SetWaves(Waves);
     SlowSystem->Start();
     WaveManager->StartGame();
 
@@ -96,15 +97,7 @@ void AChronostasisFacade::OnAllWavesComplete()
 
     if (OwningGameMode)
     {
-        bool bSecretUnlocked = false;
-        if (RequirementManagerRef.IsValid() && RequirementManagerRef->HasRequirements())
-        {
-            bSecretUnlocked = RequirementManagerRef->AreSecretRequirementsMet();
-        }
-        else
-        {
-            bSecretUnlocked = (SlowSystem->GetTriggerCount() >= 3) && !bPlayerTookDamage;
-        }
+        bool bSecretUnlocked = RequirementManagerRef.IsValid() && RequirementManagerRef->AreSecretRequirementsMet();
 
         AGameModeChronostasis* GM = Cast<AGameModeChronostasis>(OwningGameMode);
         if (GM)
@@ -130,6 +123,11 @@ void AChronostasisFacade::OnSecretTimeUp()
 int32 AChronostasisFacade::GetSlowTriggerCount() const
 {
     return SlowSystem ? SlowSystem->GetTriggerCount() : 0;
+}
+
+void AChronostasisFacade::SetNormalWaves(const TArray<FWaveConfig>& NewWaves)
+{
+    Waves = NewWaves;
 }
 
 void AChronostasisFacade::SetRequirementManager(URequirementManager* Manager)

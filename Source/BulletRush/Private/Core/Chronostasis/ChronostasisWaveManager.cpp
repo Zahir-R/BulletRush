@@ -1,12 +1,14 @@
 #include "Core/Chronostasis/ChronostasisWaveManager.h"
 #include "Core/Chronostasis/ChronostasisFacade.h"
-#include "Core/Chronostasis/DroneFactory.h"
-#include "Core/Chronostasis/MassFactory.h"
-#include "Core/Chronostasis/ExpansiveFactory.h"
-#include "Core/Chronostasis/ChargerFactory.h"
-#include "Core/Chronostasis/LinkerFactory.h"
+#include "Core/Chronostasis/GenericEnemyFactory.h"
 #include "Enemies/EnemyBase.h"
+#include "Enemies/Chronostasis/ChronostasisDrone.h"
+#include "Enemies/Chronostasis/ChronostasisMass.h"
+#include "Enemies/Chronostasis/ChronostasisExpansive.h"
+#include "Enemies/Chronostasis/ChronostasisCharger.h"
+#include "Enemies/Chronostasis/ChronostasisLinker.h"
 #include "Engine/World.h"
+#include "Kismet/GameplayStatics.h"
 
 void UChronostasisWaveManager::Initialize(AChronostasisFacade* Owner, const TArray<FWaveConfig>& DefaultWaves)
 {
@@ -19,11 +21,11 @@ void UChronostasisWaveManager::Initialize(AChronostasisFacade* Owner, const TArr
 
 void UChronostasisWaveManager::CreateFactories()
 {
-    DroneFactory = NewObject<UDroneFactory>(this);
-    MassFactory = NewObject<UMassFactory>(this);
-    ExpansiveFactory = NewObject<UExpansiveFactory>(this);
-    ChargerFactory = NewObject<UChargerFactory>(this);
-    LinkerFactory = NewObject<ULinkerFactory>(this);
+    DroneFactory = CreateGenericFactory<AChronostasisDrone>(this);
+    MassFactory = CreateGenericFactory<AChronostasisMass>(this);
+    ExpansiveFactory = CreateGenericFactory<AChronostasisExpansive>(this);
+    ChargerFactory = CreateGenericFactory<AChronostasisCharger>(this);
+    LinkerFactory = CreateGenericFactory<AChronostasisLinker>(this);
 }
 
 void UChronostasisWaveManager::StartGame()
@@ -33,10 +35,8 @@ void UChronostasisWaveManager::StartGame()
 
     if (Waves.Num() == 0)
     {
-        FWaveConfig W1; W1.DroneCount = 1; W1.SpawnPoints = { FVector(1000,0,0), FVector(-1000,0,0), FVector(0,1000,0) };
-        FWaveConfig W2; W2.DroneCount = 1; W2.MassCount = 1; W2.SpawnPoints = { FVector(200,0,0), FVector(-200,0,0), FVector(0,200,0) };
-        FWaveConfig W3; W3.DroneCount = 1; W3.MassCount = 1; W3.ExpansiveCount = 1; W3.SpawnPoints = { FVector(300,0,0), FVector(-300,0,0), FVector(0,300,0) };
-        Waves = { W1, W2, W3 };
+        UE_LOG(LogTemp, Warning, TEXT("ChronostasisWaveManager::StartGame: No waves configured!"));
+        return;
     }
 
     StartWave(0);
@@ -62,14 +62,26 @@ void UChronostasisWaveManager::StartWave(int32 Index)
     UWorld* World = OwnerFacade ? OwnerFacade->GetWorld() : nullptr;
     if (!World) return;
 
+    // Compute 5 pentagram points centred on the player
+    APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(World, 0);
+    FVector Center = PlayerPawn ? PlayerPawn->GetActorLocation() : FVector::ZeroVector;
+
+    const float Radius = 400.0f;
+    TArray<FVector> PentagramPoints;
+    for (int32 i = 0; i < 5; i++)
+    {
+        float Angle = FMath::DegreesToRadians(72.0f * i);
+        PentagramPoints.Add(Center + FVector(Radius * FMath::Cos(Angle), Radius * FMath::Sin(Angle), 0));
+    }
+
     int32 SpawnedCount = 0;
-    int32 SpawnIndex = 0;
+    int32 PointIndex = 0;
 
     auto TrySpawn = [&](int32 Count, UChronostasisFactoryEnemy* Factory)
     {
-        for (int32 i = 0; i < Count && SpawnIndex < Cfg.SpawnPoints.Num(); i++)
+        for (int32 i = 0; i < Count && PointIndex < PentagramPoints.Num(); i++)
         {
-            FVector Loc = Cfg.SpawnPoints[SpawnIndex++];
+            FVector Loc = PentagramPoints[PointIndex++];
             AEnemyBase* E = Factory->CreateEnemy(World, Loc);
             if (E)
             {

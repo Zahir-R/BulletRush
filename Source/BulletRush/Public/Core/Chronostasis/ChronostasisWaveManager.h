@@ -26,6 +26,8 @@ public:
     int32 GetRemainingEnemies() const { return RemainingEnemiesInWave; }
     int32 GetCurrentWaveIndex() const { return CurrentWaveIndex; }
 
+    void SetWaves(const TArray<FWaveConfig>& NewWaves) { Waves = NewWaves; }
+
     FOnWaveEnemyKilled OnWaveEnemyKilled;
     FSimpleMulticastDelegate OnAllWavesCompleted;
 

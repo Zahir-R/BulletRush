@@ -4,7 +4,7 @@
 #include "TimerManager.h"
 #include "Engine/World.h"
 #include "Components/BuffComponent.h"
-#include "Buffs/PulseEffectDecorator.h"
+#include "Buffs/SlowDecorator.h"
 
 AChronostasisExpansive::AChronostasisExpansive()
 {
@@ -25,25 +25,29 @@ void AChronostasisExpansive::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void AChronostasisExpansive::TriggerPulse()
 {
-    // Encuentra y aplica el buff a Drones
+    FVector MyLoc = GetActorLocation();
+    float PulseRadius = 500.f;
+
     TArray<AActor*> Found;
     UGameplayStatics::GetAllActorsOfClass(GetWorld(), AChronostasisDrone::StaticClass(), Found);
     for (AActor* A : Found)
     {
         if (AChronostasisDrone* Drone = Cast<AChronostasisDrone>(A))
         {
-            // Let the Drone manage restoration; apply a shorter, moderate buff
-            Drone->ApplySpeedBuff(2.0f, 2.0f, 1.5f);
+            if (FVector::Dist(MyLoc, Drone->GetActorLocation()) <= PulseRadius)
+            {
+                Drone->ApplySpeedBuff(2.0f, 2.0f, 1.5f);
+            }
         }
     }
 
     APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-    if (PlayerPawn)
+    if (PlayerPawn && FVector::Dist(MyLoc, PlayerPawn->GetActorLocation()) <= PulseRadius)
     {
         UBuffComponent* BuffComp = PlayerPawn->FindComponentByClass<UBuffComponent>();
         if (BuffComp)
         {
-            BuffComp->ApplyBuff(UPulseEffectDecorator::StaticClass(), 2.0f, 0.0f);
+            BuffComp->ApplyBuff(USlowDecorator::StaticClass(), 2.0f, 0.0f);
         }
     }
 }

@@ -1,8 +1,8 @@
 #include "Core/Chronostasis/ChronostasisBossManager.h"
 #include "Core/Chronostasis/ChronostasisFacade.h"
-#include "Core/Chronostasis/ChargerFactory.h"
-#include "Core/Chronostasis/LinkerFactory.h"
 #include "Core/Chronostasis/GenericEnemyFactory.h"
+#include "Enemies/Chronostasis/ChronostasisCharger.h"
+#include "Enemies/Chronostasis/ChronostasisLinker.h"
 #include "Enemies/Chronostasis/Boss/SerXBoss.h"
 #include "Enemies/Chronostasis/ChronostasisDrone.h"
 #include "Enemies/Chronostasis/ChronostasisExpansive.h"
@@ -19,12 +19,12 @@ void UChronostasisBossManager::Initialize(AChronostasisFacade* Owner, TSubclassO
     SerXBossClass = BossClass ? BossClass : ASerXBoss::StaticClass();
     BossArenaSpawnLocation = SpawnLocation;
 
-    BossChargerFactory = NewObject<UChargerFactory>(this);
-    BossLinkerFactory = NewObject<ULinkerFactory>(this);
+    BossLinkerFactory = CreateGenericFactory<AChronostasisLinker>(this);
 
     MinionFactories.Add(CreateGenericFactory<AChronostasisDrone>(this));
     MinionFactories.Add(CreateGenericFactory<AChronostasisExpansive>(this));
     MinionFactories.Add(CreateGenericFactory<AChronostasisMass>(this));
+    MinionFactories.Add(CreateGenericFactory<AChronostasisCharger>(this));
 }
 
 void UChronostasisBossManager::StartBossFight()
@@ -38,7 +38,6 @@ void UChronostasisBossManager::StartBossFight()
     if (Boss)
     {
         Boss->OnEnemyDeath.AddDynamic(this, &UChronostasisBossManager::OnBossKilled);
-        Boss->SetChargerFactory(BossChargerFactory);
         Boss->SetLinkerFactory(BossLinkerFactory);
         for (auto* Factory : MinionFactories)
         {

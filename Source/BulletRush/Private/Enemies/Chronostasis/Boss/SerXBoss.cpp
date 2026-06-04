@@ -22,7 +22,7 @@ ASerXBoss::ASerXBoss()
 
 	AttackInterval = 2.5f;
 
-	HealthComp->MaxHealth = 6000.f;
+	HealthComp->MaxHealth = 6000.0f;
 
 	AlteredZoneClass = AAlteredZone::StaticClass();
 
@@ -30,7 +30,7 @@ ASerXBoss::ASerXBoss()
 
 	MovementStrategy = CreateDefaultSubobject<USeekMovement>(TEXT("SeekMovement"));
 	SeekStrat = Cast<USeekMovement>(MovementStrategy);
-	if (SeekStrat) SeekStrat->Speed = 8000.f;
+	if (SeekStrat) SeekStrat->Speed = 4000.0f;
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cone.Shape_Cone'"));
 	if (MeshAsset.Succeeded()) MeshEnemy->SetStaticMesh(MeshAsset.Object);
@@ -134,25 +134,25 @@ void ASerXBoss::SetupMovementStrategies()
 	if (!MoveBehindStrat)
 	{
 		MoveBehindStrat = NewObject<UMoveBehindMovement>(this);
-		MoveBehindStrat->Speed = 8000.f;
+		MoveBehindStrat->Speed = 3000.f;
 		MoveBehindStrat->Distance = 200.f;
 	}
 	if (!TriangulationStrat)
 	{
 		TriangulationStrat = NewObject<UTriangulationMovement>(this);
-		TriangulationStrat->Speed = 6000.f;
+		TriangulationStrat->Speed = 3000.f;
 		TriangulationStrat->TriangleSize = 1000.f;
 	}
 	if (!AscendStrat)
 	{
 		AscendStrat = NewObject<UAscendMovement>(this);
-		AscendStrat->Speed = 6000.f;
+		AscendStrat->Speed = 4000.f;
 		AscendStrat->MaxDelta = 700.f;
 	}
 	if (!DescendStrat)
 	{
 		DescendStrat = NewObject<UDescendMovement>(this);
-		DescendStrat->Speed = 6000.f;
+		DescendStrat->Speed = 4000.f;
 		DescendStrat->MaxDelta = 700.f;
 	}
 	if (!StaticStrat)
@@ -247,11 +247,11 @@ void ASerXBoss::SetupAttackCombos()
 	{
 		TArray<FMovementComboStep> Steps;
 		Steps.Reserve(5);
-		Steps.Add({ 5, 3.f });
-		Steps.Add({ 5, 3.f });
-		Steps.Add({ 0, 2.f });
-		Steps.Add({ 2, 0.f });
-		Steps.Add({ 5, 3.f });
+		Steps.Add({ 5, 1.5f });
+		Steps.Add({ 5, 1.5f });
+		Steps.Add({ 2, 0.0f });
+		Steps.Add({ 2, 0.0f });
+		Steps.Add({ 5, 1.5f });
 		MoveCombos.Add(MoveTemp(Steps));
 	}
 
@@ -259,11 +259,11 @@ void ASerXBoss::SetupAttackCombos()
 	{
 		TArray<FMovementComboStep> Steps;
 		Steps.Reserve(5);
-		Steps.Add({ 5, 3.f });
-		Steps.Add({ 2, 0.f });
-		Steps.Add({ 5, 3.f });
-		Steps.Add({ 3, 2.f });
-		Steps.Add({ 4, 2.f });
+		Steps.Add({ 5, 1.5f });
+		Steps.Add({ 2, 0.0f });
+		Steps.Add({ 5, 0.5f });
+		Steps.Add({ 3, 2.0f });
+		Steps.Add({ 4, 2.0f });
 		MoveCombos.Add(MoveTemp(Steps));
 	}
 
@@ -273,7 +273,7 @@ void ASerXBoss::SetupAttackCombos()
 		Steps.Reserve(5);
 		Steps.Add({ 4, 2.f });
 		Steps.Add({ 1, 0.f });
-		Steps.Add({ 5, 3.f });
+		Steps.Add({ 5, 0.5f });
 		Steps.Add({ 1, 0.f });
 		Steps.Add({ 5, 3.f });
 		MoveCombos.Add(MoveTemp(Steps));
@@ -284,20 +284,11 @@ void ASerXBoss::Attack()
 {
 	if (bExecutingAttackCombo || !BulletSpawner || bIsDead) return;
 
-	AttackCount++;
-	AttacksSinceChargerSpawn++;
-
 	int32 ComboIndex = FMath::RandRange(0, 3);
 	StartAttackCombo(ComboIndex);
 
 	int32 MovChoice = FMath::RandRange(0, 2);
 	StartMovementCombo(MovChoice);
-
-	if (AttacksSinceChargerSpawn >= 3 && !bIsClone)
-	{
-		AttacksSinceChargerSpawn = 0;
-		DoSpawnCharger();
-	}
 }
 
 void ASerXBoss::StartAttackCombo(int32 ComboIndex)
@@ -351,6 +342,17 @@ void ASerXBoss::FireAttackStep(const FAttackStep& Step)
 		case EAttackType::SurroundingBullets: PatternIndex = 3; break;
 		}
 		RecorderComponent->RecordAttack(PatternIndex);
+	}
+
+	if (!bIsClone)
+	{
+		StepsSinceMinionSpawn++;
+		if (StepsSinceMinionSpawn >= 3)
+		{
+			StepsSinceMinionSpawn = 0;
+			SpawnRandomMinion();
+			SpawnRandomMinion();
+		}
 	}
 }
 
@@ -462,15 +464,6 @@ void ASerXBoss::ExecuteAttack(int32 PatternIndex)
 	BulletSpawner->StartSequence({ Step });
 }
 
-void ASerXBoss::DoSpawnCharger()
-{
-	if (!ChargerFactory || !GetWorld() || bIsDead) return;
-
-	FVector SpawnLoc = GetActorLocation() + FMath::VRand() * 300.f;
-	SpawnLoc.Z = GetActorLocation().Z;
-	ChargerFactory->CreateEnemy(GetWorld(), SpawnLoc);
-}
-
 void ASerXBoss::DoSpawnLinker()
 {
 	if (!LinkerFactory || !GetWorld() || bIsDead) return;
@@ -534,11 +527,6 @@ void ASerXBoss::OnZoneSpawnTimer()
 	{
 		RecorderComponent->TryStartRecording(AttackIdentifier);
 	}
-}
-
-void ASerXBoss::SetChargerFactory(UChronostasisFactoryEnemy* Factory)
-{
-	ChargerFactory = Factory;
 }
 
 void ASerXBoss::SetLinkerFactory(UChronostasisFactoryEnemy* Factory)

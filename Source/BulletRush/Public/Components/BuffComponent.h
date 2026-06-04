@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Buffs/PlayerStatsDecorator.h"
@@ -24,11 +23,8 @@ class BULLETRUSH_API UBuffComponent : public UActorComponent
 public:
     UBuffComponent();
 
-    // Original API used by power-ups: apply a decorator class with duration and magnitude
-    void ApplyBuff(TSubclassOf<UPlayerStatsDecorator> DecoratorClass, float Duration, float Magnitude);
-
-    // New helper: apply and return the created decorator instance (useful for manual removal)
-    UPlayerStatsDecorator* ApplyBuffAndReturn(TSubclassOf<UPlayerStatsDecorator> DecoratorClass, float Duration, float Magnitude);
+    // Apply a decorator class with duration and magnitude; returns the instance (useful for manual removal)
+    UPlayerStatsDecorator* ApplyBuff(TSubclassOf<UPlayerStatsDecorator> DecoratorClass, float Duration, float Magnitude);
 
     void RemoveDecorator(UPlayerStatsDecorator* Decorator);
 
@@ -38,9 +34,9 @@ public:
     // Check whether any decorator of the given class is active
     bool HasDecoratorOfClass(TSubclassOf<UPlayerStatsDecorator> DecoratorClass) const;
 
-    void ClearAllBuffs();
-
 protected:
+    virtual void OnComponentDestroyed(bool bDestroyingHierarchy) override;
+
     UPROPERTY()
     TArray<FActiveDecorator> ActiveDecorators;
 };

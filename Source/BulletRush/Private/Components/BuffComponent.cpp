@@ -1,6 +1,5 @@
 #include "Components/BuffComponent.h"
 #include "Player/PlayingPlayer.h"
-#include "Buffs/DoubleDamage.h"
 #include "Buffs/SpeedBoost.h"
 #include "Buffs/HealthBonus.h"
 #include "Engine/World.h"
@@ -8,6 +7,19 @@
 UBuffComponent::UBuffComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+}
+
+void UBuffComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
+{
+	for (FActiveDecorator& Active : ActiveDecorators)
+	{
+		if (Active.Timer.IsValid())
+		{
+			GetWorld()->GetTimerManager().ClearTimer(Active.Timer);
+		}
+	}
+	ActiveDecorators.Empty();
+	Super::OnComponentDestroyed(bDestroyingHierarchy);
 }
 
 void UBuffComponent::RemoveDecoratorByClass(TSubclassOf<UPlayerStatsDecorator> DecoratorClass)
@@ -30,13 +42,7 @@ bool UBuffComponent::HasDecoratorOfClass(TSubclassOf<UPlayerStatsDecorator> Deco
 	return false;
 }
 
-void UBuffComponent::ApplyBuff(TSubclassOf<UPlayerStatsDecorator> DecoratorClass, float Duration, float Magnitude)
-{
-    // Forward to new helper and ignore returned instance
-	ApplyBuffAndReturn(DecoratorClass, Duration, Magnitude);
-}
-
-UPlayerStatsDecorator* UBuffComponent::ApplyBuffAndReturn(TSubclassOf<UPlayerStatsDecorator> DecoratorClass, float Duration, float Magnitude)
+UPlayerStatsDecorator* UBuffComponent::ApplyBuff(TSubclassOf<UPlayerStatsDecorator> DecoratorClass, float Duration, float Magnitude)
 {
 	APlayingPlayer* Player = Cast<APlayingPlayer>(GetOwner());
 	if (!Player || !DecoratorClass) return nullptr;
@@ -52,20 +58,15 @@ UPlayerStatsDecorator* UBuffComponent::ApplyBuffAndReturn(TSubclassOf<UPlayerSta
 	Active.Decorator = NewDecorator;
 	if (Duration > 0.f)
 	{
-
-		TWeakObjectPtr<UPlayerStatsDecorator> WeakDecorator(NewDecorator);
 		TWeakObjectPtr<UBuffComponent> WeakThis(this);
-
-		FTimerDelegate TimerDelegate;
-		TimerDelegate.BindLambda([WeakThis, WeakDecorator]()
+		TWeakObjectPtr<UPlayerStatsDecorator> WeakDecorator(NewDecorator);
+		GetWorld()->GetTimerManager().SetTimer(Active.Timer, [WeakThis, WeakDecorator]()
 			{
-				if (!WeakThis.IsValid() || !WeakDecorator.IsValid()) return;
-				UWorld* World = WeakThis->GetWorld();
-				if (!World || !World->IsGameWorld()) return;
-				WeakThis->RemoveDecorator(WeakDecorator.Get());
-			});
-
-		GetWorld()->GetTimerManager().SetTimer(Active.Timer, TimerDelegate, Duration, false);
+				if (WeakThis.IsValid() && WeakDecorator.IsValid())
+				{
+					WeakThis->RemoveDecorator(WeakDecorator.Get());
+				}
+			}, Duration, false);
 	}
 	ActiveDecorators.Add(Active);
 	return NewDecorator;
@@ -104,12 +105,3 @@ void UBuffComponent::RemoveDecorator(UPlayerStatsDecorator* Decorator)
 	}
 }
 
-void UBuffComponent::ClearAllBuffs()
-{
-	if (GetWorld())
-	{
-		for (FActiveDecorator& Active : ActiveDecorators)
-			GetWorld()->GetTimerManager().ClearTimer(Active.Timer);
-	}
-	ActiveDecorators.Empty();
-}
