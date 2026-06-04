@@ -13,6 +13,11 @@ class UBossStateUltimate;
 
 // Enumerador de fases de ataque del Boss
 
+// NOTA: Diseño inicial para sub-estados de ataque.
+// Idle y LinearBurst se usan en Attack() para la primera llamada.
+// RadialSphere aparece en el switch pero nunca se asigna manualmente.
+// UltimateMalediction no se usa (Ultimate se controla desde BossStateUltimate).
+// El ciclo real de ataques lo controla AttackCycleIndex en CycleNextAttack().
 UENUM(BlueprintType)
 enum class EBossAttackState : uint8
 {
@@ -69,6 +74,8 @@ private:
 
  
     // Ciclo de ataques ,sub-estados internos
+    // NOTA: Solo se usa en la primera llamada a Attack(). El ciclo continuo
+    // lo controla AttackCycleIndex en CycleNextAttack().
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Bloodseeker | Combat", meta = (AllowPrivateAccess = "true"))
     EBossAttackState CurrentAttackState;
 

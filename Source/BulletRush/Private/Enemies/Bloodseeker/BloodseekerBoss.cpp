@@ -21,8 +21,6 @@ ABloodseekerBoss::ABloodseekerBoss()
     // Movimiento sinusoidal
     MovementAmplitude = 350.0f;
     MovementFrequency = 1.5f;
-
-    
     RotationSpeed = 10.0f;
 
     // Control de fases de ataque
@@ -221,6 +219,8 @@ void ABloodseekerBoss::ExecuteRadialSphere()
 
 void ABloodseekerBoss::CycleNextAttack()
 {
+    // Alterna entre Fan (0) y Sphere (1) usando AttackCycleIndex.
+    // Se programa a sí mismo en un loop infinito cada TimeBetweenAttacks.
     AttackCycleIndex = 1 - AttackCycleIndex;
 
     AttackSequence = (AttackCycleIndex == 0) ? LinearBurstCombo : RadialCombo;

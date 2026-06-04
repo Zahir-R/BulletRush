@@ -8,8 +8,6 @@
 #include "Player/TopDownPlayer.h"
 #include "Subsystems/LevelRoutingSubsystem.h"
 
-#include "Core/Publisher.h"
-
 //mas testeo
 #include "Player/PlayingPlayer.h"
 
@@ -84,10 +82,3 @@ void ALevelPortal::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
-
-void ALevelPortal::Update(APublisher* Publisher)
-{
-	// Simple update reaction: activate portal or change visual. For now no-op.
-	UE_LOG(LogTemp, Log, TEXT("ALevelPortal::Update called by Publisher %s"), Publisher ? *Publisher->GetName() : TEXT("(null)"));
-}
-

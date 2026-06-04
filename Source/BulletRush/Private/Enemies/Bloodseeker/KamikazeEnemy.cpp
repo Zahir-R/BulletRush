@@ -12,10 +12,18 @@ AKamikazeEnemy::AKamikazeEnemy()
     bAutoStartAttack = false;
     AttackInterval = 0.0f;
 
+
+
     Speed = 600.0f;
     ImpactDamage = 5.0f;
 
     bHasReachedTarget = false;
+
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cone.Shape_Cone'"));
+    if (MeshAsset.Succeeded())
+    {
+        MeshEnemy->SetStaticMesh(MeshAsset.Object);
+    }
 }
 
 void AKamikazeEnemy::BeginPlay()

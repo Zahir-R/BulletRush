@@ -21,6 +21,7 @@ class UBossStateStunned;
 class UBossStatePhaseTransition;
 class UBossStateDead;
 
+class APortalManager;
 UCLASS(Blueprintable)
 class BULLETRUSH_API ABossBase : public AEnemyBase
 {
@@ -101,6 +102,6 @@ public:
 	UBossStateDead* DeadState;
 
 	void Die() override;
-
+	APortalManager* PortalManagerRef;
 	bool HasActiveWeakPoints() const { return ActiveWeakPoints > 0; }
 };

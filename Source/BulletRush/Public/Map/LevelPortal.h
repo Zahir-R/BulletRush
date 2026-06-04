@@ -12,7 +12,7 @@ class UStaticMeshComponent;
 class ULevelRoutingSubsystem;
 
 UCLASS(Blueprintable)
-class BULLETRUSH_API ALevelPortal : public AActor, public ISubscriber
+class BULLETRUSH_API ALevelPortal : public AActor
 {
 	GENERATED_BODY()
 	
@@ -44,7 +44,5 @@ public:
 	// for detectar overlaps
 	UPROPERTY(VisibleAnywhere, Category = "Componentes")
 	UBoxComponent* CollisionBox;
-	// ISubscriber implementation
-	virtual void Update(class APublisher* Publisher) override;
 
 };

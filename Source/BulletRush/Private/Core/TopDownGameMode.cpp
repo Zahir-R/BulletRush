@@ -18,6 +18,9 @@ void ATopDownGameMode::BeginPlay()
 	//Configuramos las reglas de spawn para que se ignore las colisiones
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		GetWorld()->SpawnActor<APortalManager>(APortalManager::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+		PortalManager = GetWorld()->SpawnActor<APortalManager>(APortalManager::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+	}
+	if (PortalManager) {
+		PortalManager->SpawnPortalesCupHead();
 	}
 }
