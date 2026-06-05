@@ -11,6 +11,6 @@ void UCircleAttack::Execute(UBulletSpawnerComponent* Spawner, const FAttackParam
 		FVector Direction(FMath::Cos(Angle), FMath::Sin(Angle), 0.0f);
 		Direction = Direction.GetSafeNormal();
 
-		Spawner->InternalSpawn(Params.Origin, Direction, Params.Speed, Params.Damage);
+		Spawner->InternalSpawn(Params.Origin, Direction, Params.Speed, Params.Damage, Params.Scale);
 	}
 }

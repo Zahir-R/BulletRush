@@ -26,7 +26,7 @@ public:
 	float GetPlayerProjectileSpeedMultiplier(AActor* OwnerActor);
 
 	// Funciones para el equipo
-	ABulletBase* RequestBullet(FVector Loc, FVector Dir, float Spd, bool bIsPlayer, float Damage, FVector SpawnLocation, AActor* Owner);
+	ABulletBase* RequestBullet(FVector Loc, FVector Dir, float Spd, bool bIsPlayer, float Damage, FVector SpawnLocation, AActor* Owner, FVector Scale = FVector(0.4f));
 	void ReturnBullet(ABulletBase* Bullet);
 
 	// Return all active bullets back to pool (deactivate them)

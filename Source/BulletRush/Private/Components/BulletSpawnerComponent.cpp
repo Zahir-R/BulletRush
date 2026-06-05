@@ -5,6 +5,9 @@
 #include "Combat/AttackPatterns/SpiralAttack.h"
 #include "Combat/AttackPatterns/SphereAttack.h"
 #include "Combat/AttackPatterns/SurroundingBulletsAttack.h"
+#include "Combat/AttackPatterns/PentagramAttack.h"
+#include "Combat/AttackPatterns/FanAttack.h"
+
 
 UBulletSpawnerComponent::UBulletSpawnerComponent()
 {
@@ -26,6 +29,9 @@ void UBulletSpawnerComponent::BeginPlay()
 	AttackRegist.Add(EAttackType::Spiral, TStrongObjectPtr<UAttackStrategy>(NewObject<USpiralAttack>(this)));
 	AttackRegist.Add(EAttackType::Burst, TStrongObjectPtr<UAttackStrategy>(NewObject<UBurstAttack>(this)));
 	AttackRegist.Add(EAttackType::SurroundingBullets, TStrongObjectPtr<UAttackStrategy>(NewObject<USurroundingBulletsAttack>(this)));
+	AttackRegist.Add(EAttackType::Fan, TStrongObjectPtr<UAttackStrategy>(NewObject<UFanAttack>(this)));
+	AttackRegist.Add(EAttackType::Pentagram, TStrongObjectPtr<UAttackStrategy>(NewObject<UPentagramAttack>(this)));
+
 
 }
 
@@ -37,7 +43,7 @@ void UBulletSpawnerComponent::TickComponent(float DeltaTime, ELevelTick TickType
 }
 
 
-void UBulletSpawnerComponent::InternalSpawn(FVector Origin, FVector Direction, float Speed, float Damage)
+void UBulletSpawnerComponent::InternalSpawn(FVector Origin, FVector Direction, float Speed, float Damage, FVector Scale)
 {
 	if (!GetOwner() || !ProjectilesSubsystem) return;
 
@@ -45,7 +51,7 @@ void UBulletSpawnerComponent::InternalSpawn(FVector Origin, FVector Direction, f
 	AActor* OwnerActor = GetOwner();
 
 	ABulletBase* Bullet = ProjectilesSubsystem->RequestBullet(
-        SpawnLocation, Direction, Speed, bIsPlayerSource, Damage, SpawnLocation, OwnerActor
+        SpawnLocation, Direction, Speed, bIsPlayerSource, Damage, SpawnLocation, OwnerActor, Scale
 	);
 
 	if (Bullet)
@@ -56,6 +62,17 @@ void UBulletSpawnerComponent::InternalSpawn(FVector Origin, FVector Direction, f
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("No se pudo generar la bala o no hay disponibles en el pool"));
 	}
+}
+
+void UBulletSpawnerComponent::InternalSpawnAt(FVector SpawnLocation, FVector Direction, float Speed, float Damage)
+{
+	if (!GetOwner() || !ProjectilesSubsystem) return;
+
+	AActor* OwnerActor = GetOwner();
+
+	ABulletBase* Bullet = ProjectilesSubsystem->RequestBullet(
+		SpawnLocation, Direction, Speed, bIsPlayerSource, Damage, SpawnLocation, OwnerActor
+	);
 }
 
 void UBulletSpawnerComponent::StartSequence(const TArray<FAttackStep>& NewSequence)
@@ -84,7 +101,8 @@ void UBulletSpawnerComponent::ExecuteNextStep()
 			Step.DelayAfter,
 			Step.SpecialParam,
 			SpawnOrigin,
-			Step.Damage
+			Step.Damage,
+			Step.BulletScale
 		};
 		AttackRegist[Step.Type]->Execute(this, Params);
 	}

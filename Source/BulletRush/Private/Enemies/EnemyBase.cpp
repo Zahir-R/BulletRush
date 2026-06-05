@@ -10,15 +10,16 @@ AEnemyBase::AEnemyBase()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	
 	MeshEnemy = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshEnemy"));
 	RootComponent = MeshEnemy;
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
 
 	if (MeshAsset.Succeeded()) MeshEnemy->SetStaticMesh(MeshAsset.Object);
-
+	
 	BulletSpawner = CreateDefaultSubobject<UBulletSpawnerComponent>(TEXT("BulletSpawner"));
+	
 	
 
 	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
@@ -46,7 +47,7 @@ void AEnemyBase::BeginPlay()
 		BeginAttackLoop();
 	}
 
-
+	Tags.Add("Enemy");
 }
 
 float AEnemyBase::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -94,7 +95,7 @@ void AEnemyBase::StartAttack()
 	if (!BulletSpawner) return;
 	FVector FireDirection = GetActorForwardVector();
 	TArray<FAttackStep> TestCombo;
-	TestCombo.Add(FAttackStep(EAttackType::Circle, 12, 600.0f, 0.0f));
+	TestCombo.Add(FAttackStep());
 	BulletSpawner->StartSequence(TestCombo);
 
 //	UE_LOG(LogTemp, Log, TEXT("[%s] Ejecutando disparo de prueba."), *GetName());
@@ -145,3 +146,6 @@ void AEnemyBase::StopAttackLoop()
 }
 
 
+void AEnemyBase::Attack() {
+	UE_LOG(LogTemp, Warning,TEXT("Ejecutando Ataque"));
+}

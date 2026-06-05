@@ -19,6 +19,6 @@ public:
 	}
 	virtual float GetHealthRestore() const override
 	{
-		return ExtraHealth;
+		return (InnerStats ? InnerStats->GetHealthRestore() : 0.f) + ExtraHealth;
 	}
 };

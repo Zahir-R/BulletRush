@@ -17,37 +17,38 @@ void UVolleyStrategy::StartFiring(
 	}
 
 	bRecharging = true;
+	TWeakObjectPtr<UVolleyStrategy> WeakThis(this);
+	TWeakObjectPtr<UWeaponBaseComponent> WeakWeapon(Weapon);
 
 	for (int i = 0; i < MaxShots; i++)
 	{
 		float Delay = i * FireRate;
 
 		FTimerHandle ShotTimer;
-
-		Weapon->GetWorld()->GetTimerManager().SetTimer(
-			ShotTimer,
-			FTimerDelegate::CreateLambda([this, Weapon]()
+		Weapon->GetWorld()->GetTimerManager().SetTimer(ShotTimer,
+			[WeakThis, WeakWeapon]()
+			{
+				if (WeakThis.IsValid() && WeakWeapon.IsValid())
 				{
-					ExecuteFire(Weapon);
-				}),
-			Delay,
-			false
-		);
+					WeakThis->ExecuteFire(WeakWeapon.Get());
+				}
+			}, Delay, false);
 	}
 
-	Weapon->GetWorld()->GetTimerManager().SetTimer(
-		RechargeTimer,
-		FTimerDelegate::CreateLambda([this]()
+	Weapon->GetWorld()->GetTimerManager().SetTimer(RechargeTimer,
+		[WeakThis]()
+		{
+			if (WeakThis.IsValid())
 			{
-				bRecharging = false;
-			}),
-		(MaxShots * FireRate) + RechargeTime,
-		false
-	);
+				WeakThis->FinishRecharge();
+			}
+			
+		}, (MaxShots * FireRate) + RechargeTime, false);
 }
 void UVolleyStrategy::StopFiring(
 	UWeaponBaseComponent* Weapon)
 {
+	
 }
 
 void UVolleyStrategy::ExecuteFire(

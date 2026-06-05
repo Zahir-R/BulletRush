@@ -13,16 +13,14 @@ void UPlusFireStrategy::StartFiring(
 	}
 
 	ExecuteFire(Weapon);
+	TWeakObjectPtr<UPlusFireStrategy> WeakThis(this);
+	TWeakObjectPtr<UWeaponBaseComponent> WeakWeapon(Weapon);
 
-	Weapon->GetWorld()->GetTimerManager().SetTimer(
-		Weapon->FiringTimer,
-		FTimerDelegate::CreateLambda([this, Weapon]()
-			{
-				ExecuteFire(Weapon);
-			}),
-		NewFireRate,
-		true
-	);
+	Weapon->GetWorld()->GetTimerManager().SetTimer(Weapon->FiringTimer,
+		[WeakThis, WeakWeapon]()
+		{
+			WeakThis->ExecuteFire(WeakWeapon.Get());
+		}, NewFireRate, true);
 }
 
 void UPlusFireStrategy::StopFiring(
@@ -32,10 +30,8 @@ void UPlusFireStrategy::StopFiring(
 	{
 		return;
 	}
-
-	Weapon->GetWorld()->GetTimerManager().ClearTimer(
-		Weapon->FiringTimer
-	);
+	Weapon->GetWorld()->GetTimerManager().ClearTimer(Weapon->FiringTimer);
+	
 }
 
 void UPlusFireStrategy::ExecuteFire(

@@ -52,7 +52,9 @@ public:
 	void OnPlayerDeath();
 
 	TArray<UWeaponBaseComponent*> EquippedWeapons;
+	UPROPERTY()
 	UWeaponBaseComponent* TestWeapon;
+	UPROPERTY()
 	UWeaponBaseComponent* TestWeapontwo;
 
 	UHealthComponent* HealthComp;

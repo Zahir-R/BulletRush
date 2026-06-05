@@ -1,34 +1,38 @@
 #include "Core/Publisher.h"
+#include "Core/Subscriber.h"
 
 APublisher::APublisher()
 {
-	PrimaryActorTick.bCanEverTick = false;
+    PrimaryActorTick.bCanEverTick = false;
 }
 
-void APublisher::Subscribe(TScriptInterface<ISubscriber> Subscriber)
+void APublisher::Subscribe(UObject* Subscriber)
 {
-	if (Subscriber.GetObject())
-	{
-		Subscribers.AddUnique(Subscriber);
-	}
+    if (Subscriber && IsValid(Subscriber))
+        Subscribers.AddUnique(TWeakObjectPtr<UObject>(Subscriber));
 }
 
-void APublisher::Unsubscribe(TScriptInterface<ISubscriber> Subscriber)
+void APublisher::Unsubscribe(UObject* Subscriber)
 {
-	Subscribers.Remove(Subscriber);
+    Subscribers.RemoveAll([Subscriber](const TWeakObjectPtr<UObject>& WP)
+        {
+            return !WP.IsValid() || WP.Get() == Subscriber;
+        });
 }
 
 void APublisher::NotifySubscribers()
 {
-	for (int32 i = Subscribers.Num() - 1; i >= 0; --i)
-	{
-		if (Subscribers[i].GetObject())
-		{
-			Subscribers[i]->Update(this);
-		}
-		else
-		{
-			Subscribers.RemoveAt(i);
-		}
-	}
+    for (int32 i = Subscribers.Num() - 1; i >= 0; --i)
+    {
+        if (!Subscribers[i].IsValid())
+        {
+            Subscribers.RemoveAt(i);
+            continue;
+        }
+
+        UObject* Obj = Subscribers[i].Get();
+        ISubscriber* Sub = Cast<ISubscriber>(Obj);
+        if (Sub)
+            Sub->Update(this);
+    }
 }

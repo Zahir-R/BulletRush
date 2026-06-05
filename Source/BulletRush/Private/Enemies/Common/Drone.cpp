@@ -3,6 +3,7 @@
 #include "Combat/AttackPatterns/BurstAttack.h"
 #include "Combat/MovementStrategy/SinusoidalSeekMovement.h"
 #include "Components/BulletSpawnerComponent.h"
+#include "Core/Euclidian/EuclidianGameMode.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 #include "Engine/World.h"
@@ -23,6 +24,7 @@ void ADrone::BeginPlay()
     USinusoidalSeekMovement* SinMovement = Cast<USinusoidalSeekMovement>(MovementStrategy);
     if (SinMovement) { SinMovement->Amplitude = 200.f; SinMovement->Frequency = 2.f; SinMovement->StopDistance = 500.f; }
     BeginAttackLoop();
+
 }
 
 void ADrone::Tick(float DeltaSeconds)
@@ -43,18 +45,29 @@ void ADrone::Tick(float DeltaSeconds)
 
 void ADrone::StartAttack()
 {
-    UBulletSpawnerComponent* Spawner = FindComponentByClass<UBulletSpawnerComponent>();
-    if (!Spawner) return;
+    if (!BulletSpawner)
+    {
+        return;
+    }
 
-    FAttackParams Params;
-    Params.Origin = GetActorLocation();
-    Params.Damage = Damage;
-    Params.Speed = ProjectileSpeed * CurrentProjectileSpeedMultiplier;
+    APawn* PlayerPawn =
+        UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 
-    Params.Count = 3;
-    Params.SpecialParam = FMath::RandRange(0.1f, 0.3f);
+    if (!PlayerPawn)
+    {
+        return;
+    }
 
-    UBurstAttack().Execute(Spawner, Params);
+    FVector Direction =
+        (PlayerPawn->GetActorLocation() -
+            GetActorLocation()).GetSafeNormal();
+
+    BulletSpawner->InternalSpawn(
+        GetActorLocation(),
+        Direction,
+        ProjectileSpeed,
+        Damage
+    );
 }
 
 void ADrone::ApplySpeedBuff(float Duration, float FireRateMult, float ProjectileSpeedMult)

@@ -223,6 +223,13 @@ void AGameModeChronostasis::StartSecretLevel(URequirementManager* RequirementMan
         UE_LOG(LogTemp, Error, TEXT("AGameModeChronostasis::StartSecretLevel: No facade cached!"));
         return;
     }
+
+    if (SpawnedBossPortal && IsValid(SpawnedBossPortal))
+    {
+        SpawnedBossPortal->bIsActive = false;
+        UE_LOG(LogTemp, Log, TEXT("StartSecretLevel: Boss portal deactivated for secret level."));
+    }
+
     CachedFacade->SetRequirementManager(RequirementManager);
     CachedFacade->StartSecretWaves(SecretWaves);
 }
@@ -254,4 +261,10 @@ void AGameModeChronostasis::OnSecretLevelCompleted()
     }
 
     bSecretLevelTriggered = false;
+
+    if (SpawnedBossPortal && IsValid(SpawnedBossPortal))
+    {
+        SpawnedBossPortal->bIsActive = true;
+        UE_LOG(LogTemp, Log, TEXT("OnSecretLevelCompleted: Boss portal reactivated."));
+    }
 }

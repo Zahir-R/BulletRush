@@ -6,8 +6,20 @@
 #include "SerXBoss.generated.h"
 
 class AAlteredZone;
-class UBossCommand;
 class UMovementStrat;
+class USeekMovement;
+class UMoveBehindMovement;
+class UTriangulationMovement;
+class UAscendMovement;
+class UDescendMovement;
+class UStaticMovement;
+class UBossRecorderComponent;
+
+struct FMovementComboStep
+{
+	int32 StrategyIndex = 0;
+	float Duration = 0.f; // 0 = wait for strategy->bCompleted
+};
 
 UCLASS(Blueprintable)
 class BULLETRUSH_API ASerXBoss : public ABossBase
@@ -21,20 +33,16 @@ public:
 	virtual void Die() override;
 
 	void SetLinkerFactory(UChronostasisFactoryEnemy* Factory);
+	void AddMinionFactory(UChronostasisFactoryEnemy* Factory);
 
 	void ExecuteAttack(int32 PatternIndex);
-<<<<<<< Updated upstream
-	void DoSpawnCharger();
-=======
 	void ExecuteMovement(int32 StrategyIndex, FVector Target);
->>>>>>> Stashed changes
 	void DoSpawnLinker();
 	void ActivateZone();
-	void MoveTo(FVector Target);
+	void MoveTo(FVector Target, int32 StrategyIndex = 0);
+	void SpawnRandomMinion();
 
-	void StartRecording();
-	void StopRecordingAndSpawnClone();
-	void PlaybackCommands(ASerXBoss* Clone);
+	bool IsExecutingMovementCombo() const { return bExecutingMovementCombo; }
 
 	bool bIsClone = false;
 
@@ -49,32 +57,58 @@ protected:
 	UFUNCTION()
 	void OnZoneSpawnTimer();
 	UFUNCTION()
-	void OnRecordingFinished();
-	UFUNCTION()
 	void OnLinkerDied(AEnemyBase* DeadLinker);
 
-	void RecordCommand(UBossCommand* Cmd);
 	void SetupAttackCombos();
-	void SetupPhase2Combos();
+	void SetupMovementStrategies();
+
+	void StartAttackCombo(int32 ComboIndex);
+	void AdvanceAttackCombo();
+	void StartMovementCombo(int32 ComboIndex);
+	void AdvanceMovementCombo();
+	void StartMovementStep(int32 StepIndex);
+	void FireAttackStep(const FAttackStep& Step);
+	FVector GetMovementTargetForStrategy(int32 StrategyIndex);
+
+	UPROPERTY()
+	UBossRecorderComponent* RecorderComponent;
 
 	UPROPERTY()
 	UMovementStrat* MovementStrategy;
+	UPROPERTY()
+	USeekMovement* SeekStrat;
+	UPROPERTY()
+	UMoveBehindMovement* MoveBehindStrat;
+	UPROPERTY()
+	UTriangulationMovement* TriangulationStrat;
+	UPROPERTY()
+	UAscendMovement* AscendStrat;
+	UPROPERTY()
+	UDescendMovement* DescendStrat;
+	UPROPERTY()
+	UStaticMovement* StaticStrat;
 	FVector MovementTarget;
 	bool bIsMoving = false;
+	int32 CurrentStrategyIndex = 0;
 
-	UPROPERTY()
-	TArray<UBossCommand*> RecordedCommands;
-	float RecordingDuration = 10.f;
-	float RecordingStartTime = -1.f;
-	FTimerHandle RecordingTimerHandle;
-	bool bIsRecording = false;
-	bool bRecordingStarted = false;
+	int32 CurrentAttackCombo = -1;
+	int32 CurrentAttackStep = 0;
+	float AttackComboElapsed = 0.f;
+	bool bExecutingAttackCombo = false;
+
+	TArray<TArray<FMovementComboStep>> MoveCombos;
+	int32 CurrentMovementCombo = -1;
+	int32 CurrentMovementStep = 0;
+	float MovementStepElapsed = 0.f;
+	bool bExecutingMovementCombo = false;
 
 	FTimerHandle LinkerSpawnTimerHandle;
 	FTimerHandle ZoneSpawnTimerHandle;
 
 	UPROPERTY()
 	UChronostasisFactoryEnemy* LinkerFactory;
+	UPROPERTY()
+	TArray<UChronostasisFactoryEnemy*> MinionFactories;
 
 	UPROPERTY(EditAnywhere, Category = "Boss")
 	TSubclassOf<AAlteredZone> AlteredZoneClass;
@@ -86,13 +120,5 @@ protected:
 	int32 ActiveLinkerCount = 0;
 	int32 MaxLinkers = 3;
 
-	TArray<FAttackStep> CircleCombo;
-	TArray<FAttackStep> SphereCombo;
-	TArray<FAttackStep> SpiralCombo;
-	TArray<FAttackStep> SurroundCombo;
-
-	TArray<FAttackStep> CircleCombo2;
-	TArray<FAttackStep> SphereCombo2;
-	TArray<FAttackStep> SpiralCombo2;
-	TArray<FAttackStep> SurroundCombo2;
+	TArray<TArray<FAttackStep>> AttackCombos;
 };

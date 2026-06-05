@@ -13,6 +13,6 @@ void USpiralAttack::Execute(UBulletSpawnerComponent* Spawner, const FAttackParam
 
 		float BulletSpeed = Params.Speed * (1.0f + (i / (float)FMath::Max(1, Params.Count)) * 1.5f);
 
-		Spawner->InternalSpawn(Params.Origin, Direction, BulletSpeed, Params.Damage);
+		Spawner->InternalSpawn(Params.Origin, Direction, BulletSpeed, Params.Damage, Params.Scale);
 	}
 }
