@@ -1,6 +1,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "NiagaraComponent.h"
+#include "NiagaraSystem.h"
 #include "GameFramework/Actor.h"
 #include "BulletBase.generated.h"
 
@@ -42,6 +44,18 @@ public:
 
 	// Datos actuales de la bala (lo que usar� el manager para moverla)
 	FBulletData BulletData;
+
+	UPROPERTY(VisibleAnywhere)
+	UNiagaraComponent* TrailFX;
+
+	UPROPERTY(EditAnywhere, Category = "VFX")
+	UNiagaraSystem* TrailSystem;
+
+	UPROPERTY(EditAnywhere, Category = "VFX")
+	FLinearColor PlayerTrailColor = FLinearColor(0.2f, 0.8f, 1.0f, 1.0f);
+
+	UPROPERTY(EditAnywhere, Category = "VFX")
+	FLinearColor EnemyTrailColor = FLinearColor(1.0f, 0.3f, 0.2f, 1.0f);
 
 protected:
 	virtual void BeginPlay() override;
