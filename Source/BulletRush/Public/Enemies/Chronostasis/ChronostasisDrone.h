@@ -10,4 +10,11 @@ class BULLETRUSH_API AChronostasisDrone : public ADrone
 public:
     AChronostasisDrone();
     virtual void StartAttack() override;
+
+    void ApplySpeedBuff(float Duration, float FireRateMult, float ProjectileSpeedMult);
+
+protected:
+    void RemoveSpeedBuff();
+
+    bool bSpeedBuffBaselineSaved = false;
 };

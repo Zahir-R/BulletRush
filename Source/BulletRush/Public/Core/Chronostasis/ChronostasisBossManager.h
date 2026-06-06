@@ -18,7 +18,6 @@ public:
     UFUNCTION()
     void OnBossKilled(AEnemyBase* Boss);
 
-    void SetChargerFactory(UChronostasisFactoryEnemy* Factory) { BossChargerFactory = Factory; }
     void SetLinkerFactory(UChronostasisFactoryEnemy* Factory) { BossLinkerFactory = Factory; }
 
     FSimpleMulticastDelegate OnBossDefeated;
@@ -29,8 +28,6 @@ private:
 
     FVector BossArenaSpawnLocation;
 
-    UPROPERTY()
-    UChronostasisFactoryEnemy* BossChargerFactory;
     UPROPERTY()
     UChronostasisFactoryEnemy* BossLinkerFactory;
     UPROPERTY()

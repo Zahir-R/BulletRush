@@ -1,7 +1,7 @@
 #include "Core/Chronostasis/ChronostasisSlowSystem.h"
 #include "Core/Chronostasis/ChronostasisFacade.h"
 #include "Components/BuffComponent.h"
-#include "Buffs/TimeSlowDecorator.h"
+#include "Buffs/SlowDecorator.h"
 #include "TimerManager.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
@@ -38,7 +38,7 @@ void UChronostasisSlowSystem::OnTimerExpired()
         UBuffComponent* BuffComp = PlayerPawn->FindComponentByClass<UBuffComponent>();
         if (BuffComp)
         {
-            BuffComp->ApplyBuff(UTimeSlowDecorator::StaticClass(), -1.0f, 0.0f);
+            BuffComp->ApplyBuff(USlowDecorator::StaticClass(), -1.0f, 0.0f);
         }
     }
 
@@ -72,7 +72,7 @@ void UChronostasisSlowSystem::ResetOnKill()
         UBuffComponent* BuffComp = PlayerPawn->FindComponentByClass<UBuffComponent>();
         if (BuffComp)
         {
-            BuffComp->RemoveDecoratorByClass(UTimeSlowDecorator::StaticClass());
+            BuffComp->RemoveDecoratorByClass(USlowDecorator::StaticClass());
         }
     }
 }

@@ -18,7 +18,8 @@ public:
 
 protected:
     virtual void BeginPlay() override;
-
+    UFUNCTION()
+    void OnPlayerDeath();
 private:
     void DetectAndActivateFacade();
 
@@ -30,5 +31,5 @@ private:
     ALevel2SFacade* Facade2S = nullptr;
 
     UPROPERTY()
-    AVaultKeeperFacade* FacadeVK = nullptr;
+    AVaultKeeperFacade* FacadeVK = nullptr;  
 };

@@ -6,6 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "TopDownGameMode.generated.h"
 
+class APortalManager;
 /**
  * 
  */
@@ -16,6 +17,9 @@ class BULLETRUSH_API ATopDownGameMode : public AGameModeBase
 public:
 	ATopDownGameMode();
 	
+	UPROPERTY()
+	APortalManager* PortalManager;
+
 public:
 	virtual void BeginPlay() override;
 	

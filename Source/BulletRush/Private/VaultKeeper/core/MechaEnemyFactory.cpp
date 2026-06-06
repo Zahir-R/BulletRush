@@ -4,6 +4,8 @@
 #include "VaultKeeper/core/MechaEnemyFactory.h"
 #include "VaultKeeper/enemies/DronMecha.h"
 #include "VaultKeeper/enemies/VaultKeeper.h"
+#include "VaultKeeper/enemies/MechaKamikazeEnemy.h"
+#include "VaultKeeper/enemies/MechaChargerEnemy.h"
 #include "VaultKeeper/objets/BatteryActor.h"
 #include "Engine/World.h"
 
@@ -16,6 +18,9 @@ AMechaEnemyFactory::AMechaEnemyFactory()
 	DronMechaClass = ADronMecha::StaticClass();
 	BatteryActorClass = ABatteryActor::StaticClass();
 	VaultKeeperClass = AVaultKeeper::StaticClass();
+	MechaKamikazeClass = AMechaKamikazeEnemy::StaticClass();
+	MechaChargerClass = AMechaChargerEnemy::StaticClass();
+	
 }
 
 // Called when the game starts or when spawned
@@ -54,7 +59,13 @@ AActor* AMechaEnemyFactory::CreateEnemy(EMechaEnemyType EnemyType, FVector Locat
 	case EMechaEnemyType::VaultKeeper:
 		ClassToSpawn = VaultKeeperClass;
 		break;
-
+	
+	case EMechaEnemyType::MechaKamikaze:
+		ClassToSpawn = MechaKamikazeClass;
+		break;
+	case EMechaEnemyType::MechaCharger:
+		ClassToSpawn = MechaChargerClass;
+		break;
 	default:
 		break;
 	}

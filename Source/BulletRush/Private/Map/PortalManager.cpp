@@ -24,16 +24,16 @@ APortalManager::APortalManager()
 void APortalManager::BeginPlay()
 {
 	Super::BeginPlay();
-	
+}
+void APortalManager::SpawnPortalesCupHead() {
 	UWorld* World = GetWorld();
 
 	if (World) {
 		for (const FPortalData& data : PortalesDataBase) {
-		
 			FActorSpawnParameters SpawnParams;
 			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-            // generamos el portal físicamente en el mapa
+			// generamos el portal físicamente en el mapa
 			FTransform SpawnTransform(FRotator::ZeroRotator, data.SpawnLocation);
 			ALevelPortal* SpawnedPortal = World->SpawnActor<ALevelPortal>(ALevelPortal::StaticClass(), SpawnTransform, SpawnParams);
 
@@ -43,11 +43,26 @@ void APortalManager::BeginPlay()
 				SpawnedPortal->TargetLevelName = data.LevelName;
 			}
 		}
-	
-	
+
+
 	}
+}
 
+void APortalManager::VolverCupHead(FVector Location)
+{
+	if(GetWorld())
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		FTransform SpawnTransform(FRotator::ZeroRotator, Location + FVector(300.0f, 0.0f, 50.0f));
 
+		ALevelPortal* PortalCup = GetWorld()->SpawnActor<ALevelPortal>(ALevelPortal::StaticClass(), SpawnTransform, SpawnParams);
+
+		if (PortalCup)
+		{
+			PortalCup->TargetLevelName = FName(TEXT("Map_CupHeadMap"));
+		}
+	}
 }
 
 // Called every frame

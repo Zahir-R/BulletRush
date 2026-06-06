@@ -13,7 +13,7 @@
 #include "Components/WeakPointComponent.h"
 #include "Components/BulletSpawnerComponent.h"
 #include "Subsystems/ProjectilesSubsystem.h"
-#include "Map/LevelPortal.h"
+#include "Map/PortalManager.h"
 
 // Sets default values
 ABossBase::ABossBase()
@@ -64,6 +64,13 @@ void ABossBase::BeginPlay()
 	Combo.Add(FAttackStep(EAttackType::Sphere, 1000, 800.0f, 0.5f, 0.1f));
 
 	ChangeState(IntroState);
+
+	if (GetWorld()) {
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		PortalManagerRef = GetWorld()->SpawnActor<APortalManager>(APortalManager::StaticClass(),FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+	}
+
 }
 
 void ABossBase::Tick(float DeltaTime)
@@ -191,15 +198,8 @@ void ABossBase::Die()
 		{
 			ProjSys->ReturnAllActiveBullets();
 		}
-
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		FTransform SpawnTransform(FRotator::ZeroRotator, GetActorLocation() + FVector(300.0f, 0.0f, 50.0f));
-		ALevelPortal* ReturnPortal = GetWorld()->SpawnActor<ALevelPortal>(ALevelPortal::StaticClass(), SpawnTransform, SpawnParams);
-		if (ReturnPortal)
-		{
-			ReturnPortal->TargetLevelName = FName(TEXT("Map_CupHeadMap"));
-		}
+		FVector BossLocation = GetActorLocation();
+		PortalManagerRef->VolverCupHead(BossLocation);
 	}
 	Super::Die();
 }

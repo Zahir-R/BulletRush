@@ -30,6 +30,7 @@ public:
 
     int32 GetSlowTriggerCount() const;
 
+    void SetNormalWaves(const TArray<FWaveConfig>& NewWaves);
     void SetRequirementManager(class URequirementManager* Manager);
     void StartSecretWaves(const TArray<FWaveConfig>& NewWaves);
 

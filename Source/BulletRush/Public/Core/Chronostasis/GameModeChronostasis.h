@@ -51,6 +51,9 @@ protected:
     UPROPERTY()
     class APortalTrigger* SpawnedBossPortal;
 
+    UPROPERTY(EditAnywhere, Category="Waves")
+    TArray<FWaveConfig> NormalWaves;
+
     TArray<FWaveConfig> SecretWaves;
 
 	bool bSecretLevelTriggered = false;

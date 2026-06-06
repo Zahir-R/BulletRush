@@ -9,7 +9,7 @@ class ABloodseekerBoss;
 class ABossSpawnTrigger;
 class ALevelPortal;
 class AEnemyBase;
-
+class ASkySphereWorld;
 UCLASS()
 class BULLETRUSH_API ABloodseekerGameMode : public ABulletRushGameModeBase
 {
@@ -38,6 +38,9 @@ protected:
 
     UPROPERTY()
     ABossSpawnTrigger* BossTrigger;
+    
+    UPROPERTY()
+	ASkySphereWorld* SkySphere;
 
     UPROPERTY(EditAnywhere, Category = "Bloodseeker Level")
     TSubclassOf<ABloodseekerFacade> FacadeClass;

@@ -11,7 +11,7 @@ AChronostasisCharger::AChronostasisCharger()
 
 	MovementStrategy = CreateDefaultSubobject<USeekMovement>(TEXT("SeekMovement"));
 	USeekMovement* Seek = Cast<USeekMovement>(MovementStrategy);
-	if (Seek) Seek->Speed = 350.f;
+	if (Seek) Seek->Speed = 700.f;
 
 	HitCollision = CreateDefaultSubobject<USphereComponent>(TEXT("HitCollision"));
 	HitCollision->InitSphereRadius(100.f);

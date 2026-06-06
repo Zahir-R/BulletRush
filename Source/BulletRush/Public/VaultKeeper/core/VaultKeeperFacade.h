@@ -55,7 +55,7 @@ private:
     AVaultKeeper* BossInstance;
 
     UPROPERTY()
-    TArray<ADronMecha*> ActiveDrones;
+    TArray<AEnemyBase*> ActiveEnemies;
 
     int32 DroneSpawnCount = 0;
     bool bLevelComplete = false;

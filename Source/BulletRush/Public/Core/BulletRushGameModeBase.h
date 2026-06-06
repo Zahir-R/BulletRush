@@ -7,7 +7,7 @@
 #include "BulletRushGameModeBase.generated.h"
 
 class APowerUpManager;
-
+class APortalManager;
 /**
  * 
  */
@@ -20,6 +20,7 @@ public:
 	ABulletRushGameModeBase();
 	virtual void BeginPlay() override;
 
+	APortalManager* APortalManagerRef;
 	static APowerUpManager* SpawnPowerUpsForLevel(UWorld* World, FName LevelName);
 
 	/*

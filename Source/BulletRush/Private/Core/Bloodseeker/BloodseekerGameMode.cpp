@@ -7,6 +7,7 @@
 #include "Core/BulletRushGameInstance.h"
 #include "Subsystems/ProjectilesSubsystem.h"
 #include "Engine/World.h"
+#include "Enemies/Bloodseeker/SkySphereWorld.h"
 #include "Kismet/GameplayStatics.h"
 
 ABloodseekerGameMode::ABloodseekerGameMode()
@@ -17,6 +18,7 @@ ABloodseekerGameMode::ABloodseekerGameMode()
     BossTrigger = nullptr;
     bBossDied = false;
     SpawnBossTriggerLocation = FVector(0.0f, 0.0f, 100.0f);
+ 
 }
 
 void ABloodseekerGameMode::BeginPlay()
@@ -24,7 +26,10 @@ void ABloodseekerGameMode::BeginPlay()
     Super::BeginPlay();
 
     UE_LOG(LogTemp, Warning, TEXT("[BloodseekerGameMode] BeginPlay ejecutado"));
-
+    
+    if (GetWorld()) {
+        SkySphere = GetWorld()->SpawnActor<ASkySphereWorld>(ASkySphereWorld::StaticClass(), FTransform(FVector::ZeroVector));
+    }
     bBossDied = false;
 
     Facade = GetWorld()->SpawnActor<ABloodseekerFacade>(
