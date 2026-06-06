@@ -34,6 +34,8 @@ public:
     // Check whether any decorator of the given class is active
     bool HasDecoratorOfClass(TSubclassOf<UPlayerStatsDecorator> DecoratorClass) const;
 
+    const TArray<FActiveDecorator>& GetActiveBuffs() const { return ActiveDecorators; }
+
 protected:
     virtual void OnComponentDestroyed(bool bDestroyingHierarchy) override;
 

@@ -151,8 +151,8 @@ void UProjectilesSubsystem::Tick(float DeltaTime)
 			// MOVIMIENTO (sweep=true para activar overlap events en WeakPointComponent)
 			Bullet->SetActorLocation(NewLoc, true);
 
-			// RECICLAJE POR DISTANCIA (L?mite de 8000 unidades)
-			if (FVector::Dist(NewLoc, Bullet->BulletData.SpawnLocation) > 8000.f)
+			// RECICLAJE POR DISTANCIA (L?mite de  unidades)
+			if (FVector::Dist(NewLoc, Bullet->BulletData.SpawnLocation) > 4000.f)
 			{
 				ReturnBullet(Bullet);
 			}

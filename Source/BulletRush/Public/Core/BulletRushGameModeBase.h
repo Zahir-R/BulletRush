@@ -8,9 +8,7 @@
 
 class APowerUpManager;
 
-/**
- * 
- */
+
 UCLASS(Blueprintable)
 class BULLETRUSH_API ABulletRushGameModeBase : public AGameModeBase
 {

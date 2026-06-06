@@ -55,7 +55,7 @@ public:
 	UPROPERTY()
 	float PowerUpCooldownMultiplier = 1.0f;
 	UPROPERTY()
-	ELevelState Level2State = ELevelState::Normal;
+	ELevelState Level2State = ELevelState::Boss;
 
 	UPROPERTY()
 	bool bVaultKeeperWeakened = false;

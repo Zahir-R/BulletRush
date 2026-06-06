@@ -1,4 +1,5 @@
 #include "Core/BulletRushGameModeBase.h"
+#include "Core/BulletRushHUD.h"  
 #include "Buffs/PowerUpManager.h"
 #include "Buffs/DamagePowerUp.h"
 #include "Buffs/HealthPowerUp.h"
@@ -16,7 +17,7 @@
 ABulletRushGameModeBase::ABulletRushGameModeBase()
 {
 	DefaultPawnClass = APlayingPlayer::StaticClass();
-	
+	HUDClass = ABulletRushHUD::StaticClass();
 }
 
 void ABulletRushGameModeBase::BeginPlay() 
