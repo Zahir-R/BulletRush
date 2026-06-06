@@ -69,6 +69,8 @@ public:
 
 	void StopCurrentSequence();
 
+	void ExecuteSingleAttack(const FAttackStep& Step);
+
 protected:
 	virtual void BeginPlay() override;
 	

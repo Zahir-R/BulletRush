@@ -4,6 +4,7 @@
 #include "Enemies/Orchestrator/SurveillanceDrone.h"
 #include "Components/StealthVisionComponent.h"
 #include "Components/HealthComponent.h"
+#include "Components/BulletSpawnerComponent.h"
 #include "Enemies/Orchestrator/SurveillanceAIControler.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Components/StaticMeshComponent.h"

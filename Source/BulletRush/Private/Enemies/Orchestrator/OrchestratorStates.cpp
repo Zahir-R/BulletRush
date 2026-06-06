@@ -5,11 +5,15 @@
 #include "Enemies/Orchestrator/Orchestrator.h"
 #include "Components/RhytmConductorComponent.h"
 #include "Components/BulletSpawnerComponent.h"
+#include "Subsystems/ProjectilesSubsystem.h"
+#include "Engine/World.h"
+#include "Engine/GameInstance.h"
+#include "Kismet/GameplayStatics.h"
 
 FVector GetScaleFromBPM(float CurrentBPM)
 {
 	FVector2D BPMRange(60.0f, 180.0f);     // De lento a rápido
-	FVector2D ScaleRange(2.6f, 1.0f);      // De gigante a pequeño (relación inversa)
+	FVector2D ScaleRange(2.8f, 1.0f);      // De gigante a pequeño (relación inversa)
 
 	// Interpola el valor de forma segura
 	float UniformScale = FMath::GetMappedRangeValueClamped(BPMRange, ScaleRange, CurrentBPM);
@@ -23,6 +27,14 @@ void UOrchestrator_Normal::EnterState(ABossBase* Boss)
 	OrchestratorRef->HealthComp->SetInvulnerable(false);
 	if (OrchestratorRef && OrchestratorRef->RhythmConductor)
 	{
+
+		if (OrchestratorRef->BossAudioComp && OrchestratorRef->Phase1Music)
+		{
+			OrchestratorRef->BossAudioComp->Stop();
+			OrchestratorRef->BossAudioComp->SetSound(OrchestratorRef->Phase1Music);
+			OrchestratorRef->BossAudioComp->FadeIn(2.0f);
+			//OrchestratorRef->BossAudioComp->Play();
+		}
 		// Nos suscribimos al evento del metrónomo
 		OrchestratorRef->RhythmConductor->OnBeat.AddDynamic(this, &UOrchestrator_Normal::HandleBeat);
 
@@ -65,9 +77,11 @@ void UOrchestrator_Normal::HandleBeat()
 		{
 		}
 		else if (Compas == 3) // Medio
-			CurrentBeatAttack.Add(FAttackStep(EAttackType::Burst, 3, 800.0f, 0.0f, 0.0f, 10.0f, 0.2f, DynamicScale));
+			CurrentBeatAttack.Add(FAttackStep(EAttackType::Sphere, 24, 800.0f, 0.0f, 0.0f, 10.0f, 0.2f, DynamicScale));
 		else if (Compas == 0) // Cierre
-			CurrentBeatAttack.Add(FAttackStep(EAttackType::Spiral, 20, 500.0f, 0.0f, 15.0f, 10.0f, 0.1f, DynamicScale));
+		{
+			//CurrentBeatAttack.Add(FAttackStep(EAttackType::Spiral, 20, 500.0f, 0.0f, 15.0f, 10.0f, 0.1f, DynamicScale));
+		}
 	}
 
 	if (CurrentBeatAttack.Num() > 0) OrchestratorRef->BulletSpawner->StartSequence(CurrentBeatAttack);
@@ -80,6 +94,12 @@ void UOrchestrator_Melancholy::EnterState(ABossBase* Boss)
 	OrchestratorRef->HealthComp->SetInvulnerable(false);
 	if (OrchestratorRef && OrchestratorRef->RhythmConductor)
 	{
+		if (OrchestratorRef->BossAudioComp && OrchestratorRef->Phase2Music)
+		{
+			OrchestratorRef->BossAudioComp->Stop();
+			OrchestratorRef->BossAudioComp->SetSound(OrchestratorRef->Phase2Music);
+			OrchestratorRef->BossAudioComp->FadeIn(2.0f);
+		}
 		// Nos suscribimos al evento del metrónomo
 		OrchestratorRef->RhythmConductor->OnBeat.AddDynamic(this, &UOrchestrator_Melancholy::HandleBeat);
 
@@ -116,7 +136,7 @@ void UOrchestrator_Melancholy::HandleBeat()
 	else if (Compas == 3)
 	{
 		// Un anillo ligeramente más rápido para atrapar al jugador si se confía
-		CurrentBeatAttack.Add(FAttackStep(EAttackType::Circle, 16, 450.0f, 0.0f, 0.0f, 15.0f, 0.1f, DynamicScale));
+		CurrentBeatAttack.Add(FAttackStep(EAttackType::Sphere, 16, 450.0f, 0.0f, 0.0f, 15.0f, 0.1f, DynamicScale));
 	}
 
 	if (CurrentBeatAttack.Num() > 0) OrchestratorRef->BulletSpawner->StartSequence(CurrentBeatAttack);
@@ -130,6 +150,12 @@ void UOrchestrator_Frenetic::EnterState(ABossBase* Boss)
 	OrchestratorRef->HealthComp->SetInvulnerable(false);
 	if (OrchestratorRef && OrchestratorRef->RhythmConductor)
 	{
+		if (OrchestratorRef->BossAudioComp && OrchestratorRef->Phase3Music)
+		{
+			OrchestratorRef->BossAudioComp->Stop();
+			OrchestratorRef->BossAudioComp->SetSound(OrchestratorRef->Phase3Music);
+			OrchestratorRef->BossAudioComp->FadeIn(2.0f);
+		}
 		// Nos suscribimos al evento del metrónomo
 		OrchestratorRef->RhythmConductor->OnBeat.AddDynamic(this, &UOrchestrator_Frenetic::HandleBeat);
 
@@ -158,23 +184,20 @@ void UOrchestrator_Frenetic::HandleBeat()
 
 	int32 Compas = BeatCounter % 4;
 
-	// La percusión constante no da respiro
-	if (Compas == 1 || Compas == 3)
-	{
-		// Ataques circulares masivos en los tiempos fuertes
-		CurrentBeatAttack.Add(FAttackStep(EAttackType::Circle, 24, 900.0f, 0.0f, 0.0f, 10.0f, 0.1f, DynamicScale));
-	}
-	else
-	{
-		// Disparos directos en los contratiempos
-		CurrentBeatAttack.Add(FAttackStep(EAttackType::Burst, 2, 1000.0f, 0.0f, 0.0f, 10.0f, 0.1f, DynamicScale));
-	}
-
+	float HalfBeatDelay = (60.0f / 160.0f) / 2.0f;
 	// Adicional: Cada 8 pulsos (clímax menor), invoca una espiral sucia que se superpone a los círculos
 	if (BeatCounter % 8 == 0)
 	{
 		CurrentBeatAttack.Add(FAttackStep(EAttackType::Spiral, 24, 1000.0f, 0.0f, 25.0f, 10.0f, 0.1f, DynamicScale));
 	}
+	if (Compas == 1)
+		CurrentBeatAttack.Add(FAttackStep(EAttackType::Sphere, 24, 900.0f, HalfBeatDelay, 0.0f, 10.0f, 0.1f, DynamicScale));
+	else if (Compas == 2)
+		CurrentBeatAttack.Add(FAttackStep(EAttackType::SurroundingBullets, 12, 1000.0f, 0.0f, 0.0f, 10.0f, 0.1f, DynamicScale));
+	else if (Compas == 3)
+		CurrentBeatAttack.Add(FAttackStep(EAttackType::Sphere, 24, 900.0f, HalfBeatDelay, 0.0f, 10.0f, 0.1f, DynamicScale));
+	else if (Compas == 4)
+		CurrentBeatAttack.Add(FAttackStep(EAttackType::SurroundingBullets, 12, 1000.0f, 0.0f, 0.0f, 10.0f, 0.1f, DynamicScale));
 
 	if (CurrentBeatAttack.Num() > 0) OrchestratorRef->BulletSpawner->StartSequence(CurrentBeatAttack);
 }
@@ -187,6 +210,12 @@ void UOrchestrator_Furious::EnterState(ABossBase* Boss)
 	OrchestratorRef->HealthComp->SetInvulnerable(false);
 	if (OrchestratorRef && OrchestratorRef->RhythmConductor)
 	{
+		if (OrchestratorRef->BossAudioComp && OrchestratorRef->Phase4Music)
+		{
+			OrchestratorRef->BossAudioComp->Stop();
+			OrchestratorRef->BossAudioComp->SetSound(OrchestratorRef->Phase4Music);
+			OrchestratorRef->BossAudioComp->FadeIn(2.0f);
+		}
 		// Nos suscribimos al evento del metrónomo
 		OrchestratorRef->RhythmConductor->OnBeat.AddDynamic(this, &UOrchestrator_Furious::HandleBeat);
 
@@ -213,6 +242,38 @@ void UOrchestrator_Furious::HandleBeat()
 	FVector DynamicScale = GetScaleFromBPM(180.0f); // Proyectiles diminutos y letales
 	TArray<FAttackStep> CurrentBeatAttack;
 
+	if (BeatCounter % 84 == 0)
+	{
+		if (UGameInstance* GameInst = OrchestratorRef->GetWorld()->GetGameInstance())
+		{
+			if (UProjectilesSubsystem* ProjSub = GameInst->GetSubsystem<UProjectilesSubsystem>())
+			{
+				// 1. CONGELAMOS EL TIEMPO INMEDIATAMENTE
+				// Al poner GlobalSpeedMultiplier = 0.0f, el Tick actual las dejará quietas sin romper nada
+				ProjSub->HandleSilenceEnter();
+				OrchestratorRef->RhythmConductor->TriggerSilence(true);
+
+				// 2. ESPERAMOS LOS 2 SEGUNDOS DE PÁNICO
+				FTimerHandle SilenceEndTimer;
+				OrchestratorRef->GetWorld()->GetTimerManager().SetTimer(SilenceEndTimer, [this, ProjSub]()
+					{
+						if (OrchestratorRef && OrchestratorRef->RhythmConductor)
+						{
+							if (APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(OrchestratorRef->GetWorld(), 0))
+							{
+								// 3. EJECUTAMOS EL COLAPSO
+								// Le pasamos la velocidad letal de 2500.0f
+								ProjSub->ExecuteSilenceCollapse(PlayerPawn->GetActorLocation(), 2500.0f);
+							}
+
+							// Retomamos el metrónomo
+							OrchestratorRef->RhythmConductor->TriggerSilence(false);
+						}
+					}, 2.0f, false);
+			}
+		}
+		return; // Salimos del HandleBeat
+	}
 	// El Pentagrama de la Fase 1 vuelve, pero el doble de rápido y mortal
 	if (BeatCounter % 16 == 0)
 	{
@@ -223,14 +284,13 @@ void UOrchestrator_Furious::HandleBeat()
 
 	// Combinación de las fases anteriores por capas
 	if (Compas == 1)
-	{
 		CurrentBeatAttack.Add(FAttackStep(EAttackType::Circle, 16, 700.0f, 0.0f, 0.0f, 10.0f, 0.1f, DynamicScale));
-		CurrentBeatAttack.Add(FAttackStep(EAttackType::Burst, 3, 1200.0f, 0.0f, 0.0f, 10.0f, 0.1f, DynamicScale));
-	}
+	else if (Compas == 2)
+		CurrentBeatAttack.Add(FAttackStep(EAttackType::Sphere, 3, 1200.0f, 0.0f, 0.0f, 10.0f, 0.1f, DynamicScale));
 	else if (Compas == 3)
-	{
-		CurrentBeatAttack.Add(FAttackStep(EAttackType::Spiral, 15, 800.0f, 0.0f, 30.0f, 10.0f, 0.1f, DynamicScale));
-	}
+		CurrentBeatAttack.Add(FAttackStep(EAttackType::Sphere, 15, 800.0f, 0.0f, 30.0f, 10.0f, 0.1f, DynamicScale));
+	else if (Compas == 4)
+		CurrentBeatAttack.Add(FAttackStep(EAttackType::SurroundingBullets, 12, 1000.0f, 0.0f, 0.0f, 10.0f, 0.1f, DynamicScale));
 
 	if (CurrentBeatAttack.Num() > 0) OrchestratorRef->BulletSpawner->StartSequence(CurrentBeatAttack);
 }
@@ -276,13 +336,33 @@ void UOrchePhaseTransition::EnterState(ABossBase* Boss)
 	{
 		Boss->GetWorld()->GetTimerManager().ClearTimer(Boss->PhaseTransitionTimer);
 	}
+	if (Master && Master->BossAudioComp)
+	{
+		Master->BossAudioComp->FadeOut(0.5f, 0.0f);
+	}
+	if (UWorld* World = Boss->GetWorld())
+	{
+		// 1. Obtenemos el GameInstance correctamente
+		if (UGameInstance* GameInst = World->GetGameInstance())
+		{
+			// 2. Extraemos el Subsistema desde el GameInstance
+			if (UProjectilesSubsystem* ProjSub = GameInst->GetSubsystem<UProjectilesSubsystem>())
+			{
+				if (APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(World, 0))
+				{
+					// Redirigimos todas las balas vivas hacia la cabeza del jugador
+					ProjSub->RedirectAllBossBulletsToTarget(PlayerPawn->GetActorLocation(), 1500.0f);
+				}
+			}
+		}
+	}
+
 
 	Boss->GetWorld()->GetTimerManager().SetTimer(Boss->PhaseTransitionTimer, [Boss]()
 		{
 			AOrchestrator* Master = Cast<AOrchestrator>(Boss);
 			if (Master && Master->HealthComp)
 			{
-				// 1. Quitamos la invulnerabilidad para que vuelva a recibir daño
 				Master->HealthComp->SetInvulnerable(false);
 
 				// 2. Calculamos la vida para saber a qué fase saltar
@@ -308,7 +388,7 @@ void UOrchePhaseTransition::EnterState(ABossBase* Boss)
 					UE_LOG(LogTemp, Error, TEXT("La vida no cuadra con ninguna fase."));
 				}
 			}
-		}, 3.0f, false);
+		}, 5.0f, false);
 }
 
 void UOrchePhaseTransition::ExitState(ABossBase* Boss)

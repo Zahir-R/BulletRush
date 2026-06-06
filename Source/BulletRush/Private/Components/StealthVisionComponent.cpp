@@ -3,15 +3,17 @@
 #include "Components/StealthVisionComponent.h"
 #include "GameFramework/Pawn.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/BulletSpawnerComponent.h"
 #include "Core/Orchestrator/OrchestratorGameMode.h"
 #include "Core/Orchestrator/OrchestratorFacade.h"
+#include "Enemies/Orchestrator/SurveillanceDrone.h"
 #include "Engine/World.h"
 
 UStealthVisionComponent::UStealthVisionComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	VisionDistance = 500.0f;
-	FieldOfViewDegrees = 45.0f;
+	FieldOfViewDegrees = 25.0f;
 	bHasDetectedPlayer = false;
 }
 
@@ -59,6 +61,16 @@ void UStealthVisionComponent::TickComponent(float DeltaTime, ELevelTick TickType
 				{
 					bHasDetectedPlayer = true;
 
+					UBulletSpawnerComponent* Spawner = GetOwner()->FindComponentByClass<UBulletSpawnerComponent>();
+					if (Spawner)
+					{
+						// FAttackStep: Tipo, Cantidad, Velocidad, Delay, Origen, TiempoEntreBalas, SpecialParam, Daño
+						// Le pasamos PlayerLoc para que el origen del ataque sea el jugador y lo rodee
+						FAttackStep TrapStep(EAttackType::SurroundingBullets, 200, 800.0f, 0.0f, PlayerLoc, 0.0f, 0.0f, 60.0f);
+						TrapStep.BulletScale = FVector(0.5f);
+						Spawner->ExecuteSingleAttack(TrapStep);
+					}
+
 					// Informamos a la Fachada a través del GameMode (Patrón Observer indirecto)
 					if (AOrchestratorGameMode* GM = Cast<AOrchestratorGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
 					{
@@ -67,6 +79,8 @@ void UStealthVisionComponent::TickComponent(float DeltaTime, ELevelTick TickType
 							GM->LevelFacade->HandlePlayerDetected(OwnerLoc);
 						}
 					}
+					ASurveillanceDrone* Drone = Cast<ASurveillanceDrone>(GetOwner());
+					Drone->Die();
 				}
 			}
 		}

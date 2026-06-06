@@ -121,3 +121,25 @@ void UBulletSpawnerComponent::StopCurrentSequence()
 	CurrentStepIndex = 0;
 	CurrentSequence.Empty();
 }
+
+void UBulletSpawnerComponent::ExecuteSingleAttack(const FAttackStep& Step)
+{
+	FVector SpawnOrigin = Step.bUseBossLocation && GetOwner() ?
+		GetOwner()->GetActorLocation() :
+		Step.CustomOrigin;
+
+	if (AttackRegist.Contains(Step.Type))
+	{
+		FAttackParams Params{
+			Step.BulletCount,
+			Step.Speed,
+			Step.DelayAfter,
+			Step.SpecialParam,
+			SpawnOrigin,
+			Step.Damage,
+			Step.BulletScale
+		};
+		// Ejecutamos la estrategia directamente
+		AttackRegist[Step.Type]->Execute(this, Params);
+	}
+}

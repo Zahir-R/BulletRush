@@ -36,20 +36,24 @@ void ABossArenaTrigger::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AAct
 	// Solo reacciona si el jugador atraviesa la puerta
 	if (OtherActor && OtherActor->ActorHasTag(FName("Player")))
 	{
-		if (AOrchestratorGameMode* GM = Cast<AOrchestratorGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
+		PrepareArena();
+	}
+}
+
+void ABossArenaTrigger::PrepareArena()
+{
+	if (AOrchestratorGameMode* GM = Cast<AOrchestratorGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
+	{
+		if (GM->LevelFacade)
 		{
-			if (GM->LevelFacade)
-			{
-				// Calculamos donde spawnearemos al jefe
-				FTransform SpawnTransform;
-				SpawnTransform.SetLocation(BossSpawnOffset);
-				SpawnTransform.SetRotation(FRotator::ZeroRotator.Quaternion());
+			// Calculamos donde spawnearemos al jefe
+			FTransform SpawnTransform;
+			SpawnTransform.SetLocation(BossSpawnOffset);
+			SpawnTransform.SetRotation(FRotator::ZeroRotator.Quaternion());
 
-				GM->LevelFacade->PrepareBossArena(SpawnTransform);
-
-				// Nos destruimos para que no se ejecute dos veces
-				Destroy();
-			}
+			GM->LevelFacade->PrepareBossArena(SpawnTransform);
+			// Nos destruimos para que no se ejecute dos veces
+			Destroy();
 		}
 	}
 }

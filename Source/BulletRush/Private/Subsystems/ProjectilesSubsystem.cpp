@@ -4,6 +4,8 @@
 #include "Components/WeakPointComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
+#include "Core/Orchestrator/OrchestratorGameMode.h"
+#include "Components/BulletSpawnerComponent.h"
 #include "Kismet/KismetMaterialLibrary.h"
 
 float UProjectilesSubsystem::GetPlayerProjectileSpeedMultiplier(AActor* OwnerActor)
@@ -195,7 +197,27 @@ ABulletBase* UProjectilesSubsystem::RequestBullet(FVector Loc, FVector Dir, floa
 
 void UProjectilesSubsystem::ReturnBullet(ABulletBase* Bullet)
 {
-	if (Bullet) Bullet->DesactivateBullet();
+	if (!Bullet)	return;
+	// Código del ataque esferico para no interrumpir el ataque del jefe...
+	if (!Bullet->BulletData.bIsPlayerBullet && Bullet->BulletData.bIsActive && Bullet->GetActorRelativeScale3D().X > 2.0f)
+	{
+		if (Bullet->BulletData.OwnerActor)
+		{
+			// Buscamos el Spawner del Jefe
+			UBulletSpawnerComponent* Spawner = Bullet->BulletData.OwnerActor->FindComponentByClass<UBulletSpawnerComponent>();
+
+			if (Spawner)
+			{
+				FAttackStep ExplosionStep(EAttackType::Sphere, 24, 1200.0f, 0.0f, Bullet->GetActorLocation(), 0.0f, 0.0f, 5.0f);
+				ExplosionStep.BulletScale = FVector(0.4f); // Queremos que las esquirlas sean pequeñas
+
+				Spawner->ExecuteSingleAttack(ExplosionStep);
+			}
+		}
+	}
+	//--------------------------------------------
+
+	Bullet->DesactivateBullet();
 }
 
 void UProjectilesSubsystem::HandleBeatHit(bool bIsStrongBeat)
@@ -265,6 +287,56 @@ void UProjectilesSubsystem::ReturnAllActiveBullets()
 		if (Bullet && Bullet->BulletData.bIsActive)
 		{
 			ReturnBullet(Bullet);
+		}
+	}
+}
+
+void UProjectilesSubsystem::RedirectAllBossBulletsToTarget(FVector TargetLocation, float NewSpeed)
+{
+	TArray<ABulletBase*> BulletsToExplode;
+
+	for (ABulletBase* Bullet : BulletPool)
+	{
+		if (Bullet && Bullet->BulletData.bIsActive && !Bullet->BulletData.bIsPlayerBullet)
+		{
+			if (Bullet->GetActorRelativeScale3D().X > 2.0f)
+			{
+				// La marcamos para explotar
+				BulletsToExplode.Add(Bullet);
+			}
+			else
+			{
+				// Calculamos el nuevo vector de dirección directo al objetivo (el jugador)
+				FVector NewDir = (TargetLocation - Bullet->GetActorLocation()).GetSafeNormal();
+				Bullet->BulletData.Direction = NewDir;
+				Bullet->BulletData.Speed = NewSpeed;
+			}
+		}
+	}
+	for (ABulletBase* Bullet : BulletsToExplode)
+	{
+		ReturnBullet(Bullet);
+	}
+}
+
+void UProjectilesSubsystem::ExecuteSilenceCollapse(FVector TargetLocation, float CollapseSpeed)
+{
+	// 1. Descongelamos el universo para que las balas puedan moverse
+	GlobalSpeedMultiplier = 1.0f;
+
+	// 2. Obligamos a las balas a apuntar al jugador con la velocidad extrema
+	for (ABulletBase* Bullet : BulletPool)
+	{
+		if (Bullet && Bullet->BulletData.bIsActive && !Bullet->BulletData.bIsPlayerBullet)
+		{
+			// Calculamos dirección
+			FVector Dir = (TargetLocation - Bullet->GetActorLocation()).GetSafeNormal();
+			Bullet->BulletData.Direction = Dir;
+
+			// Asignamos la velocidad supersónica
+			Bullet->BulletData.Speed = CollapseSpeed;
+
+			// ¡NO tocamos ConvergeDelay! Así el Tick() no nos bajará la velocidad a 600.f
 		}
 	}
 }

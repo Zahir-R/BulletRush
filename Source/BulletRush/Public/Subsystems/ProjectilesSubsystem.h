@@ -44,6 +44,12 @@ public:
 
 	void HandleSilenceEnter();
 
+	UFUNCTION(BlueprintCallable, Category = "Projectiles")
+	void RedirectAllBossBulletsToTarget(FVector TargetLocation, float NewSpeed);
+
+	UFUNCTION(BlueprintCallable, Category = "Projectiles")
+	void ExecuteSilenceCollapse(FVector TargetLocation, float CollapseSpeed);
+
 private:
 	UPROPERTY()
 	TArray<ABulletBase*> BulletPool;

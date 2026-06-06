@@ -63,6 +63,39 @@ AOrchestrator::AOrchestrator()
 	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 	HealthComp->MaxHealth = 4000.0f;
 	HealthComp->SetInvulnerable(false);
+
+	// Constructor para música...
+
+	BossAudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("BossAudioComp"));
+	BossAudioComp->SetupAttachment(RootComponent);
+	BossAudioComp->bAutoActivate = false;
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> AudioFase1(TEXT("SoundWave'/Game/ParagonMuriel/OrchestratorMusic/Orchestrator_Normal.Orchestrator_Normal'"));
+	if (AudioFase1.Succeeded())
+	{
+		Phase1Music = AudioFase1.Object;
+	}
+
+	// Fase 2
+	static ConstructorHelpers::FObjectFinder<USoundBase> AudioFase2(TEXT("SoundWave'/Game/ParagonMuriel/OrchestratorMusic/Orchestrator_Melancholy.Orchestrator_Melancholy'"));
+	if (AudioFase2.Succeeded())
+	{
+		Phase2Music = AudioFase2.Object;
+	}
+
+	// Fase 3
+	static ConstructorHelpers::FObjectFinder<USoundBase> AudioFase3(TEXT("SoundWave'/Game/ParagonMuriel/OrchestratorMusic/Orchestrator_Frenetic.Orchestrator_Frenetic'"));
+	if (AudioFase3.Succeeded())
+	{
+		Phase3Music = AudioFase3.Object;
+	}
+
+	// Fase 4
+	static ConstructorHelpers::FObjectFinder<USoundBase> AudioFase4(TEXT("SoundWave'/Game/ParagonMuriel/OrchestratorMusic/Orchestrator_Furious.Orchestrator_Furious'"));
+	if (AudioFase4.Succeeded())
+	{
+		Phase4Music = AudioFase4.Object;
+	}
 }
 
 void AOrchestrator::BeginPlay()
