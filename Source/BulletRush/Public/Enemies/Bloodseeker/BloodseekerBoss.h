@@ -56,6 +56,9 @@ public:
     // Referencia al Facade para pausar/reanudar boss waves asignada desde GameMode
     UPROPERTY()
     ABloodseekerFacade* FacadeRef;
+   
+    UPROPERTY(EditAnywhere, Category = "Bloodseeker | Rotation")
+    FRotator MeshRotationOffset;
 
 protected:
 

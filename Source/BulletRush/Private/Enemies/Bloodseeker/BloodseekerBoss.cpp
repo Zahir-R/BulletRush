@@ -18,6 +18,13 @@ ABloodseekerBoss::ABloodseekerBoss()
 {
     PrimaryActorTick.bCanEverTick = true;
 
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/Assets/spaceship-nx-01/source/Spaceship1_LP.Spaceship1_LP'"));
+    if (MeshAsset.Succeeded())
+    {
+        MeshEnemy->SetStaticMesh(MeshAsset.Object);
+        MeshEnemy->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
+        MeshEnemy->SetWorldScale3D(FVector(0.5f));
+    }
     // Movimiento sinusoidal
     MovementAmplitude = 350.0f;
     MovementFrequency = 1.5f;
@@ -38,6 +45,8 @@ ABloodseekerBoss::ABloodseekerBoss()
     UltimateCount = 0;
 
     TargetPlayer = nullptr;
+
+    MeshRotationOffset = FRotator(0.0f, 90.0f, 0.0f);
 }
 
 void ABloodseekerBoss::ChangeState(UBossState* NewState)
@@ -156,6 +165,7 @@ void ABloodseekerBoss::RotateTowardsPlayer(float DeltaTime)
     );
     TargetRotation.Pitch = 0.0f;
     TargetRotation.Roll = 0.0f;
+    TargetRotation.Yaw += MeshRotationOffset.Yaw;
 
     FRotator CurrentRotation = GetActorRotation();
     FRotator NewRotation = FMath::RInterpTo(
