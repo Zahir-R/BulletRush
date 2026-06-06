@@ -5,14 +5,13 @@
 
 class AEnemyBase;
 class ASerXBoss;
-class AChronostasisFacade;
 
 UCLASS()
 class UChronostasisBossManager : public UObject
 {
     GENERATED_BODY()
 public:
-    void Initialize(AChronostasisFacade* Owner, TSubclassOf<ASerXBoss> BossClass, const FVector& SpawnLocation);
+    void Initialize(AActor* Owner, TSubclassOf<ASerXBoss> BossClass, const FVector& SpawnLocation);
 
     void StartBossFight();
     UFUNCTION()
@@ -34,5 +33,5 @@ private:
     TArray<UChronostasisFactoryEnemy*> MinionFactories;
 
     UPROPERTY()
-    AChronostasisFacade* OwnerFacade;
+    AActor* OwnerActor;
 };

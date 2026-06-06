@@ -36,14 +36,25 @@ void AChronostasisMass::Tick(float DeltaSeconds)
         APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
         if (PlayerPawn)
         {
-            FVector NewPos = MovementStrategy->GetNextPosition(this, DeltaSeconds, PlayerPawn->GetActorLocation());
-            NewPos = ApplyEnemySeparation(NewPos);
-            SetActorLocation(NewPos);
+            const float StopDistance = 100.0f;
+            const float StopDistanceSq = StopDistance * StopDistance;
+            const float DistSq = FVector::DistSquared(GetActorLocation(), PlayerPawn->GetActorLocation());
+
+            if (DistSq <= StopDistanceSq) {
+                FVector Curr = GetActorLocation();
+                Curr = ApplyEnemySeparation(Curr);
+                SetActorLocation(Curr);
+            }
+            else
+            {
+                FVector NewPos = MovementStrategy->GetNextPosition(this, DeltaSeconds, PlayerPawn->GetActorLocation());
+                NewPos = ApplyEnemySeparation(NewPos);
+                SetActorLocation(NewPos);
+            }
         }
     }
 }
 
-// This is applied twice for some reason
 void AChronostasisMass::OnSlowZoneBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
     UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {

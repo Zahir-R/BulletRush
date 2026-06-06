@@ -52,7 +52,7 @@ void ALevelPortal::BeginPlay()
 }
 void ALevelPortal::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	// Verificamos que el actor que chocó no sea nulo y no sea el portal mismo
+	// Verificamos que el actor que chocÃ³ no sea nulo y no sea el portal mismo
 	if (OtherActor && OtherActor != this)
 	{
 		// verificamos que el actor que choco sea el jugador 

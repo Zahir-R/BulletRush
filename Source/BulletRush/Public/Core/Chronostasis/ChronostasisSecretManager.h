@@ -2,14 +2,12 @@
 #include "CoreMinimal.h"
 #include "ChronostasisSecretManager.generated.h"
 
-class AChronostasisFacade;
-
 UCLASS()
 class UChronostasisSecretManager : public UObject
 {
     GENERATED_BODY()
 public:
-    void Initialize(AChronostasisFacade* Owner);
+    void Initialize(AActor* Owner);
 
     void Start();
     void ClearAllTimers();
@@ -30,5 +28,5 @@ private:
     FTimerHandle TeleportDelayHandle;
 
     UPROPERTY()
-    AChronostasisFacade* OwnerFacade;
+    AActor* OwnerActor;
 };

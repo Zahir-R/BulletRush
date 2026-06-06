@@ -1,14 +1,13 @@
 #include "Core/Chronostasis/ChronostasisSecretManager.h"
-#include "Core/Chronostasis/ChronostasisFacade.h"
 #include "Core/BulletRushHUD.h"
 #include "Subsystems/ProjectilesSubsystem.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 
-void UChronostasisSecretManager::Initialize(AChronostasisFacade* Owner)
+void UChronostasisSecretManager::Initialize(AActor* Owner)
 {
-    OwnerFacade = Owner;
+    OwnerActor = Owner;
 }
 
 void UChronostasisSecretManager::Start()
@@ -17,7 +16,7 @@ void UChronostasisSecretManager::Start()
     TimeRemaining = 120.f;
     bTimerPaused = false;
 
-    UWorld* World = OwnerFacade ? OwnerFacade->GetWorld() : nullptr;
+    UWorld* World = OwnerActor ? OwnerActor->GetWorld() : nullptr;
     if (World)
     {
         World->GetTimerManager().SetTimer(CountdownTimerHandle, this, &UChronostasisSecretManager::TickTimer, 1.f, true);
@@ -29,7 +28,7 @@ void UChronostasisSecretManager::TickTimer()
     if (bTimerPaused) return;
     TimeRemaining -= 1.f;
 
-    UWorld* World = OwnerFacade ? OwnerFacade->GetWorld() : nullptr;
+    UWorld* World = OwnerActor ? OwnerActor->GetWorld() : nullptr;
     APlayerController* PC = World ? UGameplayStatics::GetPlayerController(World, 0) : nullptr;
     ABulletRushHUD* HUD = PC ? Cast<ABulletRushHUD>(PC->GetHUD()) : nullptr;
     if (HUD)
@@ -61,7 +60,7 @@ void UChronostasisSecretManager::OnTimeUpTeleport()
 {
     bIsActive = false;
 
-    UWorld* World = OwnerFacade ? OwnerFacade->GetWorld() : nullptr;
+    UWorld* World = OwnerActor ? OwnerActor->GetWorld() : nullptr;
     if (World)
     {
         UProjectilesSubsystem* ProjSys = World->GetGameInstance()->GetSubsystem<UProjectilesSubsystem>();
@@ -73,7 +72,7 @@ void UChronostasisSecretManager::OnTimeUpTeleport()
 
 void UChronostasisSecretManager::ClearAllTimers()
 {
-    UWorld* World = OwnerFacade ? OwnerFacade->GetWorld() : nullptr;
+    UWorld* World = OwnerActor ? OwnerActor->GetWorld() : nullptr;
     if (World)
     {
         World->GetTimerManager().ClearTimer(CountdownTimerHandle);

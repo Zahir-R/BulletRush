@@ -2,14 +2,12 @@
 #include "CoreMinimal.h"
 #include "ChronostasisSlowSystem.generated.h"
 
-class AChronostasisFacade;
-
 UCLASS()
 class UChronostasisSlowSystem : public UObject
 {
     GENERATED_BODY()
 public:
-    void Initialize(AChronostasisFacade* Owner);
+    void Initialize(AActor* Owner);
     void Start();
     void Stop();
     void ResetOnKill();
@@ -25,5 +23,5 @@ private:
     int32 SlowTriggerCount;
 
     UPROPERTY()
-    AChronostasisFacade* OwnerFacade;
+    AActor* OwnerActor;
 };
