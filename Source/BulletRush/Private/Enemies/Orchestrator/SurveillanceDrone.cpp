@@ -19,13 +19,7 @@ ASurveillanceDrone::ASurveillanceDrone()
 	CollisionComp->SetCanEverAffectNavigation(false);
 
 	SetRootComponent(CollisionComp);
-	// Protección de Jerarquía
-	if (MeshEnemy)
-	{
-		MeshEnemy->SetupAttachment(CollisionComp);
-	}
 	
-
 	// 2. ADJUNTAMOS LA MALLA A LA ESFERA
 	MeshEnemy->SetupAttachment(CollisionComp); // <-- Asegúrate de adjuntarlo al CollisionComp
 	MeshEnemy->SetMobility(EComponentMobility::Movable);
