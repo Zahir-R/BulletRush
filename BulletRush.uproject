@@ -11,11 +11,16 @@
 			"AdditionalDependencies": [
 				"Engine",
 				"CoreUObject",
-				"AIModule"
+				"AIModule",
+				"UMG"
 			]
 		}
 	],
 	"Plugins": [
+		{
+			"Name": "Niagara",
+			"Enabled": true
+		},
 		{
 			"Name": "VisualStudioTools",
 			"Enabled": false,

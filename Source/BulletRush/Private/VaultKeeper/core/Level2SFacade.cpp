@@ -52,9 +52,9 @@ void ALevel2SFacade::SpawnHives()
     // Centros de cada colmena separados en el mapa
 
     TArray<FVector> HiveCenters = {
-        FVector(-1200.f,    0.f, 100.f),
-        FVector(1200.f,    0.f, 100.f),
-        //FVector(0.f, 1200.f, 100.f),
+        FVector(-1500.f,    3000.f, 200.f),
+        FVector(-1800.f,    -2300.f, 900.f),
+        FVector(3400.f, 1200.f, 2100.f),
     };
 
     // Limpiamos antes de llenar
@@ -83,22 +83,22 @@ void ALevel2SFacade::SpawnHive(int32 HiveIndex, FVector HiveCenter)
 
     // Offsets relativos al centro de la colmena
     TArray<FVector> DroneOffsets = {
-        FVector(200.f,   0.f, 0.f), //FVector(-200.f,   0.f, 0.f),
-       // FVector(0.f,   200.f, 0.f), FVector(0.f,  -200.f, 0.f),
-        //FVector(300.f, 150.f, 0.f), FVector(-300.f,  150.f, 0.f),
-       // FVector(150.f, 300.f, 0.f), FVector(-150.f, -300.f, 0.f),
-        //FVector(250.f,-150.f, 0.f), FVector(-250.f, -150.f, 0.f),
+        FVector(1200.f,   0.f, 0.f), FVector(-1000.f,   0.f, 0.f),
+        FVector(0.f,   200.f, 0.f), FVector(0.f,  -1200.f, 0.f),
+        FVector(1000.f, 650.f, 0.f), FVector(-1300.f,  150.f, 0.f),
+        FVector(1150.f, 1300.f, 0.f), FVector(-1150.f, -1300.f, 0.f),
+        FVector(1250.f,-1150.f, 0.f), FVector(-1250.f, -1150.f, 0.f),
     };
 
     TArray<FVector> ChargerOffsets = {
         FVector(400.f,   0.f, 0.f),
-       // FVector(-400.f,  0.f, 0.f),
-       // FVector(0.f,   400.f, 0.f),
+        FVector(-400.f,  0.f, 0.f),
+        FVector(0.f,   400.f, 0.f),
     };
 
     TArray<FVector> KamikazeOffsets = {
         FVector(350.f, -350.f, 0.f),
-        //FVector(-350.f, 350.f, 0.f),
+        FVector(-350.f, 350.f, 0.f),
     };
 
     // Spawn 10 drones
@@ -170,6 +170,7 @@ void ALevel2SFacade::CheckLevelComplete()
     if (ClearedCount < 2) return;
     if (bLevelComplete) return;
 
+
     bLevelComplete = true;
     GetWorld()->GetTimerManager().ClearTimer(VenomTimer);
 
@@ -192,21 +193,22 @@ void ALevel2SFacade::ApplyVenom()
 
     if (Player && Player->HealthComp && !Player->HealthComp->bDead)
     {
-        Player->HealthComp->CurrentHealth -= VenomDamagePerSecond;
-
-        if (Player->HealthComp->CurrentHealth <= 0.f)
-        {
-            Player->HealthComp->CurrentHealth = 0.f;
-            OnPlayerDeath();
-        }
+        Player->HealthComp->TakeDamage(
+            VenomDamagePerSecond,
+            FDamageEvent(),
+            nullptr,
+            this
+        );
     }
 }
 
 
+
 void ALevel2SFacade::OnPlayerDeath()
 {
+    bPlayerDied = true;
     GetWorld()->GetTimerManager().ClearTimer(VenomTimer);
-    UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()));
+    UE_LOG(LogTemp, Warning, TEXT("[Level2SFacade] Jugador murio en nivel secreto"));
 }
 
 

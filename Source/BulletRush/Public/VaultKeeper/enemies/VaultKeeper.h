@@ -12,22 +12,31 @@ public:
     AVaultKeeper();
     void DestroyOneWeakPoint();
 
+    virtual FLinearColor GetHealthBarColor() const override;
+    virtual FLinearColor GetHealthBarColorLow() const override;
+    virtual FVector2D GetHealthBarSize() const override;
+    virtual bool IsBoss() const override { return true; }
+    virtual FString GetBossDisplayName() const override;
+    virtual bool ShouldShowBossName() const override { return true; }
+    virtual float GetHealthBarVerticalOffset() const override;
+
 protected:
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
     UPROPERTY(EditAnywhere, Category = "VaultKeeper|Visuals")
     UStaticMeshComponent* VaultMesh;
 
     // --- Ciclo ---
     UPROPERTY(EditDefaultsOnly, Category = "VaultKeeper|Cycle")
-    float OpenDuration = 5.0f;
+    float OpenDuration = 10.0f;
 
     UPROPERTY(EditDefaultsOnly, Category = "VaultKeeper|Cycle")
     float ClosedDuration = 4.0f;
 
     UPROPERTY(EditDefaultsOnly, Category = "VaultKeeper|Heal")
-    float HealRate = 15.0f;
+    float HealRate = 35.0f;
 
     UPROPERTY(VisibleAnywhere, Category = "VaultKeeper|State")
     bool bIsOpen = false;
@@ -85,4 +94,11 @@ protected:
 private:
     TArray<UWeakPointComponent*> CachedWeakPoints;
     APawn* CachedPlayer = nullptr;
+    float WPOrbitAngle = 0.0f;
+
+    UPROPERTY(EditDefaultsOnly, Category = "VaultKeeper|Movement")
+    float WPOrbitSpeed = 90.0f; // grados por segundo
+
+    UPROPERTY(EditDefaultsOnly, Category = "VaultKeeper|Movement")
+    float WPOrbitRadius = 200.0f;
 };

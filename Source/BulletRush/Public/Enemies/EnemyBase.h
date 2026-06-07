@@ -3,10 +3,12 @@
 #include "CoreMinimal.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/BulletSpawnerComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Components/HealthComponent.h"
 #include "EnemyBase.generated.h"
 
 class UShapeComponent;
+class UEnemyHealthBarWidget;
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyDeath, AEnemyBase*, DeadEnemy);
@@ -25,6 +27,13 @@ public:
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	// member
+	UPROPERTY(VisibleAnywhere)
+	UWidgetComponent* HealthBarWidget;
+
+	// handler
+	UFUNCTION()
+	void OnHealthUpdated(float NewHealth);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UHealthComponent* HealthComp;
@@ -78,4 +87,12 @@ public:
 
 	// Apply repulsion from nearby enemies and return the adjusted location
 	FVector ApplyEnemySeparation(const FVector& DesiredLocation) const;
+
+	virtual FLinearColor GetHealthBarColor() const;
+	virtual FLinearColor GetHealthBarColorLow() const;
+	virtual FVector2D GetHealthBarSize() const { return FVector2D(120.f, 20.f); }
+	virtual bool IsBoss() const { return false; }
+	virtual FString GetBossDisplayName() const { return TEXT(""); }
+	virtual bool ShouldShowBossName() const { return false; }
+	virtual float GetHealthBarVerticalOffset() const { return 120.f; }
 };

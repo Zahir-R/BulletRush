@@ -25,7 +25,7 @@ protected:
 
 public:
     UPROPERTY(EditAnywhere, Category = "VaultKeeperFacade|Spawn")
-    FVector BossSpawnLocation = FVector(0.f, 0.f, 300.f);
+    FVector BossSpawnLocation = FVector(1200.f, 600.f, 1300.f);
 
     UPROPERTY(EditAnywhere, Category = "VaultKeeperFacade|Spawn")
     TArray<FVector> DroneSpawnLocations;

@@ -2,6 +2,7 @@
 #include "Engine/World.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/HealthComponent.h"
+#include "UI/EnemyHealthBarWidget.h"
 #include "Components/BulletSpawnerComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -25,6 +26,13 @@ AEnemyBase::AEnemyBase()
 	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
 	HealthComp->MaxHealth = 100.0f;
 
+	HealthBarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthBarWidget"));
+	HealthBarWidget->SetupAttachment(RootComponent);
+	HealthBarWidget->SetRelativeLocation(FVector(0.0f, 0.0f, 120.0f));
+	HealthBarWidget->SetWidgetSpace(EWidgetSpace::Screen);
+	HealthBarWidget->SetDrawSize(FVector2D(120.0f, 20.0f));
+	HealthBarWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 	TeamTag = FName("Enemy");
 	AttackInterval = 1.0f;
 	bAutoStartAttack = true;
@@ -43,11 +51,51 @@ void AEnemyBase::BeginPlay()
 
 	HealthComp->OnDeath.AddDynamic(this, &AEnemyBase::OnHealthDeath);
 
+	if (HealthBarWidget)
+	{
+		HealthBarWidget->SetWidgetClass(UEnemyHealthBarWidget::StaticClass());
+	}
+
+	HealthComp->OnHealthChanged.AddDynamic(this, &AEnemyBase::OnHealthUpdated);
+	OnHealthUpdated(HealthComp->CurrentHealth);
+
 	if (bAutoStartAttack && AttackInterval > 0.0f) {
 		BeginAttackLoop();
 	}
 
 	Tags.Add("Enemy");
+}
+
+void AEnemyBase::OnHealthUpdated(float NewHealth)
+{
+	if (!HealthBarWidget) return;
+
+	UEnemyHealthBarWidget* Widget = Cast<UEnemyHealthBarWidget>(HealthBarWidget->GetWidget());
+	if (Widget)
+	{
+		Widget->SetHealthPercent(NewHealth / HealthComp->MaxHealth);
+
+		if (IsBoss())
+		{
+			Widget->SetIsBoss(true);
+			Widget->SetBossName(GetBossDisplayName());
+			Widget->SetHealthBarColor(GetHealthBarColor());
+			Widget->SetHealthBarColorLow(GetHealthBarColorLow());
+		}
+
+		HealthBarWidget->SetDrawSize(GetHealthBarSize());
+		HealthBarWidget->SetRelativeLocation(FVector(0.f, 0.f, GetHealthBarVerticalOffset()));
+	}
+}
+
+FLinearColor AEnemyBase::GetHealthBarColor() const
+{
+	return FLinearColor(0.f, 0.8f, 0.2f, 1.f);
+}
+
+FLinearColor AEnemyBase::GetHealthBarColorLow() const
+{
+	return FLinearColor(1.f, 0.2f, 0.2f, 1.f);
 }
 
 float AEnemyBase::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)

@@ -10,13 +10,23 @@
 AVaultKeeper::AVaultKeeper()
 {
     PrimaryActorTick.bCanEverTick = true;
-	MeshEnemy->Deactivate();
-	MeshEnemy->SetHiddenInGame(true);
+    if (MeshEnemy) {
+        MeshEnemy->DestroyComponent();
+        MeshEnemy = nullptr;
+    }
     //mesh del boss
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/AccuCities/meshes/VaultKeeper.VaultKeeper'"));
 	VaultMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VaultMesh"));
 	RootComponent = VaultMesh;
 	if (MeshAsset.Succeeded()) VaultMesh->SetStaticMesh(MeshAsset.Object);
+	VaultMesh->SetRelativeScale3D(FVector(3.5f, 3.5f, 3.5f));
+
+    if (HealthBarWidget)
+    {
+        HealthBarWidget->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+        HealthBarWidget->SetupAttachment(RootComponent);
+        HealthBarWidget->SetRelativeLocation(FVector(0.0f, 0.0f, 250.0f));
+    }
 
     UWeakPointComponent* WP1 = CreateDefaultSubobject<UWeakPointComponent>(TEXT("WeakPoint_Left"));
     WP1->SetupAttachment(RootComponent);
@@ -61,6 +71,21 @@ void AVaultKeeper::BeginPlay()
         if (WP) WP->SetGenerateOverlapEvents(false);
 }
 
+void AVaultKeeper::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    if (UWorld* World = GetWorld())
+    {
+        FTimerManager& TM = World->GetTimerManager();
+        TM.ClearTimer(CycleTimer);
+        TM.ClearTimer(HealTimer);
+        TM.ClearTimer(AttackLoopTimer);
+        TM.ClearTimer(IntroTimer);
+        TM.ClearTimer(StunnedTimer);
+        TM.ClearTimer(PhaseTransitionTimer);
+    }
+    Super::EndPlay(EndPlayReason);
+}
+
 void AVaultKeeper::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
@@ -72,9 +97,35 @@ void AVaultKeeper::Tick(float DeltaTime)
         float TargetZ = HomeZ + FMath::Sin(GetWorld()->GetTimeSeconds() * HoverFrequency) * HoverAmplitude;
         CurrentZ = FMath::FInterpTo(CurrentZ, TargetZ, DeltaTime, 3.0f);
 
-        FRotator NewRot = GetActorRotation();
-        NewRot.Yaw += RotationRate * DeltaTime;
-        SetActorRotation(NewRot);
+        if (!CachedPlayer)
+            CachedPlayer = UGameplayStatics::GetPlayerPawn(this, 0);
+
+        if (CachedPlayer)
+        {
+            FVector Direction = (CachedPlayer->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+            FRotator TargetRotation = Direction.Rotation();
+            FRotator CurrentRotation = GetActorRotation();
+            SetActorRotation(FMath::RInterpTo(CurrentRotation, TargetRotation, DeltaTime, RotationRate));
+        }
+        WPOrbitAngle += WPOrbitSpeed * DeltaTime;
+        if (WPOrbitAngle >= 360.f) WPOrbitAngle -= 360.f;
+
+        for (int32 i = 0; i < CachedWeakPoints.Num(); i++)
+        {
+            if (!CachedWeakPoints[i] || CachedWeakPoints[i]->IsDestroyed()) continue;
+
+            // Distribuimos los WP equidistantes en el circulo
+            float AngleOffset = WPOrbitAngle + (360.f / CachedWeakPoints.Num()) * i;
+            float Rad = FMath::DegreesToRadians(AngleOffset);
+
+            FVector OrbitOffset = FVector(
+                FMath::Cos(Rad) * WPOrbitRadius,
+                FMath::Sin(Rad) * WPOrbitRadius,
+                FMath::Sin(Rad * 2.f) * 50.f // peque�a oscilacion en Z
+            );
+
+            CachedWeakPoints[i]->SetRelativeLocation(OrbitOffset);
+        }
     }
     else
     {
@@ -136,19 +187,22 @@ void AVaultKeeper::Open()
         if (WP && !WP->IsDestroyed())
             WP->SetGenerateOverlapEvents(true);
 
-    // Curacion pasiva
-    GetWorld()->GetTimerManager().SetTimer(
-        HealTimer, this, &AVaultKeeper::ApplyPassiveHeal, 1.0f, true);
+    UWorld* World = GetWorld();
+    if (!World) return;
 
-    // Loop de ataque abierto
-    GetWorld()->GetTimerManager().SetTimer(
-        AttackLoopTimer, this, &AVaultKeeper::Attack, 1.8f, true);
+    FTimerManager& TM = World->GetTimerManager();
+    TM.SetTimer(HealTimer, this, &AVaultKeeper::ApplyPassiveHeal, 1.0f, true);
 
-    // Timer para cerrar
-    GetWorld()->GetTimerManager().SetTimer(CycleTimer, [this]()
+    TM.SetTimer(AttackLoopTimer, this, &AVaultKeeper::Attack, 1.8f, true);
+
+    TWeakObjectPtr<AVaultKeeper> WeakThis(this);
+    TM.SetTimer(CycleTimer, [WeakThis]()
         {
-            RegenerateWeakPoints();
-            Close();
+            if (AVaultKeeper* StrongThis = WeakThis.Get())
+            {
+                StrongThis->RegenerateWeakPoints();
+                StrongThis->Close();
+            }
         }, OpenDuration, false);
 }
 
@@ -163,21 +217,28 @@ void AVaultKeeper::Close()
     UpdateWeakPointMaterials(false);
 
     for (UWeakPointComponent* WP : CachedWeakPoints)
-        if (WP) WP->SetGenerateOverlapEvents(false);
+        if (WP && !WP->IsDestroyed())
+            WP->SetGenerateOverlapEvents(false);
 
-    GetWorld()->GetTimerManager().ClearTimer(HealTimer);
-    GetWorld()->GetTimerManager().ClearTimer(AttackLoopTimer);
+    UWorld* World = GetWorld();
+    if (!World) return;
 
-    // Ataque inmediato
+    FTimerManager& TM = World->GetTimerManager();
+    TM.ClearTimer(HealTimer);
+    TM.ClearTimer(AttackLoopTimer);
+
     Attack();
 
-    // Loop de ataque cerrado
-    GetWorld()->GetTimerManager().SetTimer(
-        AttackLoopTimer, this, &AVaultKeeper::Attack, 2.5f, true);
+    TM.SetTimer(AttackLoopTimer, this, &AVaultKeeper::Attack, 2.5f, true);
 
-    // Timer para abrir
-    GetWorld()->GetTimerManager().SetTimer(
-        CycleTimer, this, &AVaultKeeper::Open, ClosedDuration, false);
+    TWeakObjectPtr<AVaultKeeper> WeakThis(this);
+    TM.SetTimer(CycleTimer, [WeakThis, this]()
+        {
+            if (AVaultKeeper* StrongThis = WeakThis.Get())
+            {
+                StrongThis->Open();
+            }
+        }, ClosedDuration, false);
 }
 
 void AVaultKeeper::ClearAllTimers()
@@ -327,4 +388,29 @@ void AVaultKeeper::DestroyOneWeakPoint()
             return;
         }
     }
+}
+
+FLinearColor AVaultKeeper::GetHealthBarColor() const
+{
+    return FLinearColor(0.9f, 0.1f, 0.1f, 1.f);
+}
+
+FLinearColor AVaultKeeper::GetHealthBarColorLow() const
+{
+    return FLinearColor(1.f, 0.f, 0.f, 1.f);
+}
+
+FVector2D AVaultKeeper::GetHealthBarSize() const
+{
+    return FVector2D(400.f, 50.f);
+}
+
+FString AVaultKeeper::GetBossDisplayName() const
+{
+    return TEXT("VAULT KEEPER");
+}
+
+float AVaultKeeper::GetHealthBarVerticalOffset() const
+{
+    return 250.f;
 }

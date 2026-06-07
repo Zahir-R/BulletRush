@@ -1,5 +1,6 @@
 #include "Core/Level2GameMode.h"
 #include "Core/BulletRushGameModeBase.h"
+#include "Core/BulletRushHUD.h"
 #include "VaultKeeper/core/Level21Facade.h"
 #include "VaultKeeper/core/Level2SFacade.h"
 #include "VaultKeeper/core/VaultKeeperFacade.h"
@@ -11,6 +12,7 @@
 ALevel2GameMode::ALevel2GameMode()
 {
     DefaultPawnClass = APlayingPlayer::StaticClass();
+    HUDClass = ABulletRushHUD::StaticClass();
 }
 
 void ALevel2GameMode::BeginPlay()
