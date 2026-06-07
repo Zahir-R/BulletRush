@@ -4,6 +4,7 @@
 #include "Buffs/DamagePowerUp.h"
 #include "Buffs/HealthPowerUp.h"
 #include "Buffs/SpeedPowerUp.h"
+#include "Buffs/UltimatePowerUp.h"
 #include "Player/PlayingPlayer.h"
 #include "Player/TopDownPlayer.h"
 #include "Engine/World.h"
@@ -64,6 +65,7 @@ APowerUpManager* ABulletRushGameModeBase::SpawnPowerUpsForLevel(UWorld* World, F
 	Classes.Add(AHealthPowerUp::StaticClass());
 	Classes.Add(ADamagePowerUp::StaticClass());
 	Classes.Add(ASpeedPowerUp::StaticClass());
+	Classes.Add(AUltimatePowerUp::StaticClass());
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;

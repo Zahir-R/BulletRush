@@ -79,7 +79,9 @@ void AChronostasisNormalFacade::StartLevel()
 	{
 		float StartTime = CombatStartOffset;
 		if (Music->IsPositionSaved())
+		{
 			StartTime = Music->ConsumeSavedPosition();
+		}
 		Music->PlaySong(CombatSong, StartTime, 2.0f, true);
 	}
 
@@ -175,14 +177,18 @@ void AChronostasisNormalFacade::ActivateSecretPortal()
 void AChronostasisNormalFacade::OnBossPortalTriggered()
 {
 	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+	{
 		Music->SavePlaybackPosition();
+	}
 	TravelToMap(FName("Map_03Boss"), ELevelState::Boss);
 }
 
 void AChronostasisNormalFacade::OnSecretPortalTriggered()
 {
 	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+	{
 		Music->SavePlaybackPosition();
+	}
 	TravelToMap(FName("Map_03Boss"), ELevelState::Secret);
 }
 

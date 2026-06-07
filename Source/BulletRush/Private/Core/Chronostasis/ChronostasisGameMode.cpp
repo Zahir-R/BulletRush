@@ -92,10 +92,13 @@ void AChronostasisGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void AChronostasisGameMode::OnPlayerDeath()
 {
-	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
-		Music->NotifyLevelTravel();
-
 	UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
+	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+	{
+		Music->SavePlaybackPosition();
+		Music->NotifyLevelTravel();
+	}
+
 	if (!GI) return;
 
 	FName MapName = FName(*GetWorld()->GetName());

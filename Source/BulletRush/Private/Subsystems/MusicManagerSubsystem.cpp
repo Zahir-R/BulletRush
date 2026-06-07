@@ -9,163 +9,193 @@
 
 UMusicManagerSubsystem::UMusicManagerSubsystem()
 {
-	AudioComponent = nullptr;
-	PlaybackStartRealTime = 0.0;
-	PlaybackStartTime = 0.0f;
-	SongDuration = 0.0f;
 	SavedPlaybackPosition = 0.0f;
-	SavedPreTransitionPosition = 0.0f;
 	bPendingResume = false;
-	bIsPlaying = false;
-	bLoopFadeEnabled = false;
-	PendingSong = nullptr;
-	PendingFadeIn = 0.0f;
-	PendingStartTime = 0.0f;
 }
 
 void UMusicManagerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
-
-	AudioComponent = NewObject<UAudioComponent>(this);
-	AudioComponent->bIsUISound = true;
-	AudioComponent->bAutoDestroy = false;
-	AudioComponent->bStopWhenOwnerDestroyed = false;
-
-	bIsPlaying = false;
-	bPendingResume = false;
-	SavedPlaybackPosition = 0.0f;
-	PlaybackStartRealTime = 0.0;
+	GetOrCreateChannel(FName("Music"));
 }
 
 void UMusicManagerSubsystem::Deinitialize()
 {
-	if (AudioComponent)
+	for (UAudioComponent* Comp : ChannelComponents)
 	{
-		AudioComponent->Stop();
-		AudioComponent = nullptr;
+		if (Comp) Comp->Stop();
 	}
+	ChannelComponents.Empty();
+	ChannelIndex.Empty();
+	ChannelState.Empty();
 	Super::Deinitialize();
 }
 
-void UMusicManagerSubsystem::EnsureAudioComponent()
+int32 UMusicManagerSubsystem::GetOrCreateChannel(FName ChannelName)
 {
-	if (AudioComponent) return;
+	if (int32* Idx = ChannelIndex.Find(ChannelName))
+		return *Idx;
 
-	AudioComponent = NewObject<UAudioComponent>(this);
-	AudioComponent->bIsUISound = true;
-	AudioComponent->bAutoDestroy = false;
-	AudioComponent->bStopWhenOwnerDestroyed = false;
+	int32 NewIdx = ChannelComponents.Num();
+	UAudioComponent* Comp = NewObject<UAudioComponent>(this);
+	Comp->bIsUISound = true;
+	Comp->bAutoDestroy = false;
+	Comp->bStopWhenOwnerDestroyed = false;
+
+	ChannelComponents.Add(Comp);
+	ChannelIndex.Add(ChannelName, NewIdx);
+	ChannelState.Add(ChannelName, FMusicChannelState());
+	return NewIdx;
 }
 
-float UMusicManagerSubsystem::GetCurrentPlaybackPosition() const
+UAudioComponent* UMusicManagerSubsystem::GetChannelComponent(FName ChannelName) const
 {
-	if (!bIsPlaying || PlaybackStartRealTime <= 0.0) return 0.0f;
+	const int32* Idx = ChannelIndex.Find(ChannelName);
+	if (!Idx || !ChannelComponents.IsValidIndex(*Idx)) return nullptr;
+	return ChannelComponents[*Idx];
+}
 
-	double Elapsed = FPlatformTime::Seconds() - PlaybackStartRealTime;
-	float Position = PlaybackStartTime + static_cast<float>(Elapsed);
+void UMusicManagerSubsystem::PlayOnChannel(FName ChannelName, USoundBase* Song, float StartTime, float FadeInTime, bool bEnableLoopFade)
+{
+	if (!Song) return;
 
-	if (SongDuration > 0.0f && Position >= SongDuration) Position = FMath::Fmod(Position, SongDuration);
+	GetOrCreateChannel(ChannelName);
+	UAudioComponent* Comp = GetChannelComponent(ChannelName);
+	if (!Comp) return;
+
+	FMusicChannelState& State = ChannelState.FindOrAdd(ChannelName);
+	State.bLoopFadeEnabled = bEnableLoopFade;
+
+	Comp->Stop();
+	Comp->SetSound(Song);
+	Comp->SetVolumeMultiplier(1.0f);
+
+	State.StartTime = StartTime;
+	State.StartRealTime = FPlatformTime::Seconds();
+
+	if (USoundWave* Wave = Cast<USoundWave>(Song))
+	{
+		Wave->bLooping = true;
+		State.SongDuration = static_cast<float>(Wave->GetDuration());
+	}
+	else
+	{
+		State.SongDuration = 0.0f;
+	}
+
+	if (FadeInTime > 0.0f)
+		Comp->FadeIn(FadeInTime, 1.0f, StartTime);
+	else
+		Comp->Play(StartTime);
+
+	if (bEnableLoopFade && State.SongDuration > 0.0f)
+		StartLoopFadeTimer();
+}
+
+void UMusicManagerSubsystem::StopChannel(FName ChannelName, float FadeOutTime)
+{
+	UAudioComponent* Comp = GetChannelComponent(ChannelName);
+	if (!Comp) return;
+
+	if (FadeOutTime > 0.0f)
+		Comp->FadeOut(FadeOutTime, 0.0f);
+	else
+		Comp->Stop();
+
+	if (FMusicChannelState* State = ChannelState.Find(ChannelName))
+	{
+		State->bLoopFadeEnabled = false;
+	}
+}
+
+void UMusicManagerSubsystem::FadeChannelVolume(FName ChannelName, float FadeDuration, float TargetVolume)
+{
+	UAudioComponent* Comp = GetChannelComponent(ChannelName);
+	if (!Comp) return;
+
+	if (TargetVolume <= 0.0f)
+	{
+		Comp->FadeOut(FadeDuration, 0.0f);
+	}
+	else
+	{
+		Comp->SetVolumeMultiplier(TargetVolume);
+	}
+
+	if (FMusicChannelState* State = ChannelState.Find(ChannelName))
+	{
+		State->Volume = TargetVolume;
+	}
+}
+
+float UMusicManagerSubsystem::GetChannelPosition(FName ChannelName) const
+{
+	const FMusicChannelState* State = ChannelState.Find(ChannelName);
+	if (!State || State->StartRealTime <= 0.0) return 0.0f;
+
+	double Elapsed = FPlatformTime::Seconds() - State->StartRealTime;
+	float Position = State->StartTime + static_cast<float>(Elapsed);
+
+	if (State->SongDuration > 0.0f && Position >= State->SongDuration)
+		Position = FMath::Fmod(Position, State->SongDuration);
 
 	return FMath::Max(0.0f, Position);
 }
 
-void UMusicManagerSubsystem::NotifyLevelTravel()
+bool UMusicManagerSubsystem::IsChannelPlaying(FName ChannelName) const
 {
-	if (bIsPlaying)
-	{
-		if (SavedPreTransitionPosition > 0.0f)
-		{
-			SavedPlaybackPosition = SavedPreTransitionPosition;
-			SavedPreTransitionPosition = 0.0f;
-		}
-		else SavedPlaybackPosition = GetCurrentPlaybackPosition();
-		
-		bPendingResume = (SavedPlaybackPosition > 0.0f);
-	}
-	else
-	{
-		SavedPlaybackPosition = 0.0f;
-		bPendingResume = false;
-	}
-
-	StopLoopFadeTimer();
-	if (AudioComponent)
-	{
-		AudioComponent->SetVolumeMultiplier(1.0f);
-		AudioComponent->Stop();
-		AudioComponent = nullptr;
-	}
-	bIsPlaying = false;
-	PlaybackStartRealTime = 0.0;
+	UAudioComponent* Comp = GetChannelComponent(ChannelName);
+	return Comp && Comp->IsPlaying();
 }
 
-void UMusicManagerSubsystem::SavePlaybackPosition()
+bool UMusicManagerSubsystem::IsPlaying() const
 {
-	if (bIsPlaying)
-	{
-		if (SavedPreTransitionPosition > 0.0f)
-		{
-			SavedPlaybackPosition = SavedPreTransitionPosition;
-			SavedPreTransitionPosition = 0.0f;
-		}
-		else SavedPlaybackPosition = GetCurrentPlaybackPosition();
-		
-		bPendingResume = (SavedPlaybackPosition > 0.0f);
-	}
-	else UE_LOG(LogTemp, Warning, TEXT("[MusicManager] NOT saving — not playing"));
+	return IsChannelPlaying(FName("Music"));
 }
 
 void UMusicManagerSubsystem::PlaySong(USoundBase* Song, float StartTime, float FadeInTime, bool bEnableLoopFade)
 {
 	if (!Song) return;
-	EnsureAudioComponent();
 
 	bPendingResume = false;
 	SavedPlaybackPosition = 0.0f;
-	SavedPreTransitionPosition = 0.0f;
-	bLoopFadeEnabled = bEnableLoopFade;
 
-	StartSong(Song, StartTime, FadeInTime);
-	bIsPlaying = true;
+	StopChannel(FName("Overlay"));
+
+	PlayOnChannel(FName("Music"), Song, StartTime, FadeInTime, bEnableLoopFade);
 }
 
 void UMusicManagerSubsystem::Stop(float FadeOutTime)
 {
-	if (!AudioComponent) return;
-
-	AudioComponent->FadeOut(FadeOutTime, 0.0f);
-	bIsPlaying = false;
+	for (auto& Pair : ChannelIndex)
+	{
+		StopChannel(Pair.Key, FadeOutTime);
+	}
 	bPendingResume = false;
 	SavedPlaybackPosition = 0.0f;
-	SavedPreTransitionPosition = 0.0f;
-	PlaybackStartRealTime = 0.0;
-
-	PendingSong = nullptr;
 	StopLoopFadeTimer();
-	UWorld* World = GetWorld();
-	if (World) World->GetTimerManager().ClearTimer(TransitionTimerHandle);
 }
 
 void UMusicManagerSubsystem::TransitionTo(USoundBase* NewSong, float FadeOutDuration, float FadeInDuration, float StartTime, bool bEnableLoopFade)
 {
 	if (!NewSong) return;
-	EnsureAudioComponent();
 
-	StopLoopFadeTimer();
-	SavedPreTransitionPosition = GetCurrentPlaybackPosition();
+	SavedPlaybackPosition = GetChannelPosition(FName("Music"));
+	bPendingResume = true;
 
-	bLoopFadeEnabled = bEnableLoopFade;
-	PendingSong = NewSong;
-	PendingFadeIn = FadeInDuration;
-	PendingStartTime = StartTime;
+	FadeChannelVolume(FName("Music"), FadeOutDuration, 0.0f);
 
-	AudioComponent->FadeOut(FadeOutDuration, 0.0f);
+	PlayOnChannel(FName("Overlay"), NewSong, StartTime, FadeInDuration, bEnableLoopFade);
+}
 
-	UWorld* World = GetGameInstance() ? GetGameInstance()->GetWorld() : nullptr;
-	
-	if (World) World->GetTimerManager().SetTimer(TransitionTimerHandle, this, &UMusicManagerSubsystem::OnTransitionComplete, FadeOutDuration, false);
-	else OnTransitionComplete();
+void UMusicManagerSubsystem::SavePlaybackPosition()
+{
+	float MusicPos = GetChannelPosition(FName("Music"));
+	if (MusicPos > 0.0f)
+	{
+		SavedPlaybackPosition = MusicPos;
+		bPendingResume = true;
+	}
 }
 
 float UMusicManagerSubsystem::ConsumeSavedPosition()
@@ -176,102 +206,78 @@ float UMusicManagerSubsystem::ConsumeSavedPosition()
 	return Pos;
 }
 
-void UMusicManagerSubsystem::StartSong(USoundBase* Song, float StartTime, float FadeInTime)
+void UMusicManagerSubsystem::NotifyLevelTravel()
 {
-	if (!AudioComponent || !Song) return;
+	SavePlaybackPosition();
 
 	StopLoopFadeTimer();
-	AudioComponent->Stop();
-	AudioComponent->SetSound(Song);
 
-	PlaybackStartTime = StartTime;
-	PlaybackStartRealTime = FPlatformTime::Seconds();
-
-	if (USoundWave* Wave = Cast<USoundWave>(Song))
+	for (UAudioComponent* Comp : ChannelComponents)
 	{
-		Wave->bLooping = true;
-		SongDuration = static_cast<float>(Wave->GetDuration());
+		if (Comp)
+		{
+			Comp->SetVolumeMultiplier(1.0f);
+			Comp->Stop();
+		}
 	}
-	else SongDuration = 0.0f;
-
-	if (FadeInTime > 0.0f) AudioComponent->FadeIn(FadeInTime, 1.0f, StartTime);
-	else AudioComponent->Play(StartTime);
-
-	if (bLoopFadeEnabled)
-		StartLoopFadeAfterDelay(FadeInTime);
+	ChannelComponents.Empty();
+	ChannelIndex.Empty();
+	ChannelState.Empty();
 }
 
-void UMusicManagerSubsystem::StartLoopFadeAfterDelay(float Delay)
-{
-	StopLoopFadeTimer();
-	if (SongDuration <= 0.0f) return;
-
-	UWorld* World = GetWorld();
-	if (!World) return;
-
-	if (Delay > 0.0f)
-	{
-		World->GetTimerManager().SetTimer(LoopFadeTimerHandle, this,
-			&UMusicManagerSubsystem::BeginLoopFadeTimer, Delay, false);
-	}
-	else
-	{
-		BeginLoopFadeTimer();
-	}
-}
-
-void UMusicManagerSubsystem::BeginLoopFadeTimer()
+void UMusicManagerSubsystem::StartLoopFadeTimer()
 {
 	UWorld* World = GetWorld();
 	if (!World) return;
 
-	World->GetTimerManager().SetTimer(LoopFadeTimerHandle, this,
-		&UMusicManagerSubsystem::UpdateLoopFade, 0.1f, true);
-
-	UpdateLoopFade();
+	if (!World->GetTimerManager().IsTimerActive(GlobalLoopFadeTimerHandle))
+	{
+		World->GetTimerManager().SetTimer(GlobalLoopFadeTimerHandle, this,
+			&UMusicManagerSubsystem::OnLoopFadeTick, 0.1f, true);
+	}
 }
 
 void UMusicManagerSubsystem::StopLoopFadeTimer()
 {
 	UWorld* World = GetWorld();
-	if (World) World->GetTimerManager().ClearTimer(LoopFadeTimerHandle);
+	if (World)
+		World->GetTimerManager().ClearTimer(GlobalLoopFadeTimerHandle);
 }
 
-void UMusicManagerSubsystem::UpdateLoopFade()
+void UMusicManagerSubsystem::OnLoopFadeTick()
 {
-	if (!AudioComponent || !bIsPlaying || SongDuration <= 0.0f)
-	{
-		if (AudioComponent)
-			AudioComponent->SetVolumeMultiplier(1.0f);
-		return;
-	}
-
-	float Pos = GetCurrentPlaybackPosition();
 	const float FadeDuration = 5.0f;
+	bool bAnyActive = false;
 
-	if (Pos >= SongDuration - FadeDuration)
+	for (auto& Pair : ChannelIndex)
 	{
-		float Alpha = (Pos - (SongDuration - FadeDuration)) / FadeDuration;
-		AudioComponent->SetVolumeMultiplier(FMath::Lerp(1.0f, 0.0f, Alpha));
-	}
-	else if (Pos < FadeDuration)
-	{
-		float Alpha = Pos / FadeDuration;
-		AudioComponent->SetVolumeMultiplier(FMath::Lerp(0.0f, 1.0f, Alpha));
-	}
-	else
-	{
-		AudioComponent->SetVolumeMultiplier(1.0f);
-	}
-}
+		FMusicChannelState* State = ChannelState.Find(Pair.Key);
+		if (!State || !State->bLoopFadeEnabled || State->SongDuration <= 0.0f)
+			continue;
 
-void UMusicManagerSubsystem::OnTransitionComplete()
-{
-	if (!PendingSong) return;
-	EnsureAudioComponent();
+		UAudioComponent* Comp = GetChannelComponent(Pair.Key);
+		if (!Comp || !Comp->IsPlaying())
+			continue;
 
-	StartSong(PendingSong, PendingStartTime, PendingFadeIn);
-	bIsPlaying = true;
+		bAnyActive = true;
+		float Pos = GetChannelPosition(Pair.Key);
 
-	PendingSong = nullptr;
+		if (Pos >= State->SongDuration - FadeDuration)
+		{
+			float Alpha = (Pos - (State->SongDuration - FadeDuration)) / FadeDuration;
+			Comp->SetVolumeMultiplier(FMath::Lerp(1.0f, 0.0f, Alpha));
+		}
+		else if (Pos < FadeDuration)
+		{
+			float Alpha = Pos / FadeDuration;
+			Comp->SetVolumeMultiplier(FMath::Lerp(0.0f, 1.0f, Alpha));
+		}
+		else
+		{
+			Comp->SetVolumeMultiplier(1.0f);
+		}
+	}
+
+	if (!bAnyActive)
+		StopLoopFadeTimer();
 }

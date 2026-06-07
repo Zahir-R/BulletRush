@@ -7,6 +7,18 @@
 class UAudioComponent;
 class USoundBase;
 
+USTRUCT()
+struct FMusicChannelState
+{
+	GENERATED_BODY()
+
+	double StartRealTime = 0.0;
+	float StartTime = 0.0f;
+	float SongDuration = 0.0f;
+	float Volume = 1.0f;
+	bool bLoopFadeEnabled = false;
+};
+
 UCLASS()
 class BULLETRUSH_API UMusicManagerSubsystem : public UGameInstanceSubsystem
 {
@@ -18,6 +30,12 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
 
+	void PlayOnChannel(FName ChannelName, USoundBase* Song, float StartTime = 0.0f, float FadeInTime = 0.0f, bool bEnableLoopFade = false);
+	void StopChannel(FName ChannelName, float FadeOutTime = 0.5f);
+	void FadeChannelVolume(FName ChannelName, float FadeDuration, float TargetVolume);
+	float GetChannelPosition(FName ChannelName) const;
+	bool IsChannelPlaying(FName ChannelName) const;
+
 	void PlaySong(USoundBase* Song, float StartTime, float FadeInTime = 0.0f, bool bEnableLoopFade = false);
 	void Stop(float FadeOutTime = 0.5f);
 	void TransitionTo(USoundBase* NewSong, float FadeOutDuration = 3.0f,
@@ -28,35 +46,25 @@ public:
 	bool IsPositionSaved() const { return bPendingResume; }
 	float ConsumeSavedPosition();
 
-	bool IsPlaying() const { return bIsPlaying; }
+	bool IsPlaying() const;
 
 private:
-	void EnsureAudioComponent();
-	void StartSong(USoundBase* Song, float StartTime, float FadeInTime);
-	float GetCurrentPlaybackPosition() const;
-	void StartLoopFadeAfterDelay(float Delay);
-	void BeginLoopFadeTimer();
-	void UpdateLoopFade();
+	int32 GetOrCreateChannel(FName ChannelName);
+	UAudioComponent* GetChannelComponent(FName ChannelName) const;
+
+	void StartLoopFadeTimer();
 	void StopLoopFadeTimer();
 	UFUNCTION()
-	void OnTransitionComplete();
+	void OnLoopFadeTick();
 
 	UPROPERTY()
-	UAudioComponent* AudioComponent;
+	TArray<UAudioComponent*> ChannelComponents;
 
-	double PlaybackStartRealTime;
-	float PlaybackStartTime;
-	float SongDuration;
-	float SavedPlaybackPosition;
-	float SavedPreTransitionPosition;
-	bool bPendingResume;
-	bool bIsPlaying;
-	bool bLoopFadeEnabled;
+	TMap<FName, int32> ChannelIndex;
+	TMap<FName, FMusicChannelState> ChannelState;
 
-	FTimerHandle TransitionTimerHandle;
-	FTimerHandle LoopFadeTimerHandle;
-	UPROPERTY()
-	USoundBase* PendingSong;
-	float PendingFadeIn;
-	float PendingStartTime;
+	float SavedPlaybackPosition = 0.0f;
+	bool bPendingResume = false;
+
+	FTimerHandle GlobalLoopFadeTimerHandle;
 };

@@ -32,7 +32,7 @@ public:
 	FVector PortalLocation = FVector(0.0f, 0.0f, 100.0f);
 
 	UPROPERTY(EditDefaultsOnly, Category = "Config")
-	float TimeLimit = 120.0f;
+	float TimeLimit = 10.0f;
 
 private:
 	void OnAllWavesComplete();
@@ -68,6 +68,6 @@ private:
 
 	FTimerHandle CountdownTimerHandle;
 	FTimerHandle AutoTeleportTimer;
-	float TimeRemaining = 120.0f;
+	float TimeRemaining = 10.0f;
 	bool bLevelComplete = false;
 };

@@ -13,7 +13,7 @@ enum class EPowerUpType : uint8
 	Health,
 	Speed,
 	Damage,
-	// TODO: ADD ULT TYPE
+	Ultimate,
 };
 
 UCLASS(Blueprintable)
@@ -46,8 +46,8 @@ protected:
 	UStaticMeshComponent* Mesh;
 
 	UFUNCTION()
-	void OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	virtual void OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-private:
+protected:
 	TWeakObjectPtr<APowerUpManager> ManagerRef;
 };

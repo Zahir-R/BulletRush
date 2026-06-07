@@ -67,12 +67,9 @@ void AChronostasisSecretFacade::StartLevel()
 	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
 	{
 		float StartTime = CombatStartOffset;
-		UE_LOG(LogTemp, Warning, TEXT("[SecretFacade] StartLevel — saved=%d, offset=%.2f"),
-			Music->IsPositionSaved(), CombatStartOffset);
 		if (Music->IsPositionSaved())
 		{
 			StartTime = Music->ConsumeSavedPosition();
-			UE_LOG(LogTemp, Warning, TEXT("[SecretFacade] Using saved pos: %.2f"), StartTime);
 		}
 		Music->PlaySong(CombatSong, StartTime, 2.0f, true);
 	}
@@ -111,15 +108,17 @@ void AChronostasisSecretFacade::OnAllWavesComplete()
 		World->GetTimerManager().ClearTimer(CountdownTimerHandle);
 	}
 
-	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+	UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
+	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>()) 
+	{
 		Music->TransitionTo(AmbientSong, 3.0f, 0.5f, 0.0f);
+	}
 
 	UProjectilesSubsystem* ProjSys = World ? World->GetGameInstance()->GetSubsystem<UProjectilesSubsystem>() : nullptr;
 	if (ProjSys) ProjSys->SetSecretLevel(false);
 
 	SlowSystem->Stop();
 
-	UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
 	if (GI)
 	{
 		GI->PowerUpCooldownMultiplier = 0.5f;
@@ -221,10 +220,11 @@ void AChronostasisSecretFacade::TickTimer()
 
 void AChronostasisSecretFacade::OnPortalToBossTriggered()
 {
-	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
-		Music->SavePlaybackPosition();
-
 	UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
+	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+	{
+		Music->SavePlaybackPosition();
+	}
 	if (!GI) return;
 
 	GI->ChronostasisState = ELevelState::Boss;
@@ -233,10 +233,11 @@ void AChronostasisSecretFacade::OnPortalToBossTriggered()
 
 void AChronostasisSecretFacade::OnAutoTeleportToBoss()
 {
-	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
-		Music->SavePlaybackPosition();
-
 	UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
+	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+	{
+		Music->SavePlaybackPosition();
+	}
 	if (!GI) return;
 
 	GI->ChronostasisState = ELevelState::Boss;

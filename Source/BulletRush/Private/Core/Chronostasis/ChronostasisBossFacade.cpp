@@ -51,12 +51,9 @@ void AChronostasisBossFacade::StartLevel()
 	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
 	{
 		float StartTime = CombatStartOffset;
-		UE_LOG(LogTemp, Warning, TEXT("[BossFacade] StartLevel — saved=%d, offset=%.2f"),
-			Music->IsPositionSaved(), CombatStartOffset);
 		if (Music->IsPositionSaved())
 		{
 			StartTime = Music->ConsumeSavedPosition();
-			UE_LOG(LogTemp, Warning, TEXT("[BossFacade] Using saved pos: %.2f"), StartTime);
 		}
 		Music->PlaySong(CombatSong, StartTime, 2.0f, true);
 	}
