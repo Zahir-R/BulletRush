@@ -36,6 +36,10 @@ public:
 
     // Remove all active decorators, clearing buff chain
     void RemoveAllDecorators();
+<<<<<<< HEAD
+=======
+    const TArray<FActiveDecorator>& GetActiveBuffs() const { return ActiveDecorators; }
+>>>>>>> 6ae9ba3f671a4c561502453637aa8f5239edeca1
 
 protected:
     virtual void OnComponentDestroyed(bool bDestroyingHierarchy) override;
