@@ -41,14 +41,21 @@ void UOrchestrator_Normal::EnterState(ABossBase* Boss)
 		// Iniciamos ritmo 4/4 clásico de la Fase 1
 		OrchestratorRef->RhythmConductor->StartRhythm(120.0f);
 	}
+	OrchestratorRef->GetWorld()->GetTimerManager().SetTimer(
+		OrchestratorRef->RoamTimerHandle, OrchestratorRef, &AOrchestrator::RoamAroundPlayer, 4.0f, true);
 }
 
 void UOrchestrator_Normal::ExitState(ABossBase* Boss)
 {
-	if (OrchestratorRef && OrchestratorRef->RhythmConductor)
+	if (OrchestratorRef)
 	{
-		// Siempre debemos desuscribirnos al cambiar de estado para evitar memory leaks
-		OrchestratorRef->RhythmConductor->OnBeat.RemoveDynamic(this, &UOrchestrator_Normal::HandleBeat);
+		if (OrchestratorRef->RhythmConductor)
+		{
+			// Siempre debemos desuscribirnos al cambiar de estado para evitar memory leaks
+			OrchestratorRef->RhythmConductor->OnBeat.RemoveDynamic(this, &UOrchestrator_Normal::HandleBeat);
+		}
+	
+		OrchestratorRef->GetWorld()->GetTimerManager().ClearTimer(OrchestratorRef->RoamTimerHandle);
 	}
 }
 
@@ -106,6 +113,8 @@ void UOrchestrator_Melancholy::EnterState(ABossBase* Boss)
 		// Iniciamos ritmo 4/4 clásico de la Fase 1
 		OrchestratorRef->RhythmConductor->StartRhythm(60.0f);
 	}
+	OrchestratorRef->GetWorld()->GetTimerManager().SetTimer(
+		OrchestratorRef->RoamTimerHandle, OrchestratorRef, &AOrchestrator::RoamAroundPlayer, 4.0f, true);
 }
 
 void UOrchestrator_Melancholy::ExitState(ABossBase* Boss)
@@ -115,6 +124,7 @@ void UOrchestrator_Melancholy::ExitState(ABossBase* Boss)
 		// Siempre debemos desuscribirnos al cambiar de estado para evitar memory leaks
 		OrchestratorRef->RhythmConductor->OnBeat.RemoveDynamic(this, &UOrchestrator_Melancholy::HandleBeat);
 		OrchestratorRef->HealthComp->SetInvulnerable(true);
+		OrchestratorRef->GetWorld()->GetTimerManager().ClearTimer(OrchestratorRef->RoamTimerHandle);
 	}
 }
 
@@ -190,6 +200,10 @@ void UOrchestrator_Frenetic::HandleBeat()
 	{
 		CurrentBeatAttack.Add(FAttackStep(EAttackType::Spiral, 24, 1000.0f, 0.0f, 25.0f, 10.0f, 0.1f, DynamicScale));
 	}
+	if (BeatCounter % 16 == 0)
+	{
+		OrchestratorRef->ErraticTeleport();
+	}
 	if (Compas == 1)
 		CurrentBeatAttack.Add(FAttackStep(EAttackType::Sphere, 24, 900.0f, HalfBeatDelay, 0.0f, 10.0f, 0.1f, DynamicScale));
 	else if (Compas == 2)
@@ -231,7 +245,6 @@ void UOrchestrator_Furious::ExitState(ABossBase* Boss)
 		// Siempre debemos desuscribirnos al cambiar de estado para evitar memory leaks
 		OrchestratorRef->RhythmConductor->OnBeat.RemoveDynamic(this, &UOrchestrator_Furious::HandleBeat);
 	}
-	OrchestratorRef->HealthComp->SetInvulnerable(true);
 }
 
 void UOrchestrator_Furious::HandleBeat()
@@ -248,12 +261,9 @@ void UOrchestrator_Furious::HandleBeat()
 		{
 			if (UProjectilesSubsystem* ProjSub = GameInst->GetSubsystem<UProjectilesSubsystem>())
 			{
-				// 1. CONGELAMOS EL TIEMPO INMEDIATAMENTE
-				// Al poner GlobalSpeedMultiplier = 0.0f, el Tick actual las dejará quietas sin romper nada
 				ProjSub->HandleSilenceEnter();
 				OrchestratorRef->RhythmConductor->TriggerSilence(true);
 
-				// 2. ESPERAMOS LOS 2 SEGUNDOS DE PÁNICO
 				FTimerHandle SilenceEndTimer;
 				OrchestratorRef->GetWorld()->GetTimerManager().SetTimer(SilenceEndTimer, [this, ProjSub]()
 					{
@@ -261,8 +271,6 @@ void UOrchestrator_Furious::HandleBeat()
 						{
 							if (APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(OrchestratorRef->GetWorld(), 0))
 							{
-								// 3. EJECUTAMOS EL COLAPSO
-								// Le pasamos la velocidad letal de 2500.0f
 								ProjSub->ExecuteSilenceCollapse(PlayerPawn->GetActorLocation(), 2500.0f);
 							}
 
@@ -278,6 +286,11 @@ void UOrchestrator_Furious::HandleBeat()
 	if (BeatCounter % 16 == 0)
 	{
 		CurrentBeatAttack.Add(FAttackStep(EAttackType::Pentagram, 60, 1200.0f, 0.0f, 0.0f, 20.0f, 0.05f, DynamicScale));
+	}
+
+	if (BeatCounter % 8 == 0)
+	{
+		OrchestratorRef->ErraticTeleport();
 	}
 
 	int32 Compas = BeatCounter % 4;
@@ -397,4 +410,17 @@ void UOrchePhaseTransition::ExitState(ABossBase* Boss)
 
 void UOrchePhaseTransition::HandleBeat()
 {
+}
+
+//--------------------------------------------------------------
+
+void UOrcheDead::EnterState(ABossBase* Boss)
+{
+	OrchestratorRef = Cast<AOrchestrator>(Boss);
+	OrchestratorRef->BossAudioComp->FadeOut(2.5f, 0.0f);
+}
+
+void UOrcheDead::ExitState(ABossBase* Boss)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Orchestrator sale de estado Dead"));
 }

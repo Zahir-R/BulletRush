@@ -168,8 +168,10 @@ void AOrchestratorFacade::SpawnSecretGuardians()
 
 	for (int i = 0; i < TotalGuardiansToSpawn; i++)
 	{
-		// Aparecen frente al jugador en la sala de energía
-		FVector SpawnLoc = FVector(0.0f, -4730.0f, 500.0f);
+		// Distribuimos a los guardianes en una línea horizontal (Y) separada por 500 unidades
+		FVector Offset = FVector(0.0f, (i - 1) * 500.0f, 0.0f);
+		FVector SpawnLoc = FVector(0.0f, -4730.0f, 500.0f) + Offset;
+
 		AEnemyBase* Guardian = GetWorld()->SpawnActor<AEnemyBase>(SecretGuardianClass, SpawnLoc, FRotator::ZeroRotator, SpawnParams);
 
 		if (Guardian)
