@@ -14,6 +14,7 @@ void UHealthComponent::BeginPlay()
 	Super::BeginPlay();
 	
 	CurrentHealth = MaxHealth;
+	OnHealthChanged.Broadcast(CurrentHealth);
 	bDead = false;
 	bIsInvulnerable = false;
 }

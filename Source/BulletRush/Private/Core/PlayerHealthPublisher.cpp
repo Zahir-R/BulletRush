@@ -17,7 +17,7 @@ void APlayerHealthPublisher::BeginPlay()
 		UHealthComponent* HealthComp = PlayerPawn->FindComponentByClass<UHealthComponent>();
 		if (HealthComp)
 		{
-			InitialHealth = HealthComp->CurrentHealth;
+			InitialHealth = HealthComp->MaxHealth;
 			CurrentHealth = InitialHealth;
 			HealthComp->OnHealthChanged.AddDynamic(this, &APlayerHealthPublisher::OnPlayerHealthChanged);
 		}

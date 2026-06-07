@@ -128,6 +128,8 @@ void AOrchestratorFacade::PrepareBossArena(FTransform BossSpawnTransform)
 	if (GetWorld())
 	{
 		AOrchestrator* FinalBoss = GetWorld()->SpawnActor<AOrchestrator>(AOrchestrator::StaticClass(), BossSpawnTransform);
+		FinalBoss->SetActorRelativeLocation(FVector::ZeroVector);
+		FinalBoss->SetActorLocation(BossSpawnTransform.GetLocation());
 	}
 	if (AOrchestratorGameMode* GM = Cast<AOrchestratorGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
 	{

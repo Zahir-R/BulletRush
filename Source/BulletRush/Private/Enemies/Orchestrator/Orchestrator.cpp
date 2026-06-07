@@ -22,7 +22,12 @@ AOrchestrator::AOrchestrator()
 	CollisionComponent->InitCapsuleSize(140.f, 40.f);
 	CollisionComponent->SetCollisionProfileName(TEXT("Pawn"));
 	CollisionComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
-	RootComponent = CollisionComponent;
+	SetRootComponent(CollisionComponent);
+	if (MeshEnemy)
+	{
+		MeshEnemy->DestroyComponent();
+		MeshEnemy = nullptr;
+	}
 
 	static ConstructorHelpers::FObjectFinder<USkeleton> SkelAsset(TEXT("/Game/ParagonMuriel/Characters/Heroes/Muriel/Meshes/Muriel_Skeleton.Muriel_Skeleton"));
 
@@ -63,6 +68,12 @@ AOrchestrator::AOrchestrator()
 	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 	HealthComp->MaxHealth = 4000.0f;
 	HealthComp->SetInvulnerable(false);
+
+	HealthBarWidget->SetupAttachment(RootComponent);
+	HealthBarWidget->SetRelativeLocation(FVector(0.0f, 0.0f, 120.0f));
+	HealthBarWidget->SetWidgetSpace(EWidgetSpace::Screen);
+	HealthBarWidget->SetDrawSize(FVector2D(120.0f, 20.0f));
+	HealthBarWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	// Constructor para música...
 
