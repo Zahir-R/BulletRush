@@ -9,6 +9,7 @@
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
+#include "Components/SpotLightComponent.h"
 
 ASurveillanceDrone::ASurveillanceDrone()
 {
@@ -45,6 +46,11 @@ ASurveillanceDrone::ASurveillanceDrone()
 	// Inicializamos la malla del cono
 	VisionConeMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisionConeMesh"));
 	VisionConeMesh->SetCanEverAffectNavigation(false);
+
+	SpotLightComp = CreateDefaultSubobject<USpotLightComponent>(TEXT("SpotLightComp"));
+	SpotLightComp->SetupAttachment(MeshEnemy);
+	SpotLightComp->SetLightColor(FLinearColor::Red); // Color de la luz (Rojo alerta)
+	SpotLightComp->SetIntensity(5000.0f);
 
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> ConeMesh(TEXT("/Game/StarterContent/Shapes/Shape_Cone.Shape_Cone"));
@@ -101,6 +107,16 @@ void ASurveillanceDrone::BeginPlay()
 		// 4. POSICIÓN: Como el pivote está en el centro geométrico del cono,
 		// solo debemos empujarlo LA MITAD de la distancia para que la punta se ancle en el dron.
 		VisionConeMesh->SetRelativeLocation(FVector(Distance, 0.0f, 0.0f));
+
+		if (SpotLightComp)
+		{
+			// El radio de la luz será igual a la distancia de visión
+			SpotLightComp->SetAttenuationRadius(Distance);
+			// El ángulo exterior del foco será igual a tu ángulo de visión
+			SpotLightComp->SetOuterConeAngle(FOV);
+			// El ángulo interior un poco menor para un degradado suave
+			SpotLightComp->SetInnerConeAngle(FOV * 0.8f);
+		}
 	}
 
 }

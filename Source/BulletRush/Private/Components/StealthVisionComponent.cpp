@@ -33,18 +33,22 @@ void UStealthVisionComponent::TickComponent(float DeltaTime, ELevelTick TickType
 	if (bHasDetectedPlayer) return;
 
 	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-	if (!PlayerPawn || !GetOwner()) return;
+	ASurveillanceDrone* Drone = Cast<ASurveillanceDrone>(GetOwner());
 
-	FVector OwnerLoc = GetOwner()->GetActorLocation();
+	// Verificamos que el jugador y el dron (con su malla) existan
+	if (!PlayerPawn || !Drone || !Drone->MeshEnemy) return;
+
+	FVector OriginLoc = Drone->MeshEnemy->GetComponentLocation();
+	FVector OriginForward = Drone->MeshEnemy->GetForwardVector();
+
 	FVector PlayerLoc = PlayerPawn->GetActorLocation();
-	float DistanceToPlayer = FVector::Dist(OwnerLoc, PlayerLoc);
+	float DistanceToPlayer = FVector::Dist(OriginLoc, PlayerLoc);
 
 	if (DistanceToPlayer <= VisionDistance)
 	{
-		FVector DirToPlayer = (PlayerLoc - OwnerLoc).GetSafeNormal();
-		FVector OwnerForward = GetOwner()->GetActorForwardVector();
+		FVector DirToPlayer = (PlayerLoc - OriginLoc).GetSafeNormal();
 
-		float DotProduct = FVector::DotProduct(OwnerForward, DirToPlayer);
+		float DotProduct = FVector::DotProduct(OriginForward, DirToPlayer);
 		float CosineFOV = FMath::Cos(FMath::DegreesToRadians(FieldOfViewDegrees));
 
 		// Si está dentro del cono de visión
@@ -55,33 +59,31 @@ void UStealthVisionComponent::TickComponent(float DeltaTime, ELevelTick TickType
 			Params.AddIgnoredActor(GetOwner());
 
 			// Trazado para comprobar que no hay paredes tapando la vista
-			if (GetWorld()->LineTraceSingleByChannel(Hit, OwnerLoc, PlayerLoc, ECC_Visibility, Params))
+			bool bHitObstacle = GetWorld()->LineTraceSingleByChannel(Hit, OriginLoc, PlayerLoc, ECC_Visibility, Params);
+
+			// Si NO golpeó ninguna pared (!bHitObstacle) O si lo que golpeó fue explícitamente el jugador...
+			if (!bHitObstacle || Hit.GetActor() == PlayerPawn)
 			{
-				if (Hit.GetActor() == PlayerPawn)
+				bHasDetectedPlayer = true;
+
+				UBulletSpawnerComponent* Spawner = GetOwner()->FindComponentByClass<UBulletSpawnerComponent>();
+				if (Spawner)
 				{
-					bHasDetectedPlayer = true;
-
-					UBulletSpawnerComponent* Spawner = GetOwner()->FindComponentByClass<UBulletSpawnerComponent>();
-					if (Spawner)
-					{
-						// FAttackStep: Tipo, Cantidad, Velocidad, Delay, Origen, TiempoEntreBalas, SpecialParam, Daño
-						// Le pasamos PlayerLoc para que el origen del ataque sea el jugador y lo rodee
-						FAttackStep TrapStep(EAttackType::SurroundingBullets, 200, 800.0f, 0.0f, PlayerLoc, 0.0f, 0.0f, 60.0f);
-						TrapStep.BulletScale = FVector(0.5f);
-						Spawner->ExecuteSingleAttack(TrapStep);
-					}
-
-					// Informamos a la Fachada a través del GameMode (Patrón Observer indirecto)
-					if (AOrchestratorGameMode* GM = Cast<AOrchestratorGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
-					{
-						if (GM->LevelFacade)
-						{
-							GM->LevelFacade->HandlePlayerDetected(OwnerLoc);
-						}
-					}
-					ASurveillanceDrone* Drone = Cast<ASurveillanceDrone>(GetOwner());
-					Drone->Die();
+					// FAttackStep: Tipo, Cantidad, Velocidad, Delay, Origen, TiempoEntreBalas, SpecialParam, Daño
+					FAttackStep TrapStep(EAttackType::SurroundingBullets, 200, 800.0f, 0.0f, PlayerLoc, 0.0f, 0.0f, 60.0f);
+					TrapStep.BulletScale = FVector(0.5f);
+					Spawner->ExecuteSingleAttack(TrapStep);
 				}
+
+				// Informamos a la Fachada
+				if (AOrchestratorGameMode* GM = Cast<AOrchestratorGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
+				{
+					if (GM->LevelFacade)
+					{
+						GM->LevelFacade->HandlePlayerDetected(OriginLoc);
+					}
+				}
+				if (Drone) Drone->Die();
 			}
 		}
 	}

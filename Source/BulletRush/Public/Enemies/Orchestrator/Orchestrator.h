@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Enemies/BossBase.h"
 #include "Components/AudioComponent.h"
+#include "GameFramework/FloatingPawnMovement.h"
 #include "Orchestrator.generated.h"
 
 class URhytmConductorComponent;
@@ -14,6 +15,7 @@ class UOrchestrator_Frenetic;
 class UOrchestrator_Furious;
 class UOrchestratorIntro;
 class UOrchePhaseTransition;
+class UOrcheDead;
 
 UCLASS()
 class BULLETRUSH_API AOrchestrator : public ABossBase
@@ -22,6 +24,8 @@ class BULLETRUSH_API AOrchestrator : public ABossBase
 	
 public:
 	AOrchestrator();
+
+	virtual FString GetBossDisplayName() const override { return TEXT("ORCHESTRATOR"); }
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
 	class UCapsuleComponent* CollisionComponent;
@@ -45,6 +49,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Music")
 	USoundBase* Phase4Music;
+
+	FTimerHandle DeathTimerHandle;
 
 protected:
 	virtual void BeginPlay() override;
@@ -75,4 +81,27 @@ public:
 
 	UPROPERTY()
 	UOrchePhaseTransition* PhaseTransitionOrcheState;
+
+	UPROPERTY()
+	UOrcheDead* OrcheDeadState;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
+	UFloatingPawnMovement* MovementComp;
+
+	// Temporizador para el movimiento de la Fase 1 y 2
+	FTimerHandle RoamTimerHandle;
+
+	UFUNCTION()
+	void RoamAroundPlayer();
+
+	UFUNCTION()
+	void ErraticTeleport();
+
+	virtual void Tick(float DeltaTime) override;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mundo")
+	FVector DownLimits = FVector(2300.0f, -6710.0f, 500.0f);
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mundo")
+	FVector UpperLimits = FVector(10820.0f, 2080.0f, 2000.0f);
+
 };

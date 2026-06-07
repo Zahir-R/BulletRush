@@ -8,6 +8,7 @@
 #include "Map/MapChronoTesting.h"
 #include "Player/PlayingPlayer.h"
 #include "Components/HealthComponent.h"
+#include "Subsystems/MusicManagerSubsystem.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -80,9 +81,24 @@ void AChronostasisGameMode::DetectAndActivateFacade()
 	}
 }
 
+void AChronostasisGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	APlayingPlayer* Player = Cast<APlayingPlayer>(UGameplayStatics::GetPlayerPawn(this, 0));
+	if (Player && Player->HealthComp)
+		Player->HealthComp->OnDeath.RemoveDynamic(this, &AChronostasisGameMode::OnPlayerDeath);
+
+	Super::EndPlay(EndPlayReason);
+}
+
 void AChronostasisGameMode::OnPlayerDeath()
 {
 	UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
+	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+	{
+		Music->SavePlaybackPosition();
+		Music->NotifyLevelTravel();
+	}
+
 	if (!GI) return;
 
 	FName MapName = FName(*GetWorld()->GetName());

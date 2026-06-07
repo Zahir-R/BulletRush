@@ -32,6 +32,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void Die() override;
 
+	virtual FString GetBossDisplayName() const override { return TEXT("SER X"); }
+
 	void SetLinkerFactory(UChronostasisFactoryEnemy* Factory);
 	void AddMinionFactory(UChronostasisFactoryEnemy* Factory);
 

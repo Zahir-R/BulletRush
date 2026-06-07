@@ -7,6 +7,7 @@
 #include "TopDownGameMode.generated.h"
 
 class APortalManager;
+class USoundBase;
 /**
  * 
  */
@@ -19,6 +20,9 @@ public:
 	
 	UPROPERTY()
 	APortalManager* PortalManager;
+
+	UPROPERTY(EditAnywhere, Category = "Music")
+	USoundBase* AmbientSong;
 
 public:
 	virtual void BeginPlay() override;

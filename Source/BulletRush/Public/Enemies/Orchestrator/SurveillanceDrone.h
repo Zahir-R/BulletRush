@@ -8,6 +8,7 @@
 
 class UStealthVisionComponent;
 class UFloatingPawnMovement;
+class USpotLightComponent;
 class USphereComponent;
 /**
  * 
@@ -37,6 +38,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USphereComponent* CollisionComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USpotLightComponent* SpotLightComp;
 
 protected:
 	virtual void BeginPlay() override;

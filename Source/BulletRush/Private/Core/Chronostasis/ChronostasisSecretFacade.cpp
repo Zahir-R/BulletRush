@@ -13,6 +13,9 @@
 #include "Components/BuffComponent.h"
 #include "Map/PortalTrigger.h"
 #include "Subsystems/ProjectilesSubsystem.h"
+#include "Subsystems/MusicManagerSubsystem.h"
+#include "Sound/SoundBase.h"
+#include "UObject/ConstructorHelpers.h"
 #include "Player/PlayingPlayer.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
@@ -21,6 +24,12 @@
 AChronostasisSecretFacade::AChronostasisSecretFacade()
 {
 	PrimaryActorTick.bCanEverTick = false;
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> AmbientFinder(TEXT("SoundWave'/Game/Audio/Ambient.Ambient'"));
+	if (AmbientFinder.Succeeded()) AmbientSong = AmbientFinder.Object;
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> CombatFinder(TEXT("SoundWave'/Game/Audio/Combat.Combat'"));
+	if (CombatFinder.Succeeded()) CombatSong = CombatFinder.Object;
 
 	FWaveConfig SW1; SW1.DroneCount = 5;
 	FWaveConfig SW2; SW2.DroneCount = 3; SW2.ExpansiveCount = 2;
@@ -55,6 +64,16 @@ void AChronostasisSecretFacade::BeginPlay()
 
 void AChronostasisSecretFacade::StartLevel()
 {
+	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+	{
+		float StartTime = CombatStartOffset;
+		if (Music->IsPositionSaved())
+		{
+			StartTime = Music->ConsumeSavedPosition();
+		}
+		Music->PlaySong(CombatSong, StartTime, 2.0f, true);
+	}
+
 	WaveManager->StartSecretWaves(Waves);
 	SlowSystem->Start();
 
@@ -75,6 +94,7 @@ void AChronostasisSecretFacade::StartLevel()
 
 void AChronostasisSecretFacade::OnEnemyKilled(AEnemyBase* Enemy)
 {
+	SlowSystem->ResetOnKill();
 }
 
 void AChronostasisSecretFacade::OnAllWavesComplete()
@@ -88,12 +108,17 @@ void AChronostasisSecretFacade::OnAllWavesComplete()
 		World->GetTimerManager().ClearTimer(CountdownTimerHandle);
 	}
 
+	UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
+	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>()) 
+	{
+		Music->TransitionTo(AmbientSong, 3.0f, 0.5f, 0.0f);
+	}
+
 	UProjectilesSubsystem* ProjSys = World ? World->GetGameInstance()->GetSubsystem<UProjectilesSubsystem>() : nullptr;
 	if (ProjSys) ProjSys->SetSecretLevel(false);
 
 	SlowSystem->Stop();
 
-	UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
 	if (GI)
 	{
 		GI->PowerUpCooldownMultiplier = 0.5f;
@@ -196,6 +221,10 @@ void AChronostasisSecretFacade::TickTimer()
 void AChronostasisSecretFacade::OnPortalToBossTriggered()
 {
 	UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
+	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+	{
+		Music->SavePlaybackPosition();
+	}
 	if (!GI) return;
 
 	GI->ChronostasisState = ELevelState::Boss;
@@ -205,6 +234,10 @@ void AChronostasisSecretFacade::OnPortalToBossTriggered()
 void AChronostasisSecretFacade::OnAutoTeleportToBoss()
 {
 	UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
+	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+	{
+		Music->SavePlaybackPosition();
+	}
 	if (!GI) return;
 
 	GI->ChronostasisState = ELevelState::Boss;

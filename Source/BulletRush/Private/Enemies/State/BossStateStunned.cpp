@@ -13,12 +13,13 @@ void UBossStateStunned::EnterState(ABossBase* Boss)
 {
 	Boss->HealthComp->SetInvulnerable(false);
 
-	Boss->GetWorld()->GetTimerManager().SetTimer(Boss->StunnedTimer, [Boss]()
+	TWeakObjectPtr<ABossBase> WeakBoss(Boss);
+	Boss->GetWorld()->GetTimerManager().SetTimer(Boss->StunnedTimer, [WeakBoss]()
 	{
-		if (Boss)
+		if (ABossBase* StrongBoss = WeakBoss.Get())
 		{
-			Boss->GetWorld()->GetTimerManager().ClearTimer(Boss->AttackLoopTimer);
-			Boss->ChangeState(Boss->AttackingState);
+			StrongBoss->GetWorld()->GetTimerManager().ClearTimer(StrongBoss->AttackLoopTimer);
+			StrongBoss->ChangeState(StrongBoss->AttackingState);
 		}
 	}, 5.0f, false);
 }
