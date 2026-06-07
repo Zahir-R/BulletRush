@@ -5,12 +5,18 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Pawn.h"
 #include "DrawDebugHelpers.h"
+#include "UObject/ConstructorHelpers.h"
 
 AChronostasisLinker::AChronostasisLinker()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	AttackInterval = 0.f;
 	bAutoStartAttack = false;
+
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/Assets/ChronoEnemies/Linker/Astral_Prism_Pendant_texture.Astral_Prism_Pendant_texture'"));
+	if (MeshAsset.Succeeded()) MeshEnemy->SetStaticMesh(MeshAsset.Object);
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> MaterialAsset(TEXT("Material'/Game/Assets/ChronoEnemies/Linker/M_Astral_Prism_Pendant.M_Astral_Prism_Pendant'"));
+	if (MaterialAsset.Succeeded()) MeshEnemy->SetMaterial(0, MaterialAsset.Object);
 }
 
 void AChronostasisLinker::BeginPlay()

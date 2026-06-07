@@ -5,6 +5,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Pawn.h"
 #include "Combat/MovementStrategy/SeekMovement.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "UObject/ConstructorHelpers.h"
 
 AChronostasisMass::AChronostasisMass()
 {
@@ -16,6 +18,15 @@ AChronostasisMass::AChronostasisMass()
     MovementStrategy = CreateDefaultSubobject<USeekMovement>(TEXT("SeekMovement"));
     USeekMovement* SeekMov = Cast<USeekMovement>(MovementStrategy);
     if (SeekMov) SeekMov->Speed = 200.f;
+
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/Assets/ChronoEnemies/Mass/Aether_Cube_texture.Aether_Cube_texture'"));
+    if (MeshAsset.Succeeded()) MeshEnemy->SetStaticMesh(MeshAsset.Object);
+
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> MaterialAsset(TEXT("Material'/Game/Assets/ChronoEnemies/Mass/M_Aether_Cube.M_Aether_Cube'"));
+    if (MaterialAsset.Succeeded()) MeshEnemy->SetMaterial(0, MaterialAsset.Object);
+
+    MeshEnemy->SetWorldScale3D(FVector(0.5f));
+
 }
 
 void AChronostasisMass::BeginPlay()
