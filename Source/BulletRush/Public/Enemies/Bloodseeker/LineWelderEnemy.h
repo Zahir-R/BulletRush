@@ -2,7 +2,6 @@
 
 #include "CoreMinimal.h"
 #include "Enemies/EnemyBase.h"
-#include "Combat/MovementStrategy/MovementStrat.h"
 #include "LineWelderEnemy.generated.h"
 
 UCLASS(Blueprintable)
@@ -22,9 +21,10 @@ public:
         UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
         bool bFromSweep, const FHitResult& SweepResult);
 
-protected:
-    UPROPERTY()
-    UMovementStrat* MovementStrategy;
-
 private:
+    UPROPERTY(EditAnywhere, Category = "Movement")
+    float Speed = 300.0f;
+
+    UPROPERTY(EditAnywhere, Category = "Movement")
+    float StopDistance = 600.0f;
 };

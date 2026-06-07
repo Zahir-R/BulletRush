@@ -1,5 +1,4 @@
 #include "Enemies/Bloodseeker/LineWelderEnemy.h"
-#include "Combat/MovementStrategy/SinusoidalSeekMovement.h"
 #include "Components/BulletSpawnerComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
@@ -9,22 +8,11 @@ ALineWelderEnemy::ALineWelderEnemy()
     PrimaryActorTick.bCanEverTick = true;
     bAutoStartAttack = true;
     AttackInterval = 1.5f;
-
-    MovementStrategy = CreateDefaultSubobject<USinusoidalSeekMovement>(TEXT("SinusoidalMovement"));
 }
 
 void ALineWelderEnemy::BeginPlay()
 {
     Super::BeginPlay();
-
-    USinusoidalSeekMovement* SinMovement = Cast<USinusoidalSeekMovement>(MovementStrategy);
-    if (SinMovement)
-    {
-        SinMovement->Amplitude = 150.0f;
-        SinMovement->Frequency = 2.0f;
-        SinMovement->StopDistance = 600.0f;
-        SinMovement->InitialPhase = FMath::FRandRange(0.0f, PI * 2.0f);
-    }
 
     if (MeshEnemy)
     {
@@ -36,15 +24,18 @@ void ALineWelderEnemy::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    if (MovementStrategy)
+    APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+    if (!PlayerPawn) return;
+
+    FVector MyLoc = GetActorLocation();
+    FVector TargetLoc = PlayerPawn->GetActorLocation();
+    FVector Dir = (TargetLoc - MyLoc);
+    float Distance = Dir.Size();
+
+    if (Distance > StopDistance)
     {
-        APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-        if (PlayerPawn)
-        {
-            FVector Target = PlayerPawn->GetActorLocation();
-            FVector NewPos = MovementStrategy->GetNextPosition(this, DeltaTime, Target);
-            SetActorLocation(NewPos);
-        }
+        Dir.Normalize();
+        SetActorLocation(MyLoc + Dir * Speed * DeltaTime);
     }
 }
 

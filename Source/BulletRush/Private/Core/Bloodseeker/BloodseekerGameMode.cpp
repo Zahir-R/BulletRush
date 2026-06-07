@@ -76,6 +76,15 @@ void ABloodseekerGameMode::OnBossSpawned(ABloodseekerBoss* SpawnedBoss)
     {
         BossRef = SpawnedBoss;
         BossRef->FacadeRef = Facade;
+        //nivel-s
+        if (Facade->bSecretLevel)
+        {
+            float OriginalMax = BossRef->HealthComp->MaxHealth;
+            BossRef->HealthComp->MaxHealth = OriginalMax * 0.75f;
+            BossRef->HealthComp->CurrentHealth = BossRef->HealthComp->MaxHealth;
+            UE_LOG(LogTemp, Warning, TEXT("[GameMode] SECRETO! Boss con 25%% menos HP: %.0f"), BossRef->HealthComp->MaxHealth);
+        }
+        //
         BossRef->OnEnemyDeath.AddDynamic(this, &ABloodseekerGameMode::OnBossDied);
 
         if (Facade)

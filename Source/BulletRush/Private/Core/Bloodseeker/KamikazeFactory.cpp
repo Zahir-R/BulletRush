@@ -10,7 +10,7 @@ AEnemyBase* UKamikazeFactory::CreateEnemy(UWorld* World, const FVector& Location
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	UClass* ClassToSpawn = KamikazeClass ? KamikazeClass.Get() : AKamikazeEnemy::StaticClass();
+	UClass* ClassToSpawn = KamikazeClass ? KamikazeClass : AKamikazeEnemy::StaticClass();
 	AEnemyBase* Enemy = World->SpawnActor<AEnemyBase>(ClassToSpawn, FTransform(Location), SpawnParams);
 
 	UE_LOG(LogTemp, Warning, TEXT("[KamikazeFactory] Spawned Kamikaze at %s. Success: %s"), *Location.ToString(), Enemy ? TEXT("True") : TEXT("False"));
