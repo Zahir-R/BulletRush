@@ -14,6 +14,12 @@ ADronMecha::ADronMecha()
 {
     PrimaryActorTick.bCanEverTick = true;
     CurrentDroneState = EDroneState::Closed;
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/AccuCities/meshes/Meshy_AI_Kamikaze.Meshy_AI_Kamikaze'"));
+	
+	if (MeshAsset.Succeeded()) MeshEnemy->SetStaticMesh(MeshAsset.Object);
+	MeshEnemy->SetRelativeScale3D(FVector(1.5f));
+	MeshEnemy->SetRelativeRotationExact(FRotator(0.0f, 90.0f, 0.0f));
+
 
     AttackInterval = 0.0f;    
     bAutoStartAttack = false; 
@@ -33,7 +39,7 @@ void ADronMecha::BeginPlay()
     HomeLocation = GetActorLocation();
     // Usamos movimiento estático, sobreescribimos el sinusoidal de ADrone
     MovementStrategy = NewObject<UStaticMovement>(this);
-
+    //APawn* CachedPlayer = UGameplayStatics::GetPlayerPawn(this, 0);
     // Empezamos cerrado
     Close();
 }
