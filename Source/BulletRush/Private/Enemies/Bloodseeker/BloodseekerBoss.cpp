@@ -273,31 +273,22 @@ void ABloodseekerBoss::SpawnKamikazeWave(int32 Count, float DelayBetween)
                 ABloodseekerBoss* Self = WeakBoss_SW.Get();
                 if (!Self || !Self->GetWorld()) return;
 
-                // Ángulo horizontal: +-120grados desde el frente del player (excluye espalda)
                 float HorzAngle = FMath::FRandRange(-120.0f, 120.0f);
                 FVector HorzDir = PlayerForward.RotateAngleAxis(HorzAngle, FVector::UpVector);
-
-                // Distancia: 1800-2500 unidades
                 float Distance = FMath::FRandRange(1800.0f, 2500.0f);
-
-                // Altura: +-300 unidades
                 float HeightOffset = FMath::FRandRange(-300.0f, 300.0f);
 
                 FVector SpawnLocation = PlayerLocation + HorzDir * Distance;
                 SpawnLocation.Z += HeightOffset;
 
-                FActorSpawnParameters SpawnParams;
-                SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-                AKamikazeEnemy* NewKamikaze = Self->GetWorld()->SpawnActor<AKamikazeEnemy>(
-                    AKamikazeEnemy::StaticClass(),
-                    FTransform(SpawnLocation),
-                    SpawnParams
-                );
-
-                if (NewKamikaze)
+                if (Self->FacadeRef && Self->FacadeRef->KamikazeFactory)
                 {
-                    NewKamikaze->InitializeArc(SpawnLocation, PlayerLocation);
+                    AEnemyBase* NewEnemy = Self->FacadeRef->KamikazeFactory->CreateEnemy(Self->GetWorld(), SpawnLocation);
+                    AKamikazeEnemy* NewKamikaze = Cast<AKamikazeEnemy>(NewEnemy);
+                    if (NewKamikaze)
+                    {
+                        NewKamikaze->InitializeArc(SpawnLocation, PlayerLocation);
+                    }
                 }
             },
             SpawnDelay,

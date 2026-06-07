@@ -6,6 +6,7 @@
 #include "Engine/World.h"
 #include "TimerManager.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/HealthComponent.h"
 
 ABloodseekerFacade::ABloodseekerFacade()
 {
@@ -13,11 +14,19 @@ ABloodseekerFacade::ABloodseekerFacade()
     CurrentWaveIndex = 0;
     RemainingEnemiesInWave = 0;
     bIsBossPhase = false;
+    bPlayerHurt = false;
+    bSecretLevel = false;
+    KamikazeFactory = nullptr;
+    LineWelderFactory = nullptr;
+    GravitySiphonFactory = nullptr;
 }
 
 void ABloodseekerFacade::BeginPlay()
 {
     Super::BeginPlay();
+    KamikazeFactory = new UKamikazeFactory();
+    LineWelderFactory = new ULineWelderFactory();
+    GravitySiphonFactory = new UGravitySiphonFactory();
 }
 
 void ABloodseekerFacade::SetupDefaultWaves()
@@ -72,17 +81,19 @@ void ABloodseekerFacade::SetupDefaultBossWaves()
 
 void ABloodseekerFacade::StartGame()
 {
-    if (!KamikazeFactory)
+  
+    //nivel-s
+    bPlayerHurt = false;
+    bSecretLevel = false;
+
+    APawn* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+    if (Player)
     {
-        KamikazeFactory = NewObject<UKamikazeFactory>(this);
-    }
-    if (!LineWelderFactory)
-    {
-        LineWelderFactory = NewObject<ULineWelderFactory>(this);
-    }
-    if (!GravitySiphonFactory)
-    {
-        GravitySiphonFactory = NewObject<UGravitySiphonFactory>(this);
+        UHealthComponent* HealthComp = Player->FindComponentByClass<UHealthComponent>();
+        if (HealthComp)
+        {
+            HealthComp->OnHealthChanged.AddDynamic(this, &ABloodseekerFacade::OnPlayerHealthChanged);
+        }
     }
 
     SetupDefaultWaves();
@@ -92,12 +103,12 @@ void ABloodseekerFacade::StartGame()
     UE_LOG(LogTemp, Warning, TEXT("[Facade] StartGame - Oleadas configuradas: %d. Iniciando oleada 0..."), HordasWaves.Num());
     StartWave(CurrentWaveIndex);
 }
-
 void ABloodseekerFacade::StartWave(int32 Index)
 {
     if (!GetWorld() || Index >= HordasWaves.Num())
     {
         UE_LOG(LogTemp, Warning, TEXT("[Facade] StartWave(%d) - Todas las oleadas completadas!"), Index);
+        
         OnAllWavesComplete.Broadcast();
         return;
     }
@@ -308,6 +319,12 @@ void ABloodseekerFacade::OnEnemyKilled(AEnemyBase* DeadEnemy)
             }
             else
             {
+                //nivel-s
+                if (!bPlayerHurt)
+                {
+                    bSecretLevel = true;
+                    UE_LOG(LogTemp, Warning, TEXT("[Facade] SECRETO ACTIVADO! Boss ser� m�s d�bil."));
+                }
                 UE_LOG(LogTemp, Warning, TEXT("[Facade] TODAS las oleadas de hordas completadas! BossTrigger incoming."));
                 OnAllWavesComplete.Broadcast();
             }
@@ -384,7 +401,20 @@ void ABloodseekerFacade::StopAllSpawning()
         SpawnTimerHandles.Empty();
     }
 }
-
+void ABloodseekerFacade::OnPlayerHealthChanged(float NewHealth)
+{
+    bPlayerHurt = true;
+}
+void ABloodseekerFacade::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    delete KamikazeFactory;
+    delete LineWelderFactory;
+    delete GravitySiphonFactory;
+    KamikazeFactory = nullptr;
+    LineWelderFactory = nullptr;
+    GravitySiphonFactory = nullptr;
+    Super::EndPlay(EndPlayReason);
+}
 void ABloodseekerFacade::DestroyAllEnemies()
 {
     if (!GetWorld()) return;

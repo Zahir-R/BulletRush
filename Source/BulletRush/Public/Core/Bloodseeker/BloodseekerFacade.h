@@ -9,6 +9,7 @@
 #include "BloodseekerFacade.generated.h"
 
 class AEnemyBase;
+class UHealthComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAllWavesCompleteSignature);
 
@@ -49,13 +50,24 @@ public:
     void StopAllSpawning();
     void DestroyAllEnemies();
 
+    
     FOnAllWavesCompleteSignature OnAllWavesComplete;
 
+    //nivel-s
+    bool bPlayerHurt;
+    bool bSecretLevel;
+
+    UKamikazeFactory* KamikazeFactory;
+    ULineWelderFactory* LineWelderFactory;
+    UGravitySiphonFactory* GravitySiphonFactory;
 protected:
     virtual void BeginPlay() override;
-
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
     UFUNCTION()
     void OnEnemyKilled(AEnemyBase* DeadEnemy);
+    //nivel-s
+    UFUNCTION()
+    void OnPlayerHealthChanged(float NewHealth);
 
 private:
     void SetupDefaultWaves();
@@ -69,15 +81,6 @@ private:
     FVector GetRandomSpawnLocation();
 
     UPROPERTY()
-    UKamikazeFactory* KamikazeFactory;
-
-    UPROPERTY()
-    ULineWelderFactory* LineWelderFactory;
-
-    UPROPERTY()
-    UGravitySiphonFactory* GravitySiphonFactory;
-
-    UPROPERTY()
     TArray<FBloodseekerWaveConfig> HordasWaves;
 
     UPROPERTY()
@@ -86,7 +89,7 @@ private:
     int32 CurrentWaveIndex;
     int32 RemainingEnemiesInWave;
     bool bIsBossPhase;
-
+ 
     FTimerHandle WaveTimerHandle;
     FTimerHandle BossWaveTimerHandle;
     FTimerHandle SpawnTimerHandle;

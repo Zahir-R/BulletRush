@@ -11,12 +11,18 @@ UBuffComponent::UBuffComponent()
 
 void UBuffComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
 {
+
 	if (!GetWorld()) return;
-	for (FActiveDecorator& Active : ActiveDecorators)
+	
+	UWorld* World = GetWorld();
+	if (World)
 	{
-		if (Active.Timer.IsValid())
+		for (FActiveDecorator& Active : ActiveDecorators)
 		{
-			GetWorld()->GetTimerManager().ClearTimer(Active.Timer);
+			if (Active.Timer.IsValid())
+			{
+				World->GetTimerManager().ClearTimer(Active.Timer);
+			}
 		}
 	}
 	ActiveDecorators.Empty();

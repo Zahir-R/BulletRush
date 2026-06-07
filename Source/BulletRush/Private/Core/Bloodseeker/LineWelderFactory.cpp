@@ -10,7 +10,7 @@ AEnemyBase* ULineWelderFactory::CreateEnemy(UWorld* World, const FVector& Locati
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	UClass* ClassToSpawn = LineWelderClass ? LineWelderClass.Get() : ALineWelderEnemy::StaticClass();
+	UClass* ClassToSpawn = LineWelderClass ? LineWelderClass : ALineWelderEnemy::StaticClass();
 	AEnemyBase* Enemy = World->SpawnActor<AEnemyBase>(ClassToSpawn, FTransform(Location), SpawnParams);
 
 	UE_LOG(LogTemp, Warning, TEXT("[LineWelderFactory] Spawned LineWelder at %s. Success: %s"), *Location.ToString(), Enemy ? TEXT("True") : TEXT("False"));

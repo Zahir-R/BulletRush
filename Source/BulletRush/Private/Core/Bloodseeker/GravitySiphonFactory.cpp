@@ -10,7 +10,7 @@ AEnemyBase* UGravitySiphonFactory::CreateEnemy(UWorld* World, const FVector& Loc
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	UClass* ClassToSpawn = GravitySiphonClass ? GravitySiphonClass.Get() : AGravitySiphonEnemy::StaticClass();
+	UClass* ClassToSpawn = GravitySiphonClass ? GravitySiphonClass : AGravitySiphonEnemy::StaticClass();
 	AEnemyBase* Enemy = World->SpawnActor<AEnemyBase>(ClassToSpawn, FTransform(Location), SpawnParams);
 
 	UE_LOG(LogTemp, Warning, TEXT("[GravitySiphonFactory] Spawned GravitySiphon at %s. Success: %s"), *Location.ToString(), Enemy ? TEXT("True") : TEXT("False"));
