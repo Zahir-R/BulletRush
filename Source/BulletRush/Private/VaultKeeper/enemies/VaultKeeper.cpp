@@ -17,6 +17,7 @@ AVaultKeeper::AVaultKeeper()
 	VaultMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VaultMesh"));
 	RootComponent = VaultMesh;
 	if (MeshAsset.Succeeded()) VaultMesh->SetStaticMesh(MeshAsset.Object);
+	VaultMesh->SetRelativeScale3D(FVector(3.5f, 3.5f, 3.5f));
 
     UWeakPointComponent* WP1 = CreateDefaultSubobject<UWeakPointComponent>(TEXT("WeakPoint_Left"));
     WP1->SetupAttachment(RootComponent);

@@ -18,21 +18,21 @@ ALevel21Facade::ALevel21Facade()
    
     // Spawn locations por defecto si no se asignan en el editor
     DroneSpawnLocations = {
-        FVector(500.f,    0.f, 100.f),
-        FVector(-500.f,   0.f, 100.f),
-        FVector(0.f,    500.f, 100.f),
-        FVector(0.f,   -500.f, 100.f),
-        FVector(700.f,  300.f, 100.f),
-        FVector(-700.f, 300.f, 100.f),
-        FVector(300.f,  700.f, 100.f),
-        FVector(-300.f,-700.f, 100.f),
-        FVector(900.f,    0.f, 100.f),
-        FVector(-900.f,   0.f, 100.f),
-        FVector(0.f,    900.f, 100.f),
-        FVector(0.f,   -900.f, 100.f),
+        FVector(580.f,    800.f, 100.f),
+        FVector(-1500.f,   0.f, 700.f),
+        FVector(2150.f,    1500.f, 400.f),
+        FVector(0.f,   -500.f, 200.f),
+        FVector(2700.f,  1300.f, 500.f),
+        FVector(-700.f, 1300.f, 900.f),
+        FVector(300.f,  1700.f, 600.f),
+        FVector(-2300.f,-700.f, 300.f),
+        FVector(900.f,    100.f, 150.f),
+        FVector(-1900.f,   0.f, 900.f),
+        FVector(0.f,    900.f, 1050.f),
+        FVector(0.f,   -900.f, 1700.f),
         FVector(600.f, -600.f, 100.f),
-        FVector(-600.f, 600.f, 100.f),
-        FVector(1000.f, 400.f, 100.f),
+        FVector(-600.f, 3000.f, 1000.f),
+        FVector(1000.f, 400.f, 1500.f),
     };
 }
 
@@ -90,19 +90,19 @@ void ALevel21Facade::SpawnWave()
     // 4 Chargers
     TArray<FVector> ChargerPositions = {
         FVector(1900.f,   0.f, 300.f), FVector(-1900.f,   0.f, 300.f),
-        FVector(0.f,   1900.f, 100.f), FVector(0.f,   -1900.f, 100.f),
+        FVector(0.f,   3900.f, 100.f), FVector(0.f,   -1900.f, 100.f),
     };
 
     // 3 Kamikazes
     TArray<FVector> KamikazePositions = {
-        FVector(1600.f, -600.f, 100.f),
-        FVector(-600.f, 600.f, 1100.f),
-        FVector(1000.f, 1400.f, 100.f),
+        FVector(3600.f, -600.f, 100.f),
+        FVector(-600.f, 600.f, 3100.f),
+        FVector(1000.f, 3400.f, 100.f),
     };
 
     // Spawn drones
     
-    for (FVector Loc : DronePositions)
+    for (FVector Loc : DroneSpawnLocations)
     {
         ADronMecha* Drone = Cast<ADronMecha>(
             Factory->CreateEnemy(EMechaEnemyType::DroneMecha, Loc, FRotator::ZeroRotator));

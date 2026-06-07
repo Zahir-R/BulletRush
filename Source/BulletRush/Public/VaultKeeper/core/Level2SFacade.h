@@ -58,6 +58,8 @@ private:
 
     int32 HivesCleared = 0;
     bool bLevelComplete = false;
+ 
+    bool bPlayerDied = false;
 
     FTimerHandle VenomTimer;
 

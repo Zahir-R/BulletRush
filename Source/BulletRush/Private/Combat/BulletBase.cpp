@@ -26,6 +26,13 @@ ABulletBase::ABulletBase()
 	BulletMesh->SetCollisionResponseToAllChannels(ECR_Overlap);
 	BulletMesh->SetGenerateOverlapEvents(true);
 
+	TrailFX = CreateDefaultSubobject<UNiagaraComponent>(TEXT("TrailFX"));
+	TrailFX->SetupAttachment(RootComponent);
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> TrailAsset(
+		TEXT("NiagaraSystem'/Game/MixedVFX/Particles/Projectiles/NS_GalaxyArrow.NS_GalaxyArrow'"));
+	if (TrailAsset.Succeeded()) TrailSystem = TrailAsset.Object;
+	TrailFX->bAutoActivate = false;
+
 	DesactivateBullet();
 	
 
@@ -54,6 +61,14 @@ void ABulletBase::ActivateBullet(FVector position, FVector Direction, float Spee
 
 	SetActorHiddenInGame(false);
 	SetActorEnableCollision(true);
+	if (TrailFX && TrailSystem)
+	{
+		TrailFX->SetAsset(TrailSystem);
+		FLinearColor Color = bIsPlayerBullet ? PlayerTrailColor : EnemyTrailColor;
+		TrailFX->SetColorParameter(FName("Color"), Color);
+		TrailFX->SetColorParameter(FName("User.Color"), Color);
+		TrailFX->Activate(true);
+	}
 }
 void ABulletBase::DesactivateBullet()
 {
@@ -63,5 +78,9 @@ void ABulletBase::DesactivateBullet()
 	SetActorRelativeScale3D(FVector(0.4f));
 	// La mandamos lejos para que no estorbe
 	SetActorLocation(FVector(0, 0, -5000.f));
+	if (TrailFX)
+	{
+		TrailFX->Deactivate();
+	}
 }
 

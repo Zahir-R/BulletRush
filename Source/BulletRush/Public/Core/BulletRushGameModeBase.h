@@ -7,10 +7,8 @@
 #include "BulletRushGameModeBase.generated.h"
 
 class APowerUpManager;
-class APortalManager;
-/**
- * 
- */
+
+
 UCLASS(Blueprintable)
 class BULLETRUSH_API ABulletRushGameModeBase : public AGameModeBase
 {
@@ -20,7 +18,6 @@ public:
 	ABulletRushGameModeBase();
 	virtual void BeginPlay() override;
 
-	APortalManager* APortalManagerRef;
 	static APowerUpManager* SpawnPowerUpsForLevel(UWorld* World, FName LevelName);
 
 	/*
