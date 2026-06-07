@@ -17,7 +17,7 @@ ABloodseekerGameMode::ABloodseekerGameMode()
     BossRef = nullptr;
     BossTrigger = nullptr;
     bBossDied = false;
-    SpawnBossTriggerLocation = FVector(0.0f, 0.0f, 100.0f);
+    SpawnBossTriggerLocation = FVector(900.0f, 0.0f, 100.0f);
  
 }
 

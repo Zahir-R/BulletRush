@@ -1,6 +1,7 @@
 #include "Enemies/Bloodseeker/LineWelderEnemy.h"
 #include "Components/BulletSpawnerComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Engine/World.h"
 
 ALineWelderEnemy::ALineWelderEnemy()
@@ -8,6 +9,17 @@ ALineWelderEnemy::ALineWelderEnemy()
     PrimaryActorTick.bCanEverTick = true;
     bAutoStartAttack = true;
     AttackInterval = 1.5f;
+
+    Speed = 900.0f;
+    StopDistance = 600.0f;
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/Assets/low-poly-spaceship-110/source/Ship1.Ship1'"));
+    if (MeshAsset.Succeeded())
+    {
+        MeshEnemy->SetStaticMesh(MeshAsset.Object);
+        MeshEnemy->SetWorldScale3D(FVector(2.0f));
+    }
+    //GIRO DE MESH
+    MeshRotationOffset = FRotator(0.0f, -90.0f, 0.0f);
 }
 
 void ALineWelderEnemy::BeginPlay()
@@ -23,7 +35,7 @@ void ALineWelderEnemy::BeginPlay()
 void ALineWelderEnemy::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-
+	
     APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
     if (!PlayerPawn) return;
 
@@ -37,6 +49,10 @@ void ALineWelderEnemy::Tick(float DeltaTime)
         Dir.Normalize();
         SetActorLocation(MyLoc + Dir * Speed * DeltaTime);
     }
+    // Rotar suavemente hacia el jugador
+    RotateTowardsPlayer(DeltaTime);
+    
+   
 }
 
 void ALineWelderEnemy::StartAttack()
@@ -66,7 +82,27 @@ void ALineWelderEnemy::OnOverlapPlayer(UPrimitiveComponent* OverlappedComp, AAct
         );
     }
 }
+void ALineWelderEnemy::RotateTowardsPlayer(float DeltaTime)
+{
+    APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+    if (!PlayerPawn) return;
 
+    FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(
+        GetActorLocation(),
+        PlayerPawn->GetActorLocation()
+    );
+    TargetRotation.Pitch = 0.0f;
+    TargetRotation.Roll = 0.0f;
+    TargetRotation.Yaw += MeshRotationOffset.Yaw;
+
+    FRotator NewRotation = FMath::RInterpTo(
+        GetActorRotation(),
+        TargetRotation,
+        DeltaTime,
+        RotationSpeed
+    );
+    SetActorRotation(NewRotation);
+}
 void ALineWelderEnemy::Die()
 {
     Super::Die();

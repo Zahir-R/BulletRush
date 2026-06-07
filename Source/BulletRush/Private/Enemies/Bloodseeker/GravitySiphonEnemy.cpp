@@ -12,6 +12,11 @@
 AGravitySiphonEnemy::AGravitySiphonEnemy()
 {
     PrimaryActorTick.bCanEverTick = true;
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/22_STATION/2_Stacioin_Asset.2_Stacioin_Asset'"));
+    if (MeshAsset.Succeeded()) {
+        MeshEnemy->SetStaticMesh(MeshAsset.Object);
+        MeshEnemy->SetWorldScale3D(FVector(0.9f));
+    }
     bAutoStartAttack = true;
     AttackInterval = 2.0f;
 
