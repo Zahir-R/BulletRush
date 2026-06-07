@@ -8,9 +8,6 @@
 
 class APowerUpManager;
 class APortalManager;
-/**
- * 
- */
 
 
 UCLASS(Blueprintable)

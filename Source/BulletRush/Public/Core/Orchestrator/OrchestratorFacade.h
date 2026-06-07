@@ -4,10 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Components/AudioComponent.h"
+#include "Sound/SoundBase.h"
 #include "OrchestratorFacade.generated.h"
 
 class AOrchestratorGameMode;
 class AEnemyBase;
+class AOrchestrator;
+class ABossArenaTrigger;
 
 UCLASS()
 class BULLETRUSH_API AOrchestratorFacade : public AActor
@@ -40,6 +44,17 @@ public:
 	TSubclassOf<AEnemyBase> SecretGuardianClass;
 
 	bool bSecretPuzzleSolved;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Audio")
+	UAudioComponent* LevelAudioComp;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio|Tracks")
+	USoundBase* ChillMusic;
+
+	AOrchestrator* Boss;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Facade|Triggers")
+	ABossArenaTrigger* TriggerRef;
 
 protected:
 	virtual void BeginPlay() override;

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Enemies/BossBase.h"
+#include "Components/AudioComponent.h"
 #include "Orchestrator.generated.h"
 
 class URhytmConductorComponent;
@@ -30,6 +31,20 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Fisicas")
 	class UPhysicsAsset* PhysicsAsset;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Audio")
+	UAudioComponent* BossAudioComp;
+	UPROPERTY(EditDefaultsOnly, Category = "Music")
+	USoundBase* Phase1Music;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Music")
+	USoundBase* Phase2Music;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Music")
+	USoundBase* Phase3Music;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Music")
+	USoundBase* Phase4Music;
 
 protected:
 	virtual void BeginPlay() override;

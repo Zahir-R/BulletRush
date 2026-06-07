@@ -5,7 +5,10 @@
 #include "Enemies/Orchestrator/Orchestrator.h"
 #include "Enemies/EnemyBase.h"
 #include "Core/Orchestrator/OrchestratorGameMode.h"
+#include "Enemies/Orchestrator/BossArenaTrigger.h"
 #include "Enemies/Bloodseeker/KamikazeEnemy.h"
+#include "Enemies/Orchestrator/SecretGuardian.h"
+#include "Player/PlayingPlayer.h"
 #include "TimerManager.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
@@ -22,12 +25,44 @@ AOrchestratorFacade::AOrchestratorFacade()
 	GuardiansDefeated = 0;
 	TotalGuardiansToSpawn = 3;
 	ReinforcementClass = AKamikazeEnemy::StaticClass();
-	SecretGuardianClass = AKamikazeEnemy::StaticClass();
+	SecretGuardianClass = ASecretGuardian::StaticClass();
+
+	LevelAudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("LevelAudioComp"));
+	RootComponent = LevelAudioComp;
+
+	LevelAudioComp->bAutoActivate = false;
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> AudioChill(TEXT("SoundWave'/Game/ParagonMuriel/OrchestratorMusic/Wav/Orchestrator_Idle.Orchestrator_Idle'"));
+	if (AudioChill.Succeeded())
+	{
+		ChillMusic = AudioChill.Object;
+	}
 }
 
 void AOrchestratorFacade::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (LevelAudioComp && ChillMusic)
+	{
+		LevelAudioComp->SetSound(ChillMusic);
+		LevelAudioComp->FadeIn(2.0f);
+	}
+	if (GetWorld())
+	{
+		AActor* FoundActor = UGameplayStatics::GetActorOfClass(GetWorld(), ABossArenaTrigger::StaticClass());
+
+		if (FoundActor)
+		{
+			// Hacemos un Cast seguro para guardarlo en nuestra variable
+			TriggerRef = Cast<ABossArenaTrigger>(FoundActor);
+			UE_LOG(LogTemp, Warning, TEXT("Fachada: Referencia al Trigger del Jefe encontrada con éxito."));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Fachada: ERROR. No se encontró ningún Trigger del Jefe en el nivel."));
+		}
+	}
 }
 
 void AOrchestratorFacade::HandlePlayerDetected(FVector DetectionLocation)
@@ -75,6 +110,10 @@ void AOrchestratorFacade::ReportGuardianDefeated()
 	{
 		bSecretPuzzleSolved = true;
 		UE_LOG(LogTemp, Warning, TEXT("Fachada: ¡Guardianes derrotados! Nivel 5-1-S completado. Jefe perderá Fase 1."));
+		if (TriggerRef)
+		{
+			TriggerRef->PrepareArena();
+		}
 	}
 }
 
@@ -88,8 +127,21 @@ void AOrchestratorFacade::PrepareBossArena(FTransform BossSpawnTransform)
 
 	if (GetWorld())
 	{
-		AOrchestrator* TheBoss = GetWorld()->SpawnActor<AOrchestrator>(AOrchestrator::StaticClass(), BossSpawnTransform);
+		AOrchestrator* FinalBoss = GetWorld()->SpawnActor<AOrchestrator>(AOrchestrator::StaticClass(), BossSpawnTransform);
+		FinalBoss->SetActorRelativeLocation(FVector::ZeroVector);
+		FinalBoss->SetActorLocation(BossSpawnTransform.GetLocation());
 	}
+	if (AOrchestratorGameMode* GM = Cast<AOrchestratorGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
+	{
+		if (GM->LevelFacade && GM->LevelFacade->LevelAudioComp)
+		{
+			// Apaga la música de exploración/combate en 2 segundos
+			GM->LevelFacade->LevelAudioComp->FadeOut(2.0f, 0.0f);
+		}
+	}
+	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	APlayingPlayer* PlayingPlayer = Cast<APlayingPlayer>(PC->GetPawn());
+	PlayingPlayer->SetActorLocation(FVector(4410.0f, -2710.0f, 50.0f));
 }
 
 void AOrchestratorFacade::SpawnZoneAReinforcements(FVector SpawnOrigin)
@@ -102,7 +154,7 @@ void AOrchestratorFacade::SpawnZoneAReinforcements(FVector SpawnOrigin)
 	// Spawn de 3 enemigos en un triángulo alrededor del jugador
 	for (int i = 0; i < 3; i++)
 	{
-		FVector Offset = FVector(FMath::Cos(i * 120.0f) * 400.0f, FMath::Sin(i * 120.0f) * 400.0f, 0.0f);
+		FVector Offset = FVector(FMath::Cos(i * 120.0f) * 400.0f, FMath::Sin(i * 120.0f) * 400.0f, 650.0f);
 		GetWorld()->SpawnActor<AEnemyBase>(ReinforcementClass, SpawnOrigin + Offset, FRotator::ZeroRotator, SpawnParams);
 	}
 }
@@ -117,14 +169,17 @@ void AOrchestratorFacade::SpawnSecretGuardians()
 	for (int i = 0; i < TotalGuardiansToSpawn; i++)
 	{
 		// Aparecen frente al jugador en la sala de energía
-		//FVector SpawnLoc = GetActorLocation() + FVector(200.0f * i, 300.0f, 0.0f);
 		FVector SpawnLoc = FVector(0.0f, -4730.0f, 500.0f);
 		AEnemyBase* Guardian = GetWorld()->SpawnActor<AEnemyBase>(SecretGuardianClass, SpawnLoc, FRotator::ZeroRotator, SpawnParams);
 
 		if (Guardian)
 		{
-			// Nos suscribimos a su muerte para llevar la cuenta
-			Guardian->HealthComp->OnDeath.AddDynamic(this, &AOrchestratorFacade::ReportGuardianDefeated);
+			// Buscamos su componente de vida y nos suscribimos a su muerte
+			UHealthComponent* HealthComp = Guardian->FindComponentByClass<UHealthComponent>();
+			if (HealthComp)
+			{
+				HealthComp->OnDeath.AddDynamic(this, &AOrchestratorFacade::ReportGuardianDefeated);
+			}
 		}
 	}
 }

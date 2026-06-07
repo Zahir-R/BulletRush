@@ -21,6 +21,6 @@ void USphereAttack::Execute(UBulletSpawnerComponent* Spawner, const FAttackParam
 		FVector Direction(x, y, z);
 		Direction = Direction.GetSafeNormal();
 
-		Spawner->InternalSpawn(Params.Origin, Direction, Params.Speed, Params.Damage);
+		Spawner->InternalSpawn(Params.Origin, Direction, Params.Speed, Params.Damage, Params.Scale);
 	}
 }

@@ -91,7 +91,7 @@ void APlayingPlayer::BeginPlay()
 
 	// TODO: Esto deberia hacer que el jugador muera, redirija al nivel CupHead y resetee el progreso
 	if (HealthComp) HealthComp->OnDeath.AddDynamic(this, &APlayingPlayer::OnPlayerDeath);
-
+	if (HealthComp)	HealthComp->CurrentHealth = HealthComp->MaxHealth;
 	// Weapon 1 Strategy
 
 	UVolleyStrategy* VolleyStrategy =

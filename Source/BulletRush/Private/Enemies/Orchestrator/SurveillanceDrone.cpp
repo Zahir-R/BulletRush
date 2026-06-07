@@ -4,6 +4,7 @@
 #include "Enemies/Orchestrator/SurveillanceDrone.h"
 #include "Components/StealthVisionComponent.h"
 #include "Components/HealthComponent.h"
+#include "Components/BulletSpawnerComponent.h"
 #include "Enemies/Orchestrator/SurveillanceAIControler.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Components/StaticMeshComponent.h"
@@ -19,13 +20,7 @@ ASurveillanceDrone::ASurveillanceDrone()
 	CollisionComp->SetCanEverAffectNavigation(false);
 
 	SetRootComponent(CollisionComp);
-	// Protección de Jerarquía
-	if (MeshEnemy)
-	{
-		MeshEnemy->SetupAttachment(CollisionComp);
-	}
 	
-
 	// 2. ADJUNTAMOS LA MALLA A LA ESFERA
 	MeshEnemy->SetupAttachment(CollisionComp); // <-- Asegúrate de adjuntarlo al CollisionComp
 	MeshEnemy->SetMobility(EComponentMobility::Movable);

@@ -22,7 +22,12 @@ AOrchestrator::AOrchestrator()
 	CollisionComponent->InitCapsuleSize(140.f, 40.f);
 	CollisionComponent->SetCollisionProfileName(TEXT("Pawn"));
 	CollisionComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
-	RootComponent = CollisionComponent;
+	SetRootComponent(CollisionComponent);
+	if (MeshEnemy)
+	{
+		MeshEnemy->DestroyComponent();
+		MeshEnemy = nullptr;
+	}
 
 	static ConstructorHelpers::FObjectFinder<USkeleton> SkelAsset(TEXT("/Game/ParagonMuriel/Characters/Heroes/Muriel/Meshes/Muriel_Skeleton.Muriel_Skeleton"));
 
@@ -63,6 +68,45 @@ AOrchestrator::AOrchestrator()
 	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 	HealthComp->MaxHealth = 4000.0f;
 	HealthComp->SetInvulnerable(false);
+
+	HealthBarWidget->SetupAttachment(RootComponent);
+	HealthBarWidget->SetRelativeLocation(FVector(0.0f, 0.0f, 120.0f));
+	HealthBarWidget->SetWidgetSpace(EWidgetSpace::Screen);
+	HealthBarWidget->SetDrawSize(FVector2D(120.0f, 20.0f));
+	HealthBarWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	// Constructor para música...
+
+	BossAudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("BossAudioComp"));
+	BossAudioComp->SetupAttachment(RootComponent);
+	BossAudioComp->bAutoActivate = false;
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> AudioFase1(TEXT("SoundWave'/Game/ParagonMuriel/OrchestratorMusic/Wav/Orchestrator_Normal.Orchestrator_Normal'"));
+	if (AudioFase1.Succeeded())
+	{
+		Phase1Music = AudioFase1.Object;
+	}
+
+	// Fase 2
+	static ConstructorHelpers::FObjectFinder<USoundBase> AudioFase2(TEXT("SoundWave'/Game/ParagonMuriel/OrchestratorMusic/Wav/Orchestrator_Melancholy.Orchestrator_Melancholy'"));
+	if (AudioFase2.Succeeded())
+	{
+		Phase2Music = AudioFase2.Object;
+	}
+
+	// Fase 3
+	static ConstructorHelpers::FObjectFinder<USoundBase> AudioFase3(TEXT("SoundWave'/Game/ParagonMuriel/OrchestratorMusic/Wav/Orchestrator_Frenetic.Orchestrator_Frenetic'"));
+	if (AudioFase3.Succeeded())
+	{
+		Phase3Music = AudioFase3.Object;
+	}
+
+	// Fase 4
+	static ConstructorHelpers::FObjectFinder<USoundBase> AudioFase4(TEXT("SoundWave'/Game/ParagonMuriel/OrchestratorMusic/Wav/Orchestrator_Furious.Orchestrator_Furious'"));
+	if (AudioFase4.Succeeded())
+	{
+		Phase4Music = AudioFase4.Object;
+	}
 }
 
 void AOrchestrator::BeginPlay()
