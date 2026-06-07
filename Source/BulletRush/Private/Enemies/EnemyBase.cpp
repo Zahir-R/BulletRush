@@ -74,7 +74,28 @@ void AEnemyBase::OnHealthUpdated(float NewHealth)
 	if (Widget)
 	{
 		Widget->SetHealthPercent(NewHealth / HealthComp->MaxHealth);
+
+		if (IsBoss())
+		{
+			Widget->SetIsBoss(true);
+			Widget->SetBossName(GetBossDisplayName());
+			Widget->SetHealthBarColor(GetHealthBarColor());
+			Widget->SetHealthBarColorLow(GetHealthBarColorLow());
+		}
+
+		HealthBarWidget->SetDrawSize(GetHealthBarSize());
+		HealthBarWidget->SetRelativeLocation(FVector(0.f, 0.f, GetHealthBarVerticalOffset()));
 	}
+}
+
+FLinearColor AEnemyBase::GetHealthBarColor() const
+{
+	return FLinearColor(0.f, 0.8f, 0.2f, 1.f);
+}
+
+FLinearColor AEnemyBase::GetHealthBarColorLow() const
+{
+	return FLinearColor(1.f, 0.2f, 0.2f, 1.f);
 }
 
 float AEnemyBase::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)

@@ -11,8 +11,6 @@ UBossStateAttacking::UBossStateAttacking()
 
 void UBossStateAttacking::EnterState(ABossBase* Boss)
 {
-	Boss->HealthComp->SetInvulnerable(false);
-
 	if (Boss->bHasTransitioned)
 	{
 		Boss->AttackIdentifier = 1;

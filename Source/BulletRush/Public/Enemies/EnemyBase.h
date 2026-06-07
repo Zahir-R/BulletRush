@@ -87,4 +87,12 @@ public:
 
 	// Apply repulsion from nearby enemies and return the adjusted location
 	FVector ApplyEnemySeparation(const FVector& DesiredLocation) const;
+
+	virtual FLinearColor GetHealthBarColor() const;
+	virtual FLinearColor GetHealthBarColorLow() const;
+	virtual FVector2D GetHealthBarSize() const { return FVector2D(120.f, 20.f); }
+	virtual bool IsBoss() const { return false; }
+	virtual FString GetBossDisplayName() const { return TEXT(""); }
+	virtual bool ShouldShowBossName() const { return false; }
+	virtual float GetHealthBarVerticalOffset() const { return 120.f; }
 };

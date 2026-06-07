@@ -25,7 +25,7 @@ ABulletBase::ABulletBase()
 	BulletMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	BulletMesh->SetCollisionResponseToAllChannels(ECR_Overlap);
 	BulletMesh->SetGenerateOverlapEvents(true);
-
+	
 	TrailFX = CreateDefaultSubobject<UNiagaraComponent>(TEXT("TrailFX"));
 	TrailFX->SetupAttachment(RootComponent);
 	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> TrailAsset(
