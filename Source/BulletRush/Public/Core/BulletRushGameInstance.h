@@ -58,5 +58,8 @@ public:
 	ELevelState Level2State = ELevelState::Normal;
 
 	UPROPERTY()
+	ELevelState ChronostasisState = ELevelState::Normal;
+
+	UPROPERTY()
 	bool bVaultKeeperWeakened = false;
 };

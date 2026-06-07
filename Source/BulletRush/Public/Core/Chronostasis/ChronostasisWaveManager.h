@@ -5,7 +5,6 @@
 #include "ChronostasisWaveManager.generated.h"
 
 class AEnemyBase;
-class AChronostasisFacade;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnWaveEnemyKilled, AEnemyBase*);
 
@@ -14,7 +13,7 @@ class UChronostasisWaveManager : public UObject
 {
     GENERATED_BODY()
 public:
-    void Initialize(AChronostasisFacade* Owner, const TArray<FWaveConfig>& DefaultWaves);
+    void Initialize(AActor* Owner, const TArray<FWaveConfig>& DefaultWaves);
 
     void StartGame();
     void StartSecretWaves(const TArray<FWaveConfig>& NewWaves);
@@ -42,7 +41,7 @@ private:
     int32 RemainingEnemiesInWave;
 
     UPROPERTY()
-    AChronostasisFacade* OwnerFacade;
+    AActor* OwnerActor;
 
     UPROPERTY()
     UChronostasisFactoryEnemy* DroneFactory;

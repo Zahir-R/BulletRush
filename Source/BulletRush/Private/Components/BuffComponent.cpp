@@ -11,6 +11,7 @@ UBuffComponent::UBuffComponent()
 
 void UBuffComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
 {
+	if (!GetWorld()) return;
 	for (FActiveDecorator& Active : ActiveDecorators)
 	{
 		if (Active.Timer.IsValid())
@@ -72,6 +73,18 @@ UPlayerStatsDecorator* UBuffComponent::ApplyBuff(TSubclassOf<UPlayerStatsDecorat
 	return NewDecorator;
 }
 
+void UBuffComponent::RemoveAllDecorators()
+{
+	for (int32 i = ActiveDecorators.Num() - 1; i >= 0; --i)
+	{
+		if (ActiveDecorators[i].Decorator)
+		{
+			RemoveDecorator(ActiveDecorators[i].Decorator);
+		}
+	}
+	ActiveDecorators.Empty();
+}
+
 void UBuffComponent::RemoveDecorator(UPlayerStatsDecorator* Decorator)
 {
 	APlayingPlayer* Player = Cast<APlayingPlayer>(GetOwner());
@@ -98,6 +111,7 @@ void UBuffComponent::RemoveDecorator(UPlayerStatsDecorator* Decorator)
 	{
 		if (ActiveDecorators[i].Decorator == Decorator)
 		{
+			if (!GetWorld()) return;
 			GetWorld()->GetTimerManager().ClearTimer(ActiveDecorators[i].Timer);
 			ActiveDecorators.RemoveAt(i);
 			break;

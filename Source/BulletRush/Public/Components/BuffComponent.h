@@ -34,6 +34,9 @@ public:
     // Check whether any decorator of the given class is active
     bool HasDecoratorOfClass(TSubclassOf<UPlayerStatsDecorator> DecoratorClass) const;
 
+    // Remove all active decorators, clearing buff chain
+    void RemoveAllDecorators();
+
 protected:
     virtual void OnComponentDestroyed(bool bDestroyingHierarchy) override;
 

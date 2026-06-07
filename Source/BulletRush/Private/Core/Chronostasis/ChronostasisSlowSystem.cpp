@@ -1,14 +1,13 @@
 #include "Core/Chronostasis/ChronostasisSlowSystem.h"
-#include "Core/Chronostasis/ChronostasisFacade.h"
 #include "Components/BuffComponent.h"
 #include "Buffs/SlowDecorator.h"
 #include "TimerManager.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 
-void UChronostasisSlowSystem::Initialize(AChronostasisFacade* Owner)
+void UChronostasisSlowSystem::Initialize(AActor* Owner)
 {
-    OwnerFacade = Owner;
+    OwnerActor = Owner;
     SlowTriggerCount = 0;
 }
 
@@ -20,10 +19,10 @@ void UChronostasisSlowSystem::Start()
 
 void UChronostasisSlowSystem::StartTimer()
 {
-    UWorld* World = OwnerFacade ? OwnerFacade->GetWorld() : nullptr;
+    UWorld* World = OwnerActor ? OwnerActor->GetWorld() : nullptr;
     if (World)
     {
-        World->GetTimerManager().SetTimer(SlowTimerHandle, this, &UChronostasisSlowSystem::OnTimerExpired, 15.0f, false);
+        World->GetTimerManager().SetTimer(SlowTimerHandle, this, &UChronostasisSlowSystem::OnTimerExpired, 5.0f, false);
     }
 }
 
@@ -31,7 +30,7 @@ void UChronostasisSlowSystem::OnTimerExpired()
 {
     SlowTriggerCount++;
 
-    UWorld* World = OwnerFacade ? OwnerFacade->GetWorld() : nullptr;
+    UWorld* World = OwnerActor ? OwnerActor->GetWorld() : nullptr;
     APawn* PlayerPawn = World ? UGameplayStatics::GetPlayerPawn(World, 0) : nullptr;
     if (PlayerPawn)
     {
@@ -48,7 +47,7 @@ void UChronostasisSlowSystem::OnTimerExpired()
 
 void UChronostasisSlowSystem::Stop()
 {
-    UWorld* World = OwnerFacade ? OwnerFacade->GetWorld() : nullptr;
+    UWorld* World = OwnerActor ? OwnerActor->GetWorld() : nullptr;
     if (World)
     {
         World->GetTimerManager().ClearTimer(SlowTimerHandle);
@@ -58,7 +57,7 @@ void UChronostasisSlowSystem::Stop()
 
 void UChronostasisSlowSystem::ResetOnKill()
 {
-    UWorld* World = OwnerFacade ? OwnerFacade->GetWorld() : nullptr;
+    UWorld* World = OwnerActor ? OwnerActor->GetWorld() : nullptr;
     if (World)
     {
         World->GetTimerManager().ClearTimer(SlowTimerHandle);
