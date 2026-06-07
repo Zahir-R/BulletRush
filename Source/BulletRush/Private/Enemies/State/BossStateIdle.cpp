@@ -4,6 +4,7 @@
 #include "Components/HealthComponent.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
+#include "UObject/WeakObjectPtr.h"
 
 UBossStateIdle::UBossStateIdle()
 {
@@ -13,9 +14,13 @@ void UBossStateIdle::EnterState(ABossBase* Boss)
 {
 	if (!Boss->HasActiveWeakPoints())
 	{
-		Boss->GetWorld()->GetTimerManager().SetTimer(Boss->IntroTimer, [Boss]()
+		TWeakObjectPtr<ABossBase> WeakBoss(Boss);
+		Boss->GetWorld()->GetTimerManager().SetTimer(Boss->IntroTimer, [WeakBoss]()
 		{
-			if (Boss) Boss->ChangeState(Boss->AttackingState);
+			if (ABossBase* StrongBoss = WeakBoss.Get())
+			{
+				StrongBoss->ChangeState(StrongBoss->AttackingState);
+			}
 		}, 0.1f, false);
 	}
 }
