@@ -13,8 +13,11 @@ public:
 
     void ApplySpeedBuff(float Duration, float FireRateMult, float ProjectileSpeedMult);
 
+    virtual void Tick(float DeltaTime) override;
+
 protected:
     void RemoveSpeedBuff();
 
     bool bSpeedBuffBaselineSaved = false;
+    float RotationSpeed = 5.0f;
 };

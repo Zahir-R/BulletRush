@@ -1,5 +1,4 @@
 #include "Core/Chronostasis/ChronostasisWaveManager.h"
-#include "Core/Chronostasis/ChronostasisFacade.h"
 #include "Core/Chronostasis/GenericEnemyFactory.h"
 #include "Enemies/EnemyBase.h"
 #include "Enemies/Chronostasis/ChronostasisDrone.h"
@@ -10,9 +9,9 @@
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 
-void UChronostasisWaveManager::Initialize(AChronostasisFacade* Owner, const TArray<FWaveConfig>& DefaultWaves)
+void UChronostasisWaveManager::Initialize(AActor* Owner, const TArray<FWaveConfig>& DefaultWaves)
 {
-    OwnerFacade = Owner;
+    OwnerActor = Owner;
     Waves = DefaultWaves;
     CurrentWaveIndex = 0;
     RemainingEnemiesInWave = 0;
@@ -59,14 +58,14 @@ void UChronostasisWaveManager::StartWave(int32 Index)
     CurrentWaveIndex = Index;
     const FWaveConfig& Cfg = Waves[Index];
 
-    UWorld* World = OwnerFacade ? OwnerFacade->GetWorld() : nullptr;
+    UWorld* World = OwnerActor ? OwnerActor->GetWorld() : nullptr;
     if (!World) return;
 
     // Compute 5 pentagram points centred on the player
     APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(World, 0);
     FVector Center = PlayerPawn ? PlayerPawn->GetActorLocation() : FVector::ZeroVector;
 
-    const float Radius = 400.0f;
+    const float Radius = 800.0f;
     TArray<FVector> PentagramPoints;
     for (int32 i = 0; i < 5; i++)
     {

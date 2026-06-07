@@ -121,4 +121,5 @@ protected:
 	int32 MaxLinkers = 3;
 
 	TArray<TArray<FAttackStep>> AttackCombos;
+	float RotationSpeed = 5.0f;
 };

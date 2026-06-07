@@ -1,5 +1,4 @@
 #include "Core/Chronostasis/ChronostasisBossManager.h"
-#include "Core/Chronostasis/ChronostasisFacade.h"
 #include "Core/Chronostasis/GenericEnemyFactory.h"
 #include "Enemies/Chronostasis/ChronostasisCharger.h"
 #include "Enemies/Chronostasis/ChronostasisLinker.h"
@@ -13,9 +12,9 @@
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 
-void UChronostasisBossManager::Initialize(AChronostasisFacade* Owner, TSubclassOf<ASerXBoss> BossClass, const FVector& SpawnLocation)
+void UChronostasisBossManager::Initialize(AActor* Owner, TSubclassOf<ASerXBoss> BossClass, const FVector& SpawnLocation)
 {
-    OwnerFacade = Owner;
+    OwnerActor = Owner;
     SerXBossClass = BossClass ? BossClass : ASerXBoss::StaticClass();
     BossArenaSpawnLocation = SpawnLocation;
 
@@ -29,7 +28,7 @@ void UChronostasisBossManager::Initialize(AChronostasisFacade* Owner, TSubclassO
 
 void UChronostasisBossManager::StartBossFight()
 {
-    UWorld* World = OwnerFacade ? OwnerFacade->GetWorld() : nullptr;
+    UWorld* World = OwnerActor ? OwnerActor->GetWorld() : nullptr;
     if (!World || !SerXBossClass) return;
 
     FActorSpawnParameters Params;
@@ -55,7 +54,7 @@ void UChronostasisBossManager::StartBossFight()
 
 void UChronostasisBossManager::OnBossKilled(AEnemyBase* Boss)
 {
-    UWorld* World = OwnerFacade ? OwnerFacade->GetWorld() : nullptr;
+    UWorld* World = OwnerActor ? OwnerActor->GetWorld() : nullptr;
     if (World)
     {
         APlayerController* PC = UGameplayStatics::GetPlayerController(World, 0);

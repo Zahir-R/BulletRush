@@ -11,6 +11,8 @@
 #include "Components/BulletSpawnerComponent.h"
 #include "Components/HealthComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "UObject/ConstructorHelpers.h"
 #include "Engine/World.h"
 
 ASerXBoss::ASerXBoss()
@@ -32,8 +34,11 @@ ASerXBoss::ASerXBoss()
 	SeekStrat = Cast<USeekMovement>(MovementStrategy);
 	if (SeekStrat) SeekStrat->Speed = 4000.0f;
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cone.Shape_Cone'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/Assets/ChronoEnemies/Boss/Nebula_Voyager_boss_texture.Nebula_Voyager_boss_texture'"));
 	if (MeshAsset.Succeeded()) MeshEnemy->SetStaticMesh(MeshAsset.Object);
+
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> MaterialAsset(TEXT("Material'/Game/Assets/ChronoEnemies/Boss/M_Nebula_Voyager_boss.M_Nebula_Voyager_boss'"));
+	if (MaterialAsset.Succeeded()) MeshEnemy->SetMaterial(0, MaterialAsset.Object);
 }
 
 void ASerXBoss::BeginPlay()
@@ -117,6 +122,21 @@ void ASerXBoss::Tick(float DeltaTime)
 		NewPos = ApplyEnemySeparation(NewPos);
 		SetActorLocation(NewPos);
 	}
+	Super::Tick(DeltaTime);
+	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+
+	if (PlayerPawn)
+	{
+		FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), PlayerPawn->GetActorLocation());
+		TargetRotation.Roll = 0.0f;
+		TargetRotation.Yaw += 180.0f;
+		TargetRotation.Pitch *= -1.0f;
+
+		FRotator CurrRotation = GetActorRotation();
+		FRotator SmoothRotation = UKismetMathLibrary::RInterpTo(CurrRotation, TargetRotation, DeltaTime, RotationSpeed);
+		SetActorRotation(SmoothRotation);
+	}
+
 }
 
 void ASerXBoss::BeginDestroy()
