@@ -32,7 +32,7 @@ AOrchestratorFacade::AOrchestratorFacade()
 
 	LevelAudioComp->bAutoActivate = false;
 
-	static ConstructorHelpers::FObjectFinder<USoundBase> AudioChill(TEXT("SoundWave'/Game/ParagonMuriel/OrchestratorMusic/Orchestrator_Idle.Orchestrator_Idle'"));
+	static ConstructorHelpers::FObjectFinder<USoundBase> AudioChill(TEXT("SoundWave'/Game/ParagonMuriel/OrchestratorMusic/Wav/Orchestrator_Idle.Orchestrator_Idle'"));
 	if (AudioChill.Succeeded())
 	{
 		ChillMusic = AudioChill.Object;

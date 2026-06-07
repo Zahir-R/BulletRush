@@ -70,28 +70,28 @@ AOrchestrator::AOrchestrator()
 	BossAudioComp->SetupAttachment(RootComponent);
 	BossAudioComp->bAutoActivate = false;
 
-	static ConstructorHelpers::FObjectFinder<USoundBase> AudioFase1(TEXT("SoundWave'/Game/ParagonMuriel/OrchestratorMusic/Orchestrator_Normal.Orchestrator_Normal'"));
+	static ConstructorHelpers::FObjectFinder<USoundBase> AudioFase1(TEXT("SoundWave'/Game/ParagonMuriel/OrchestratorMusic/Wav/Orchestrator_Normal.Orchestrator_Normal'"));
 	if (AudioFase1.Succeeded())
 	{
 		Phase1Music = AudioFase1.Object;
 	}
 
 	// Fase 2
-	static ConstructorHelpers::FObjectFinder<USoundBase> AudioFase2(TEXT("SoundWave'/Game/ParagonMuriel/OrchestratorMusic/Orchestrator_Melancholy.Orchestrator_Melancholy'"));
+	static ConstructorHelpers::FObjectFinder<USoundBase> AudioFase2(TEXT("SoundWave'/Game/ParagonMuriel/OrchestratorMusic/Wav/Orchestrator_Melancholy.Orchestrator_Melancholy'"));
 	if (AudioFase2.Succeeded())
 	{
 		Phase2Music = AudioFase2.Object;
 	}
 
 	// Fase 3
-	static ConstructorHelpers::FObjectFinder<USoundBase> AudioFase3(TEXT("SoundWave'/Game/ParagonMuriel/OrchestratorMusic/Orchestrator_Frenetic.Orchestrator_Frenetic'"));
+	static ConstructorHelpers::FObjectFinder<USoundBase> AudioFase3(TEXT("SoundWave'/Game/ParagonMuriel/OrchestratorMusic/Wav/Orchestrator_Frenetic.Orchestrator_Frenetic'"));
 	if (AudioFase3.Succeeded())
 	{
 		Phase3Music = AudioFase3.Object;
 	}
 
 	// Fase 4
-	static ConstructorHelpers::FObjectFinder<USoundBase> AudioFase4(TEXT("SoundWave'/Game/ParagonMuriel/OrchestratorMusic/Orchestrator_Furious.Orchestrator_Furious'"));
+	static ConstructorHelpers::FObjectFinder<USoundBase> AudioFase4(TEXT("SoundWave'/Game/ParagonMuriel/OrchestratorMusic/Wav/Orchestrator_Furious.Orchestrator_Furious'"));
 	if (AudioFase4.Succeeded())
 	{
 		Phase4Music = AudioFase4.Object;
