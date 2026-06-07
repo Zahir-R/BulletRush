@@ -9,6 +9,7 @@ class APortalTrigger;
 class UChronostasisWaveManager;
 class UChronostasisSlowSystem;
 class AEnemyBase;
+class USoundBase;
 
 UCLASS()
 class BULLETRUSH_API AChronostasisSecretFacade : public AActor
@@ -53,11 +54,20 @@ private:
 	UPROPERTY()
 	APortalTrigger* PortalBossTrigger = nullptr;
 
+	UPROPERTY(EditAnywhere, Category = "Music")
+	USoundBase* AmbientSong;
+
+	UPROPERTY(EditAnywhere, Category = "Music")
+	USoundBase* CombatSong;
+
+	UPROPERTY(EditAnywhere, Category = "Music")
+	float CombatStartOffset = 11.3f;
+
 	UPROPERTY(EditAnywhere, Category = "Waves")
 	TArray<FWaveConfig> Waves;
 
 	FTimerHandle CountdownTimerHandle;
 	FTimerHandle AutoTeleportTimer;
-	float TimeRemaining = 120.0f;
+	float TimeRemaining = 10.0f;
 	bool bLevelComplete = false;
 };

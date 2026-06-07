@@ -13,11 +13,12 @@ void UBossStateIntro::EnterState(ABossBase* Boss)
 {
 	Boss->HealthComp->SetInvulnerable(true);
 
-	Boss->GetWorld()->GetTimerManager().SetTimer(Boss->IntroTimer, [Boss]()
+	TWeakObjectPtr<ABossBase> WeakBoss(Boss);
+	Boss->GetWorld()->GetTimerManager().SetTimer(Boss->IntroTimer, [WeakBoss]()
 	{
-		if (Boss)
+		if (ABossBase* StrongBoss = WeakBoss.Get())
 		{
-			Boss->ChangeState(Boss->IdleState);
+			StrongBoss->ChangeState(StrongBoss->IdleState);
 		}
 	}, 2.0f, false);
 }

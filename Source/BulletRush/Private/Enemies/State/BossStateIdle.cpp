@@ -14,6 +14,8 @@ void UBossStateIdle::EnterState(ABossBase* Boss)
 {
 	if (!Boss->HasActiveWeakPoints())
 	{
+		Boss->SetInvulnerable(false);
+
 		TWeakObjectPtr<ABossBase> WeakBoss(Boss);
 		Boss->GetWorld()->GetTimerManager().SetTimer(Boss->IntroTimer, [WeakBoss]()
 		{

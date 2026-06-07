@@ -73,6 +73,17 @@ void ABossBase::BeginPlay()
 
 }
 
+void ABossBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(IntroTimer);
+		World->GetTimerManager().ClearTimer(StunnedTimer);
+		World->GetTimerManager().ClearTimer(PhaseTransitionTimer);
+	}
+	Super::EndPlay(EndPlayReason);
+}
+
 void ABossBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);

@@ -12,6 +12,7 @@ class UChronostasisSlowSystem;
 class URequirementManager;
 class UHealthComponent;
 class AEnemyBase;
+class USoundBase;
 
 UCLASS()
 class BULLETRUSH_API AChronostasisNormalFacade : public APublisher
@@ -69,6 +70,15 @@ private:
 
 	UFUNCTION()
 	void OnPlayerHealthChanged(float NewHealth);
+
+	UPROPERTY(EditAnywhere, Category = "Music")
+	USoundBase* AmbientSong;
+
+	UPROPERTY(EditAnywhere, Category = "Music")
+	USoundBase* CombatSong;
+
+	UPROPERTY(EditAnywhere, Category = "Music")
+	float CombatStartOffset = 11.3f;
 
 	UPROPERTY(EditAnywhere, Category = "Waves")
 	TArray<FWaveConfig> Waves;

@@ -46,6 +46,8 @@ public:
     virtual void Die() override;
     virtual void ChangeState(UBossState* NewState) override;
 
+    virtual FString GetBossDisplayName() const override { return TEXT("BLOODSEEKER"); }
+
     // Estado Ultimate (Maldición del Sangrado)
     UPROPERTY()
     UBossStateUltimate* UltimateState;
