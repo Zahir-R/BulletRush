@@ -33,6 +33,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	int32 ActiveWeakPoints;
 
@@ -104,4 +105,13 @@ public:
 	void Die() override;
 	APortalManager* PortalManagerRef;
 	bool HasActiveWeakPoints() const { return ActiveWeakPoints > 0; }
+
+	// Boss health bar defaults (matching VaultKeeper behavior)
+	virtual bool IsBoss() const override { return true; }
+	virtual bool ShouldShowBossName() const override { return true; }
+	virtual FString GetBossDisplayName() const override { return TEXT("BOSS"); }
+	virtual FLinearColor GetHealthBarColor() const override { return FLinearColor(0.9f, 0.1f, 0.1f); }
+	virtual FLinearColor GetHealthBarColorLow() const override { return FLinearColor(1.f, 0.f, 0.f); }
+	virtual FVector2D GetHealthBarSize() const override { return FVector2D(400.f, 50.f); }
+	virtual float GetHealthBarVerticalOffset() const override { return 250.f; }
 };

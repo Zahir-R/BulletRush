@@ -14,12 +14,21 @@
 #include "Map/PortalTrigger.h"
 #include "Components/HealthComponent.h"
 #include "Player/PlayingPlayer.h"
+#include "Subsystems/MusicManagerSubsystem.h"
+#include "Sound/SoundBase.h"
+#include "UObject/ConstructorHelpers.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 
 AChronostasisNormalFacade::AChronostasisNormalFacade()
 {
 	PrimaryActorTick.bCanEverTick = false;
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> AmbientFinder(TEXT("SoundWave'/Game/Audio/Ambient.Ambient'"));
+	if (AmbientFinder.Succeeded()) AmbientSong = AmbientFinder.Object;
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> CombatFinder(TEXT("SoundWave'/Game/Audio/Combat.Combat'"));
+	if (CombatFinder.Succeeded()) CombatSong = CombatFinder.Object;
 
 	FWaveConfig NW1; NW1.DroneCount = 3; NW1.MassCount = 2;
 	FWaveConfig NW2; NW2.DroneCount = 3; NW2.MassCount = 1; NW2.ExpansiveCount = 1;
@@ -66,6 +75,14 @@ void AChronostasisNormalFacade::BeginPlay()
 
 void AChronostasisNormalFacade::StartLevel()
 {
+	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+	{
+		float StartTime = CombatStartOffset;
+		if (Music->IsPositionSaved())
+			StartTime = Music->ConsumeSavedPosition();
+		Music->PlaySong(CombatSong, StartTime, 2.0f, true);
+	}
+
 	WaveManager->SetWaves(Waves);
 	SlowSystem->Start();
 	WaveManager->StartGame();
@@ -117,6 +134,9 @@ void AChronostasisNormalFacade::OnAllWavesComplete()
 	UWorld* World = GetWorld();
 	if (!World) return;
 
+	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+		Music->TransitionTo(AmbientSong, 3.0f, 0.5f, 0.0f);
+
 	World->GetTimerManager().ClearAllTimersForObject(this);
 	SlowSystem->Stop();
 
@@ -154,11 +174,15 @@ void AChronostasisNormalFacade::ActivateSecretPortal()
 
 void AChronostasisNormalFacade::OnBossPortalTriggered()
 {
+	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+		Music->SavePlaybackPosition();
 	TravelToMap(FName("Map_03Boss"), ELevelState::Boss);
 }
 
 void AChronostasisNormalFacade::OnSecretPortalTriggered()
 {
+	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+		Music->SavePlaybackPosition();
 	TravelToMap(FName("Map_03Boss"), ELevelState::Secret);
 }
 

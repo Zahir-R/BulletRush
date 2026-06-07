@@ -22,11 +22,12 @@ void UBossStateAttacking::EnterState(ABossBase* Boss)
 
 	Boss->Attack();
 
-	Boss->GetWorld()->GetTimerManager().SetTimer(Boss->AttackLoopTimer, [Boss]()
+	TWeakObjectPtr<ABossBase> WeakBoss(Boss);
+	Boss->GetWorld()->GetTimerManager().SetTimer(Boss->AttackLoopTimer, [WeakBoss]()
 	{
-		if (Boss)
+		if (ABossBase* StrongBoss = WeakBoss.Get())
 		{
-			Boss->Attack();
+			StrongBoss->Attack();
 		}
 	}, Boss->AttackInterval, true);
 }

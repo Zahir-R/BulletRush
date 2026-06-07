@@ -4,10 +4,16 @@
 #include "Core/TopDownGameMode.h"
 #include "Player/TopDownPlayer.h"
 #include "Map/PortalManager.h"
+#include "Subsystems/MusicManagerSubsystem.h"
+#include "Sound/SoundBase.h"
+#include "UObject/ConstructorHelpers.h"
 
 ATopDownGameMode::ATopDownGameMode()
 {
 	DefaultPawnClass = ATopDownPlayer::StaticClass();
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> AmbientFinder(TEXT("SoundWave'/Game/Audio/Ambient.Ambient'"));
+	if (AmbientFinder.Succeeded()) AmbientSong = AmbientFinder.Object;
 }
 
 void ATopDownGameMode::BeginPlay()
@@ -23,4 +29,7 @@ void ATopDownGameMode::BeginPlay()
 	if (PortalManager) {
 		PortalManager->SpawnPortalesCupHead();
 	}
+
+	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+		Music->PlaySong(AmbientSong, 0.0f, 5.0f);
 }

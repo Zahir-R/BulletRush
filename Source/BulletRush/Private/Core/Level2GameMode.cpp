@@ -8,6 +8,7 @@
 #include "Player/PlayingPlayer.h"
 #include "Kismet/GameplayStatics.h"
 #include "Core/BulletRushGameInstance.h"
+#include "Subsystems/MusicManagerSubsystem.h"
 
 ALevel2GameMode::ALevel2GameMode()
 {
@@ -68,8 +69,20 @@ void ALevel2GameMode::DetectAndActivateFacade()
         break;
     }
 }
+void ALevel2GameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    APlayingPlayer* Player = Cast<APlayingPlayer>(UGameplayStatics::GetPlayerPawn(this, 0));
+    if (Player && Player->HealthComp)
+        Player->HealthComp->OnDeath.RemoveDynamic(this, &ALevel2GameMode::OnPlayerDeath);
+
+    Super::EndPlay(EndPlayReason);
+}
+
 void ALevel2GameMode::OnPlayerDeath()
 {
+    if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+        Music->NotifyLevelTravel();
+
     UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
     if (!GI) return;
 

@@ -9,6 +9,7 @@ class ASerXBoss;
 class UChronostasisFactoryEnemy;
 class UGenericEnemyFactory;
 class AEnemyBase;
+class USoundBase;
 
 UCLASS()
 class BULLETRUSH_API AChronostasisBossFacade : public AActor
@@ -32,6 +33,15 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Portals")
 	FVector PortalLocation = FVector(0.0f, 0.0f, 100.0f);
+
+	UPROPERTY(EditAnywhere, Category = "Music")
+	USoundBase* AmbientSong;
+
+	UPROPERTY(EditAnywhere, Category = "Music")
+	USoundBase* CombatSong;
+
+	UPROPERTY(EditAnywhere, Category = "Music")
+	float CombatStartOffset = 11.3f;
 
 private:
 	void SpawnBoss();

@@ -23,6 +23,8 @@ class BULLETRUSH_API AOrchestrator : public ABossBase
 public:
 	AOrchestrator();
 
+	virtual FString GetBossDisplayName() const override { return TEXT("ORCHESTRATOR"); }
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componentes")
 	class UCapsuleComponent* CollisionComponent;
 

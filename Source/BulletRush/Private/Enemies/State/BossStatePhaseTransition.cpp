@@ -21,13 +21,14 @@ void UBossStatePhaseTransition::EnterState(ABossBase* Boss)
 
 	Boss->AttackIdentifier++;
 
-	Boss->GetWorld()->GetTimerManager().SetTimer(Boss->PhaseTransitionTimer, [Boss]()
+	TWeakObjectPtr<ABossBase> WeakBoss(Boss);
+	Boss->GetWorld()->GetTimerManager().SetTimer(Boss->PhaseTransitionTimer, [WeakBoss]()
 	{
-		if (Boss)
+		if (ABossBase* StrongBoss = WeakBoss.Get())
 		{
-			Boss->bHasTransitioned = true;
-			Boss->SetInvulnerable(false);
-			Boss->ChangeState(Boss->AttackingState);
+			StrongBoss->bHasTransitioned = true;
+			StrongBoss->SetInvulnerable(false);
+			StrongBoss->ChangeState(StrongBoss->AttackingState);
 		}
 	}, 5.0f, false);
 }
