@@ -86,7 +86,8 @@ void ALevel2GameMode::OnPlayerDeath()
     }
     else
     {
-        // Sin vidas ? resetea estado y vuelve al mapa
+        // Sin vidas → resetea el contador y el estado, luego vuelve al mapa
+        GI->ResetVidas(MapName);
         GI->Level2State = ELevelState::Normal;
         UGameplayStatics::OpenLevel(this, FName("Map_CupHeadMap"));
     }
