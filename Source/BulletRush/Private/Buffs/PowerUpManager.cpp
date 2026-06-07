@@ -31,9 +31,22 @@ void APowerUpManager::SpawnRandomPowerUp()
 		return;
 	}
     UE_LOG(LogTemp, Verbose, TEXT("APowerUpManager::SpawnRandomPowerUp called on %s"), *GetName());
-	SpawnedPowerUps.RemoveAll([](APowerUpBase* P)
+	SpawnedPowerUps.RemoveAll([this](APowerUpBase* P)
 		{
-			return !IsValid(P);
+			if (!IsValid(P))
+			{
+				for (auto It = LifecycleTimers.CreateIterator(); It; ++It)
+				{
+					if (It.Key() == P)
+					{
+						GetWorldTimerManager().ClearTimer(It.Value());
+						It.RemoveCurrent();
+						break;
+					}
+				}
+				return true;
+			}
+			return false;
 		});
 
 	if (!SpawnArea)
@@ -80,14 +93,24 @@ void APowerUpManager::SpawnRandomPowerUp()
 		{
 			FTimerHandle LifeTimer;
 			TWeakObjectPtr<APowerUpBase> WeakPowerUp = NewPowerUp;
-			GetWorldTimerManager().SetTimer(LifeTimer, FTimerDelegate::CreateLambda([this, WeakPowerUp]()
+			GetWorldTimerManager().SetTimer(LifeTimer, FTimerDelegate::CreateLambda([this, WeakPowerUp, LifeTimer]()
 				{
 					if (WeakPowerUp.IsValid() && !WeakPowerUp->IsActorBeingDestroyed())
 					{
 						OnPowerUpCollected(WeakPowerUp.Get());
 						WeakPowerUp->Destroy();
 					}
-					LifecycleTimers.Remove(WeakPowerUp.Get());
+					else
+					{
+						for (auto It = LifecycleTimers.CreateIterator(); It; ++It)
+						{
+							if (It.Value() == LifeTimer)
+							{
+								It.RemoveCurrent();
+								break;
+							}
+						}
+					}
 				}), PowerUpLifetime, false);
 			LifecycleTimers.Add(NewPowerUp, LifeTimer);
 		}
