@@ -12,14 +12,14 @@ ABatteryActor::ABatteryActor()
 {
     PrimaryActorTick.bCanEverTick = false;
 
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/AccuCities/meshes/station.station'"));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/AccuCities/meshes/uasset/mesh/station.station'"));
     BatteryMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BatteryMesh"));
     RootComponent = BatteryMesh;
     if (MeshAsset.Succeeded())
     {
         BatteryMesh->SetStaticMesh(MeshAsset.Object);
     }
-	BatteryMesh->SetRelativeScale3D(FVector(2.5f));
+	BatteryMesh->SetRelativeScale3D(FVector(0.5f));
 
 	BatteryMesh->SetGenerateOverlapEvents(true);
 
