@@ -4,6 +4,7 @@
 #include "../../Public/Subsystems/LevelRoutingSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "../../Public/Core/BulletRushGameInstance.h"
+#include "Subsystems/MusicManagerSubsystem.h"
 
 UBulletRushGameInstance* ULevelRoutingSubsystem::GetBulletRushGameInstance() const
 {
@@ -29,6 +30,10 @@ void ULevelRoutingSubsystem::SolicitarViajeANivel(FName NombreNivelDestino, cons
 		UE_LOG(LogTemp, Warning, TEXT("Navegando al mapa: %s"), *NombreNivelDestino.ToString());
 
 		// guardamos estado antes de viajar si fuera necesario
+		if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+		{
+			Music->NotifyLevelTravel();
+		}
 		//el open level 
 		UGameplayStatics::OpenLevel(WorldContextObject, NombreNivelDestino);
 	}
