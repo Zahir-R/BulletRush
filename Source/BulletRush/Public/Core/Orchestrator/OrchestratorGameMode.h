@@ -20,7 +20,12 @@ public:
 
 	virtual void BeginPlay() override;
 
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 	// Referencia pública a la Fachada para que los actores puedan comunicarse
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Level Progression")
 	AOrchestratorFacade* LevelFacade;
+
+	UFUNCTION()
+	void OnPlayerDeath();
 };

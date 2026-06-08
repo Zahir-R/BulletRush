@@ -147,7 +147,7 @@ void AOrchestrator::BeginPlay()
 
 	if (AOrchestratorGameMode* GM = Cast<AOrchestratorGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
 	{
-		if (GM->LevelFacade && GM->LevelFacade->bSecretPuzzleSolved) // Asegúrate de hacer pública bSecretPuzzleSolved en la fachada
+		if (GM->LevelFacade && GM->LevelFacade->bSecretPuzzleSolved)
 		{
 			bSecretLevelCleared = true;
 		}
@@ -201,16 +201,13 @@ float AOrchestrator::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 	if (DamageAmount <= 0.0f)	return 0.0f;
 
 	//HealthComp->CurrentHealth = HealthComp->CurrentHealth - DamageTaken;
-	HealthComp->TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	UE_LOG(LogTemp, Warning, TEXT("Vida actual del jefe: %f"), HealthComp->CurrentHealth);
-
-	float HealthPercent = HealthComp->CurrentHealth / HealthComp->MaxHealth;
+	float HealthPercent = HealthComp->CurrentHealth-DamageAmount / HealthComp->MaxHealth;
 
 	if (HealthPercent <= 0.0f && GetCurrentBossStateName() == "Phase4_Furious")
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Jefe cambia a estado muerto..."));
-		ChangeState(DeadState);
+		UE_LOG(LogTemp, Warning, TEXT("Orchestrator: Jefe cambia a estado muerto..."));
+		ChangeState(OrcheDeadState);
 	}
 	else if (HealthPercent <= 0.25 && GetCurrentBossStateName() == "Phase3_Frenetic")
 	{
@@ -222,10 +219,12 @@ float AOrchestrator::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 	}
 	else if (HealthPercent <= 0.75f && GetCurrentBossStateName() == "Phase1_Normal")
 	{
-		ChangeState(PhaseTransitionOrcheState); // Luego de la transición, ir a Phase 2
+		ChangeState(PhaseTransitionOrcheState);
 	}
 	
-	
+	HealthComp->TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	UE_LOG(LogTemp, Warning, TEXT("Vida actual del jefe: %f"), HealthComp->CurrentHealth);
 	
 
 	return 0.0f;

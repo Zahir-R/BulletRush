@@ -5,6 +5,7 @@
 #include "Enemies/Orchestrator/Orchestrator.h"
 #include "Components/RhytmConductorComponent.h"
 #include "Components/BulletSpawnerComponent.h"
+#include "Core/BulletRushGameInstance.h"
 #include "Subsystems/ProjectilesSubsystem.h"
 #include "Engine/World.h"
 #include "Engine/GameInstance.h"
@@ -418,6 +419,20 @@ void UOrcheDead::EnterState(ABossBase* Boss)
 {
 	OrchestratorRef = Cast<AOrchestrator>(Boss);
 	OrchestratorRef->BossAudioComp->FadeOut(2.5f, 0.0f);
+
+	UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(OrchestratorRef->GetGameInstance());
+	if (GI)
+	{
+		GI->MarcarMapaCompletado(FName("Map_05Boss"));
+	}
+
+	OrchestratorRef->GetWorld()->GetTimerManager().SetTimer(OrchestratorRef->DeathTimerHandle, [this]()
+		{
+			if (OrchestratorRef)
+			{
+				OrchestratorRef->Die();
+			}
+		}, 3.0f, false);
 }
 
 void UOrcheDead::ExitState(ABossBase* Boss)

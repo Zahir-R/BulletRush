@@ -48,6 +48,16 @@ void ABulletRushHUD::BindToPlayer()
         HC->OnHealthChanged.AddDynamic(this, &ABulletRushHUD::OnPlayerHealthChanged);
         HC->OnDeath.AddDynamic(this, &ABulletRushHUD::OnPlayerDeath);
     }
+
+    if (UGameInstance* GI = GetWorld() ? GetWorld()->GetGameInstance() : nullptr)
+    {
+        if (UBulletRushGameInstance* BRGI = Cast<UBulletRushGameInstance>(GI))
+        {
+            FString LevelName = UGameplayStatics::GetCurrentLevelName(this);
+            CachedLives = BRGI->GetVidasRestantes(FName(*LevelName));
+        }
+    }
+
 }
 
 void ABulletRushHUD::OnPlayerHealthChanged(float NewHealth)
@@ -119,6 +129,14 @@ void ABulletRushHUD::DrawHUD()
 {
     Super::DrawHUD();
 
+    if (!CachedPlayer.IsValid())
+    {
+        BindToPlayer();
+    }
+    if (GetWorld())
+    {
+        TimeAccumulator += GetWorld()->GetDeltaSeconds();
+    }
     // Damage flash overlay
     if (DamageFlashTime > 0.f)
     {

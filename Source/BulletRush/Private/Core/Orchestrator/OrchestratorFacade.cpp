@@ -2,6 +2,7 @@
 
 
 #include "Core/Orchestrator/OrchestratorFacade.h"
+#include "Core/BulletRushGameInstance.h"
 #include "Components/StaticMeshComponent.h"
 #include "Enemies/Orchestrator/Orchestrator.h"
 #include "Enemies/EnemyBase.h"
@@ -63,6 +64,12 @@ void AOrchestratorFacade::BeginPlay()
 		{
 			UE_LOG(LogTemp, Error, TEXT("Fachada: ERROR. No se encontró ningún Trigger del Jefe en el nivel."));
 		}
+	}
+	UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
+	if (GI)
+	{
+		//GI->MarcarMapaCompletado(FName("Map_05Boss"));
+		GI->OrchestratorLState = ELevelState::Normal;
 	}
 }
 
@@ -126,6 +133,11 @@ void AOrchestratorFacade::ReportGeneratorDestroyed()
 					ToDelete->Destroy();
 				}
 			}
+		}
+		UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
+		if (GI)
+		{
+			GI->OrchestratorLState = ELevelState::Secret;
 		}
 		SpawnSecretGuardians();
 	}
@@ -227,6 +239,12 @@ void AOrchestratorFacade::PrepareBossArena(FTransform BossSpawnTransform)
 	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	APlayingPlayer* PlayingPlayer = Cast<APlayingPlayer>(PC->GetPawn());
 	PlayingPlayer->SetActorLocation(FVector(4410.0f, -2710.0f, 50.0f));
+
+	UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
+	if (GI)
+	{
+		GI->OrchestratorLState = ELevelState::Boss;
+	}
 }
 
 void AOrchestratorFacade::SpawnZoneAReinforcements(FVector SpawnOrigin)

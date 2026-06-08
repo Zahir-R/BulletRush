@@ -62,4 +62,8 @@ public:
 
 	UPROPERTY()
 	bool bVaultKeeperWeakened = false;
+
+	// Orchestrator...
+	UPROPERTY()
+	ELevelState OrchestratorLState = ELevelState::Normal;
 };
