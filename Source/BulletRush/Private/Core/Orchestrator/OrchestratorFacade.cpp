@@ -2,6 +2,8 @@
 
 
 #include "Core/Orchestrator/OrchestratorFacade.h"
+#include "Core/BulletRushGameInstance.h"
+#include "Components/StaticMeshComponent.h"
 #include "Enemies/Orchestrator/Orchestrator.h"
 #include "Enemies/EnemyBase.h"
 #include "Core/Orchestrator/OrchestratorGameMode.h"
@@ -63,6 +65,12 @@ void AOrchestratorFacade::BeginPlay()
 			UE_LOG(LogTemp, Error, TEXT("Fachada: ERROR. No se encontró ningún Trigger del Jefe en el nivel."));
 		}
 	}
+	UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
+	if (GI)
+	{
+		//GI->MarcarMapaCompletado(FName("Map_05Boss"));
+		GI->OrchestratorLState = ELevelState::Normal;
+	}
 }
 
 void AOrchestratorFacade::HandlePlayerDetected(FVector DetectionLocation)
@@ -91,6 +99,46 @@ void AOrchestratorFacade::ReportGeneratorDestroyed()
 		// Puzzle resuelto a tiempo
 		GetWorld()->GetTimerManager().ClearTimer(PuzzleTimerHandle);
 		UE_LOG(LogTemp, Warning, TEXT("Fachada: Puzzle a tiempo. Spawneando Guardianes Secretos."));
+		if (GetWorld())
+		{
+			TArray<AActor*> SecretWalls;
+
+			UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("SecretWall"), SecretWalls);
+
+			for (AActor* Wall : SecretWalls)
+			{
+				if (Wall)
+				{
+					// Los hacemos visibles
+					Wall->SetActorHiddenInGame(false);
+					// Les devolvemos la colisión para encerrar al jugador
+					Wall->SetActorEnableCollision(true);
+
+					UStaticMeshComponent* MeshComp = Wall->FindComponentByClass<UStaticMeshComponent>();
+					if (MeshComp)
+					{
+						// Le asignamos el perfil estándar de los muros inamovibles
+						MeshComp->SetCollisionProfileName(TEXT("BlockAll"));
+					}
+				}
+			}
+			TArray<AActor*> Nivel1;
+
+			UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("OrcheNivel1"), Nivel1);
+
+			for (AActor* ToDelete : Nivel1)
+			{
+				if (ToDelete)
+				{
+					ToDelete->Destroy();
+				}
+			}
+		}
+		UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
+		if (GI)
+		{
+			GI->OrchestratorLState = ELevelState::Secret;
+		}
 		SpawnSecretGuardians();
 	}
 }
@@ -99,6 +147,11 @@ void AOrchestratorFacade::FailSecretPuzzle()
 {
 	UE_LOG(LogTemp, Error, TEXT("Fachada: Tiempo agotado. Puzzle 5-1-S fallado."));
 	GeneratorsDestroyed = 0;
+
+	if (TriggerRef)
+	{
+		TriggerRef->PrepareArena();
+	}
 	// Aquí podrías destruir los generadores restantes o bloquear la habitación
 }
 
@@ -130,6 +183,50 @@ void AOrchestratorFacade::PrepareBossArena(FTransform BossSpawnTransform)
 		AOrchestrator* FinalBoss = GetWorld()->SpawnActor<AOrchestrator>(AOrchestrator::StaticClass(), BossSpawnTransform);
 		FinalBoss->SetActorRelativeLocation(FVector::ZeroVector);
 		FinalBoss->SetActorLocation(BossSpawnTransform.GetLocation());
+
+		TArray<AActor*> BossWalls;
+		// Buscamos todos los actores del nivel que tengan la etiqueta "BossWall"
+		UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("BossWall"), BossWalls);
+
+		for (AActor* Wall : BossWalls)
+		{
+			if (Wall)
+			{
+				// Los hacemos visibles
+				Wall->SetActorHiddenInGame(false);
+				// Les devolvemos la colisión para encerrar al jugador
+				Wall->SetActorEnableCollision(true);
+
+				UStaticMeshComponent* MeshComp = Wall->FindComponentByClass<UStaticMeshComponent>();
+				if (MeshComp)
+				{
+					// Le asignamos el perfil estándar de los muros inamovibles
+					MeshComp->SetCollisionProfileName(TEXT("BlockAll"));
+				}
+			}
+
+			TArray<AActor*> Nivel1;
+			TArray<AActor*> NivelS;
+
+			UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("OrcheNivel1"), Nivel1);
+			UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("OrcheNivelS"), NivelS);
+
+			for (AActor* ToDelete : Nivel1)
+			{
+				if (ToDelete)
+				{
+					ToDelete->Destroy();
+				}
+			}
+
+			for (AActor* ToDelete : NivelS)
+			{
+				if (ToDelete)
+				{
+					ToDelete->Destroy();
+				}
+			}
+		}
 	}
 	if (AOrchestratorGameMode* GM = Cast<AOrchestratorGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
 	{
@@ -142,6 +239,12 @@ void AOrchestratorFacade::PrepareBossArena(FTransform BossSpawnTransform)
 	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	APlayingPlayer* PlayingPlayer = Cast<APlayingPlayer>(PC->GetPawn());
 	PlayingPlayer->SetActorLocation(FVector(4410.0f, -2710.0f, 50.0f));
+
+	UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
+	if (GI)
+	{
+		GI->OrchestratorLState = ELevelState::Boss;
+	}
 }
 
 void AOrchestratorFacade::SpawnZoneAReinforcements(FVector SpawnOrigin)
@@ -168,8 +271,10 @@ void AOrchestratorFacade::SpawnSecretGuardians()
 
 	for (int i = 0; i < TotalGuardiansToSpawn; i++)
 	{
-		// Aparecen frente al jugador en la sala de energía
-		FVector SpawnLoc = FVector(0.0f, -4730.0f, 500.0f);
+		// Distribuimos a los guardianes en una línea horizontal (Y) separada por 500 unidades
+		FVector Offset = FVector(0.0f, (i - 1) * 500.0f, 0.0f);
+		FVector SpawnLoc = FVector(0.0f, -4730.0f, 500.0f) + Offset;
+
 		AEnemyBase* Guardian = GetWorld()->SpawnActor<AEnemyBase>(SecretGuardianClass, SpawnLoc, FRotator::ZeroRotator, SpawnParams);
 
 		if (Guardian)

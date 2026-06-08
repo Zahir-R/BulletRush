@@ -2,6 +2,7 @@
 
 
 #include "Enemies/Orchestrator/Orchestrator.h"
+#include "Animation/AnimInstance.h"
 #include "Enemies/State/BossStateBase.h"
 #include "Enemies/State/BossStateDead.h"
 #include "Enemies/Orchestrator/OrchestratorStates.h"
@@ -14,6 +15,7 @@
 #include "Core/Orchestrator/OrchestratorFacade.h"
 #include "Kismet/GameplayStatics.h"
 #include "PhysicsEngine/PhysicsAsset.h"
+#include "AIController.h"
 
 AOrchestrator::AOrchestrator()
 {
@@ -34,6 +36,7 @@ AOrchestrator::AOrchestrator()
 	OrchestMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Jefe Mesh"));
 	OrchestMesh->SetupAttachment(RootComponent);
 	OrchestMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -70.0f));
+	OrchestMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshAsset(TEXT("/Game/ParagonMuriel/Characters/Heroes/Muriel/Meshes/Muriel_GDC.Muriel_GDC"));
 	if (MeshAsset.Succeeded())
@@ -49,6 +52,13 @@ AOrchestrator::AOrchestrator()
 	}
 	OrchestMesh->bCastCapsuleDirectShadow = true;
 	OrchestMesh->bCastCapsuleIndirectShadow = true;
+
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimBP(TEXT("/Game/ParagonMuriel/Characters/Heroes/Muriel/Muriel_AnimBlueprint.Muriel_AnimBlueprint_C"));
+
+	if (AnimBP.Succeeded())
+	{
+		OrchestMesh->SetAnimInstanceClass(AnimBP.Class);
+	}
 
 	TeamTag = FName("Enemy");
 	Tags.Add("Enemigo");
@@ -68,6 +78,7 @@ AOrchestrator::AOrchestrator()
 	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 	HealthComp->MaxHealth = 4000.0f;
 	HealthComp->SetInvulnerable(false);
+	//HealthComp->OnDeath.AddDynamic(this, &AOrchestrator::Die);
 
 	HealthBarWidget->SetupAttachment(RootComponent);
 	HealthBarWidget->SetRelativeLocation(FVector(0.0f, 0.0f, 120.0f));
@@ -107,15 +118,36 @@ AOrchestrator::AOrchestrator()
 	{
 		Phase4Music = AudioFase4.Object;
 	}
+
+	// AI zona
+	MovementComp = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MovementComp"));
+	MovementComp->MaxSpeed = 1500.0f; // Flote majestuoso y lento
+
+	MovementComp->NavAgentProps.bCanWalk = true;
+	MovementComp->NavAgentProps.bCanFly = true;
+	
+	bUseControllerRotationYaw = true;
+	bUseControllerRotationPitch = true;
+	bUseControllerRotationRoll = true;
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	CollisionComponent->SetEnableGravity(false);
+
+	SetActorScale3D(FVector(4.0f));
 }
 
 void AOrchestrator::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (GetController() == nullptr)
+	{
+		SpawnDefaultController();
+	}
+
 	if (AOrchestratorGameMode* GM = Cast<AOrchestratorGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
 	{
-		if (GM->LevelFacade && GM->LevelFacade->bSecretPuzzleSolved) // Asegúrate de hacer pública bSecretPuzzleSolved en la fachada
+		if (GM->LevelFacade && GM->LevelFacade->bSecretPuzzleSolved)
 		{
 			bSecretLevelCleared = true;
 		}
@@ -126,16 +158,39 @@ void AOrchestrator::BeginPlay()
 	Phase3State = NewObject<UOrchestrator_Frenetic>(this);
 	Phase4State = NewObject<UOrchestrator_Furious>(this);
 	IntroOrcheState = NewObject<UOrchestratorIntro>(this);
+	OrcheDeadState = NewObject<UOrcheDead>(this);
 	PhaseTransitionOrcheState = NewObject<UOrchePhaseTransition>(this);
 
 	if (bSecretLevelCleared)
 	{
+		HealthComp->CurrentHealth = HealthComp->MaxHealth;
 		HealthComp->CurrentHealth = HealthComp->MaxHealth * 0.75f;
 		ChangeState(Phase2State);
 	}
 	else
 	{
 		ChangeState(IntroOrcheState);
+	}
+
+	if (AAIController* AI = Cast<AAIController>(GetController()))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AI Controller found"));
+		if (APawn* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
+		{
+			AI->SetFocus(Player);
+		}
+	}
+}
+
+void AOrchestrator::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	if (AAIController* AI = Cast<AAIController>(GetController()))
+	{
+		if (APawn* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
+		{
+			AI->SetFocus(Player);
+		}
 	}
 }
 
@@ -146,15 +201,13 @@ float AOrchestrator::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 	if (DamageAmount <= 0.0f)	return 0.0f;
 
 	//HealthComp->CurrentHealth = HealthComp->CurrentHealth - DamageTaken;
-	HealthComp->TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	UE_LOG(LogTemp, Warning, TEXT("Vida actual del jefe: %f"), HealthComp->CurrentHealth);
-
-	float HealthPercent = HealthComp->CurrentHealth / HealthComp->MaxHealth;
+	float HealthPercent = HealthComp->CurrentHealth-DamageAmount / HealthComp->MaxHealth;
 
 	if (HealthPercent <= 0.0f && GetCurrentBossStateName() == "Phase4_Furious")
 	{
-		ChangeState(DeadState);
+		UE_LOG(LogTemp, Warning, TEXT("Orchestrator: Jefe cambia a estado muerto..."));
+		ChangeState(OrcheDeadState);
 	}
 	else if (HealthPercent <= 0.25 && GetCurrentBossStateName() == "Phase3_Frenetic")
 	{
@@ -166,11 +219,56 @@ float AOrchestrator::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 	}
 	else if (HealthPercent <= 0.75f && GetCurrentBossStateName() == "Phase1_Normal")
 	{
-		ChangeState(PhaseTransitionOrcheState); // Luego de la transición, ir a Phase 2
+		ChangeState(PhaseTransitionOrcheState);
 	}
 	
-	
+	HealthComp->TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	UE_LOG(LogTemp, Warning, TEXT("Vida actual del jefe: %f"), HealthComp->CurrentHealth);
 	
 
 	return 0.0f;
+}
+
+void AOrchestrator::RoamAroundPlayer()
+{
+	if (AAIController* AI = Cast<AAIController>(GetController()))
+	{
+		if (APawn* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
+		{
+			FVector PlayerLoc = Player->GetActorLocation();
+
+			FVector RandomOffset = FMath::VRand() * FMath::RandRange(800.0f, 1500.0f);
+
+			FVector TargetLocation = PlayerLoc + RandomOffset;
+			
+			TargetLocation.X = FMath::Clamp(TargetLocation.X, DownLimits.X, UpperLimits.X);
+			TargetLocation.Y = FMath::Clamp(TargetLocation.Y, DownLimits.Y, UpperLimits.Y);
+			TargetLocation.Z = FMath::Clamp(TargetLocation.Z, DownLimits.Z, UpperLimits.Z);
+
+			// Al ponerlo en FALSE, ignoramos el NavMesh y el jefe vuela libremente en 3D hacia el punto.
+			AI->MoveToLocation(TargetLocation, 100.0f, true, false);
+		}
+	}
+}
+
+void AOrchestrator::ErraticTeleport()
+{
+	if (APawn* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
+	{
+		FVector PlayerLoc = Player->GetActorLocation();
+		
+		FVector RandomOffset = FMath::VRand() * FMath::RandRange(1200.0f, 2000.0f);
+
+
+		FVector NewLoc = PlayerLoc + RandomOffset;
+
+		NewLoc.X = FMath::Clamp(NewLoc.X, DownLimits.X, UpperLimits.X);
+		NewLoc.Y = FMath::Clamp(NewLoc.Y, DownLimits.Y, UpperLimits.Y);
+		NewLoc.Z = FMath::Clamp(NewLoc.Z, DownLimits.Z, UpperLimits.Z);
+
+		SetActorLocation(NewLoc);
+
+		// TODO: Llamar a Niagara para emitir humo/partículas de teletransporte
+	}
 }
