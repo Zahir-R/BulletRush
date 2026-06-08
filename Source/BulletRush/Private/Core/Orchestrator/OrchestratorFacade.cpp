@@ -2,6 +2,7 @@
 
 
 #include "Core/Orchestrator/OrchestratorFacade.h"
+#include "Components/StaticMeshComponent.h"
 #include "Enemies/Orchestrator/Orchestrator.h"
 #include "Enemies/EnemyBase.h"
 #include "Core/Orchestrator/OrchestratorGameMode.h"
@@ -91,6 +92,41 @@ void AOrchestratorFacade::ReportGeneratorDestroyed()
 		// Puzzle resuelto a tiempo
 		GetWorld()->GetTimerManager().ClearTimer(PuzzleTimerHandle);
 		UE_LOG(LogTemp, Warning, TEXT("Fachada: Puzzle a tiempo. Spawneando Guardianes Secretos."));
+		if (GetWorld())
+		{
+			TArray<AActor*> SecretWalls;
+
+			UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("SecretWall"), SecretWalls);
+
+			for (AActor* Wall : SecretWalls)
+			{
+				if (Wall)
+				{
+					// Los hacemos visibles
+					Wall->SetActorHiddenInGame(false);
+					// Les devolvemos la colisión para encerrar al jugador
+					Wall->SetActorEnableCollision(true);
+
+					UStaticMeshComponent* MeshComp = Wall->FindComponentByClass<UStaticMeshComponent>();
+					if (MeshComp)
+					{
+						// Le asignamos el perfil estándar de los muros inamovibles
+						MeshComp->SetCollisionProfileName(TEXT("BlockAll"));
+					}
+				}
+			}
+			TArray<AActor*> Nivel1;
+
+			UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("OrcheNivel1"), Nivel1);
+
+			for (AActor* ToDelete : Nivel1)
+			{
+				if (ToDelete)
+				{
+					ToDelete->Destroy();
+				}
+			}
+		}
 		SpawnSecretGuardians();
 	}
 }
@@ -99,6 +135,11 @@ void AOrchestratorFacade::FailSecretPuzzle()
 {
 	UE_LOG(LogTemp, Error, TEXT("Fachada: Tiempo agotado. Puzzle 5-1-S fallado."));
 	GeneratorsDestroyed = 0;
+
+	if (TriggerRef)
+	{
+		TriggerRef->PrepareArena();
+	}
 	// Aquí podrías destruir los generadores restantes o bloquear la habitación
 }
 
@@ -130,6 +171,50 @@ void AOrchestratorFacade::PrepareBossArena(FTransform BossSpawnTransform)
 		AOrchestrator* FinalBoss = GetWorld()->SpawnActor<AOrchestrator>(AOrchestrator::StaticClass(), BossSpawnTransform);
 		FinalBoss->SetActorRelativeLocation(FVector::ZeroVector);
 		FinalBoss->SetActorLocation(BossSpawnTransform.GetLocation());
+
+		TArray<AActor*> BossWalls;
+		// Buscamos todos los actores del nivel que tengan la etiqueta "BossWall"
+		UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("BossWall"), BossWalls);
+
+		for (AActor* Wall : BossWalls)
+		{
+			if (Wall)
+			{
+				// Los hacemos visibles
+				Wall->SetActorHiddenInGame(false);
+				// Les devolvemos la colisión para encerrar al jugador
+				Wall->SetActorEnableCollision(true);
+
+				UStaticMeshComponent* MeshComp = Wall->FindComponentByClass<UStaticMeshComponent>();
+				if (MeshComp)
+				{
+					// Le asignamos el perfil estándar de los muros inamovibles
+					MeshComp->SetCollisionProfileName(TEXT("BlockAll"));
+				}
+			}
+
+			TArray<AActor*> Nivel1;
+			TArray<AActor*> NivelS;
+
+			UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("OrcheNivel1"), Nivel1);
+			UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("OrcheNivelS"), NivelS);
+
+			for (AActor* ToDelete : Nivel1)
+			{
+				if (ToDelete)
+				{
+					ToDelete->Destroy();
+				}
+			}
+
+			for (AActor* ToDelete : NivelS)
+			{
+				if (ToDelete)
+				{
+					ToDelete->Destroy();
+				}
+			}
+		}
 	}
 	if (AOrchestratorGameMode* GM = Cast<AOrchestratorGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
 	{
