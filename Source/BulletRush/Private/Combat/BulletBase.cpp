@@ -11,13 +11,13 @@ ABulletBase::ABulletBase()
 
 	BulletMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BulletMesh"));
 	RootComponent = BulletMesh;
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> BulletMeshAsset(TEXT("StaticMesh'/Game/ParagonMuriel/FX/Meshes/Shapes/SM_Sphere.SM_Sphere'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> BulletMeshAsset(TEXT("/Engine/BasicShapes/Sphere"));
 	if (BulletMeshAsset.Succeeded()) {
 
 		BulletMesh->SetStaticMesh(BulletMeshAsset.Object);
-		//BulletMesh->SetRelativeScale3D(FVector(30.f)); // Escalamos la esfera para que parezca una bala
+		BulletMesh->SetRelativeScale3D(FVector(0.4f)); // Escalamos la esfera para que parezca una bala
 	}
-	//BulletMesh->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
+	
 
 	// Bullet uses QueryOnly collision with Overlap responses so that
 	// WeakPointComponent can detect overlaps via OnComponentBeginOverlap.
