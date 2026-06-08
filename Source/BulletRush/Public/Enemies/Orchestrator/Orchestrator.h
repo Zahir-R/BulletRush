@@ -99,6 +99,9 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION()
+	void Die() override;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mundo")
 	FVector DownLimits = FVector(2300.0f, -6710.0f, 500.0f);
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mundo")

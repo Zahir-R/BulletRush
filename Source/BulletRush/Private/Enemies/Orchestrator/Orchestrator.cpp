@@ -13,6 +13,7 @@
 #include "Components/RhytmConductorComponent.h"
 #include "Core/Orchestrator/OrchestratorGameMode.h"
 #include "Core/Orchestrator/OrchestratorFacade.h"
+#include "Map/PortalManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "PhysicsEngine/PhysicsAsset.h"
 #include "AIController.h"
@@ -75,10 +76,11 @@ AOrchestrator::AOrchestrator()
 	}
 
 
-	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+
+	if (!HealthComp)
+		HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 	HealthComp->MaxHealth = 4000.0f;
 	HealthComp->SetInvulnerable(false);
-	//HealthComp->OnDeath.AddDynamic(this, &AOrchestrator::Die);
 
 	HealthBarWidget->SetupAttachment(RootComponent);
 	HealthBarWidget->SetRelativeLocation(FVector(0.0f, 0.0f, 120.0f));
@@ -152,7 +154,6 @@ void AOrchestrator::BeginPlay()
 			bSecretLevelCleared = true;
 		}
 	}
-	HealthComp->CurrentHealth = HealthComp->MaxHealth;
 	Phase1State = NewObject<UOrchestrator_Normal>(this);
 	Phase2State = NewObject<UOrchestrator_Melancholy>(this);
 	Phase3State = NewObject<UOrchestrator_Frenetic>(this);
@@ -161,9 +162,14 @@ void AOrchestrator::BeginPlay()
 	OrcheDeadState = NewObject<UOrcheDead>(this);
 	PhaseTransitionOrcheState = NewObject<UOrchePhaseTransition>(this);
 
-	if (bSecretLevelCleared)
+	if (HealthComp)
 	{
 		HealthComp->CurrentHealth = HealthComp->MaxHealth;
+		HealthComp->OnDeath.AddDynamic(this, &AOrchestrator::Die);
+	}
+
+	if (bSecretLevelCleared)
+	{
 		HealthComp->CurrentHealth = HealthComp->MaxHealth * 0.75f;
 		ChangeState(Phase2State);
 	}
@@ -201,13 +207,17 @@ float AOrchestrator::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 	if (DamageAmount <= 0.0f)	return 0.0f;
 
 	//HealthComp->CurrentHealth = HealthComp->CurrentHealth - DamageTaken;
+	HealthComp->TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	float HealthPercent = HealthComp->CurrentHealth-DamageAmount / HealthComp->MaxHealth;
+	UE_LOG(LogTemp, Warning, TEXT("Vida actual del jefe: %f"), HealthComp->CurrentHealth);
+
+	float HealthPercent = HealthComp->CurrentHealth / HealthComp->MaxHealth;
 
 	if (HealthPercent <= 0.0f && GetCurrentBossStateName() == "Phase4_Furious")
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Orchestrator: Jefe cambia a estado muerto..."));
-		ChangeState(OrcheDeadState);
+		//ChangeState(OrcheDeadState);
+		return 0.0f;
 	}
 	else if (HealthPercent <= 0.25 && GetCurrentBossStateName() == "Phase3_Frenetic")
 	{
@@ -221,11 +231,6 @@ float AOrchestrator::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 	{
 		ChangeState(PhaseTransitionOrcheState);
 	}
-	
-	HealthComp->TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-
-	UE_LOG(LogTemp, Warning, TEXT("Vida actual del jefe: %f"), HealthComp->CurrentHealth);
-	
 
 	return 0.0f;
 }
@@ -271,4 +276,28 @@ void AOrchestrator::ErraticTeleport()
 
 		// TODO: Llamar a Niagara para emitir humo/partículas de teletransporte
 	}
+}
+
+void AOrchestrator::Die()
+{
+	if (GetCurrentBossStateName() == FName("OrcheDead"))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Entra al condicional OrcheDead"));
+		GetWorld()->GetTimerManager().ClearTimer(DeathTimerHandle);
+		if (GetWorld() && GetWorld()->GetGameInstance())
+		{
+			UProjectilesSubsystem* ProjSys = GetWorld()->GetGameInstance()->GetSubsystem<UProjectilesSubsystem>();
+			if (ProjSys)
+			{
+				ProjSys->ReturnAllActiveBullets();
+			}
+			FVector BossLocation = GetActorLocation();
+			PortalManagerRef->VolverCupHead(BossLocation);
+		}
+		bIsDead = true;
+		Destroy();
+		return;
+	}
+	else
+		ChangeState(OrcheDeadState);
 }
