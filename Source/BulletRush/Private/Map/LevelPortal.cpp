@@ -19,7 +19,7 @@ ALevelPortal::ALevelPortal()
 	
 	
 	CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
-	CollisionBox->SetBoxExtent(FVector(10.0f, 10.0f, 10.0f));
+	CollisionBox->SetBoxExtent(FVector(20.0f, 70.0f, 200.0f));
 	RootComponent = CollisionBox;
 
 
@@ -29,14 +29,14 @@ ALevelPortal::ALevelPortal()
 	// descativamos las colisiones de la malla
 	PortalMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/Assets/portal/Meshy_AI_Portal_of_the_Floatin_0607235308_texture.Meshy_AI_Portal_of_the_Floatin_0607235308_texture'"));
 
 	if (MeshAsset.Succeeded())
 	{
 		PortalMesh->SetStaticMesh(MeshAsset.Object);
 		//ubicacion respecto al box
-		PortalMesh->SetRelativeLocation(FVector(0.0f, 0.0f, 10.0f));
+		PortalMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -200.0f));
+		PortalMesh->SetWorldScale3D(FVector(1.0f));
 	}
 
 	CollisionBox->OnComponentBeginOverlap.AddDynamic(this, &ALevelPortal::OnOverlapBegin);
@@ -62,6 +62,8 @@ void ALevelPortal::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 		APlayingPlayer* Player2 = Cast<APlayingPlayer>(OtherActor);
 		if ((Player || Player2) && !TargetLevelName.IsNone())
 		{
+			OnBeforeLevelTravel.Broadcast();
+
 			ULevelRoutingSubsystem* LevelRouter = GetGameInstance()->GetSubsystem<ULevelRoutingSubsystem>();
 			if (LevelRouter)
 			{

@@ -5,7 +5,7 @@
 #include "Core/Chronostasis/WaveConfig.h"
 #include "ChronostasisSecretFacade.generated.h"
 
-class APortalTrigger;
+class ALevelPortal;
 class UChronostasisWaveManager;
 class UChronostasisSlowSystem;
 class AEnemyBase;
@@ -32,15 +32,14 @@ public:
 	FVector PortalLocation = FVector(0.0f, 0.0f, 100.0f);
 
 	UPROPERTY(EditDefaultsOnly, Category = "Config")
-	float TimeLimit = 10.0f;
+	float TimeLimit = 120.0f;
 
 private:
 	void OnAllWavesComplete();
 	void OnTimeUp();
 	void TickTimer();
 
-	UFUNCTION()
-	void OnPortalToBossTriggered();
+	void OnBeforePortalTravel();
 
 	UFUNCTION()
 	void OnAutoTeleportToBoss();
@@ -52,7 +51,7 @@ private:
 	UChronostasisSlowSystem* SlowSystem;
 
 	UPROPERTY()
-	APortalTrigger* PortalBossTrigger = nullptr;
+	ALevelPortal* PortalToBoss = nullptr;
 
 	UPROPERTY(EditAnywhere, Category = "Music")
 	USoundBase* AmbientSong;
@@ -61,13 +60,13 @@ private:
 	USoundBase* CombatSong;
 
 	UPROPERTY(EditAnywhere, Category = "Music")
-	float CombatStartOffset = 11.3f;
+	float CombatStartOffset = 0.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Waves")
 	TArray<FWaveConfig> Waves;
 
 	FTimerHandle CountdownTimerHandle;
 	FTimerHandle AutoTeleportTimer;
-	float TimeRemaining = 10.0f;
+	float TimeRemaining = 120.0f;
 	bool bLevelComplete = false;
 };

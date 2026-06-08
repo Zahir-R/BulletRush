@@ -12,7 +12,7 @@ void APowerUpBase::SetManager(APowerUpManager* Manager)
 
 APowerUpBase::APowerUpBase()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	CollisionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
 	RootComponent = CollisionSphere;
@@ -26,7 +26,7 @@ APowerUpBase::APowerUpBase()
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> SphereMesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
 	if (SphereMesh.Succeeded()) Mesh->SetStaticMesh(SphereMesh.Object);
 	Mesh->SetRelativeLocation(FVector(0.0f, 0.0f, -64.0f));
-
+	Mesh->SetCollisionProfileName("NoCollision");
 }
 
 
@@ -41,4 +41,10 @@ void APowerUpBase::OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 		if (ManagerRef.IsValid()) ManagerRef->OnPowerUpCollected(this);
 		Destroy();
 	}
+}
+
+void APowerUpBase::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	AddActorLocalRotation(FRotator(0.0f, 90.0f * DeltaTime, 0.0f));
 }

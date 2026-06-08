@@ -2,9 +2,9 @@
 #include "Enemies/BossBase.h"
 #include "Components/BuffComponent.h"
 #include "Buffs/PlayerSlowDecorator.h"
+#include "Components/SplineMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Pawn.h"
-#include "DrawDebugHelpers.h"
 #include "UObject/ConstructorHelpers.h"
 
 AChronostasisLinker::AChronostasisLinker()
@@ -17,6 +17,23 @@ AChronostasisLinker::AChronostasisLinker()
 	if (MeshAsset.Succeeded()) MeshEnemy->SetStaticMesh(MeshAsset.Object);
 	static ConstructorHelpers::FObjectFinder<UMaterialInterface> MaterialAsset(TEXT("Material'/Game/Assets/ChronoEnemies/Linker/M_Astral_Prism_Pendant.M_Astral_Prism_Pendant'"));
 	if (MaterialAsset.Succeeded()) MeshEnemy->SetMaterial(0, MaterialAsset.Object);
+
+	LinkBeam = CreateDefaultSubobject<USplineMeshComponent>(TEXT("LinkBeam"));
+	LinkBeam->SetMobility(EComponentMobility::Movable);
+	LinkBeam->SetupAttachment(RootComponent);
+	LinkBeam->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> BeamMesh(TEXT("StaticMesh'/Engine/BasicShapes/Cylinder'"));
+	if (BeamMesh.Succeeded())
+	{
+		LinkBeam->SetStaticMesh(BeamMesh.Object);
+	}
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> BeamMat(TEXT("Material'/Game/StarterContent/Materials/M_Tech_Hex_Tile_Pulse.M_Tech_Hex_Tile_Pulse'"));
+	if (BeamMat.Succeeded())
+	{
+		LinkBeam->SetMaterial(0, BeamMat.Object);
+	}
+	LinkBeam->SetStartScale(FVector2D(0.15f, 0.15f));
+	LinkBeam->SetEndScale(FVector2D(0.15f, 0.15f));
 }
 
 void AChronostasisLinker::BeginPlay()
@@ -98,7 +115,8 @@ void AChronostasisLinker::Tick(float DeltaSeconds)
 		AppliedPlayerDebuff = nullptr;
 	}
 
-	DrawDebugLine(GetWorld(), GetActorLocation(), LinkedBoss->GetActorLocation(), FColor::Purple, false, -1.f, 0, 4.f);
+	FVector EndLocal = LinkedBoss->GetActorLocation() - GetActorLocation();
+	LinkBeam->SetStartAndEnd(FVector::ZeroVector, FVector::ZeroVector, EndLocal, FVector::ZeroVector);
 }
 
 void AChronostasisLinker::EndPlay(const EEndPlayReason::Type EndPlayReason)

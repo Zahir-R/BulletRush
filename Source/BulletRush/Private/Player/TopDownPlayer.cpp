@@ -26,7 +26,7 @@ ATopDownPlayer::ATopDownPlayer()
     CameraBoom->SetupAttachment(RootComponent);
 
     //  Rotar el brazo -90 grados en Pitch para que mire hacia abajo
-    CameraBoom->SetRelativeRotation(FRotator(-90.0f, 0.0f, 0.0f));
+    CameraBoom->SetRelativeRotation(FRotator(-70.0f, 0.0f, 0.0f));
     CameraBoom->TargetArmLength = 1500.0f; // Aumentado para que la cámara no esté pegada al piso
 
     CameraBoom->bUsePawnControlRotation = false;

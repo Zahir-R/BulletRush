@@ -10,10 +10,16 @@
 #include "Player/PlayingPlayer.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
+#include "Subsystems/MusicManagerSubsystem.h"
+#include "Sound/SoundBase.h"
+#include "UObject/ConstructorHelpers.h"
 
 ALevel21Facade::ALevel21Facade()
 {
     PrimaryActorTick.bCanEverTick = false;
+
+    static ConstructorHelpers::FObjectFinder<USoundBase> CombatFinder(TEXT("SoundWave'/Game/Audio/1-_Brave_reaction.1-_Brave_reaction'"));
+    if (CombatFinder.Succeeded()) CombatSong = CombatFinder.Object;
 
    
     // Spawn locations por defecto si no se asignan en el editor
@@ -55,6 +61,16 @@ void ALevel21Facade::BeginPlay()
 
 void ALevel21Facade::StartLevel()
 {
+    if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+    {
+        float StartTime = CombatStartOffset;
+        if (Music->IsPositionSaved())
+        {
+            StartTime = Music->ConsumeSavedPosition();
+        }
+        Music->PlaySong(CombatSong, StartTime, 2.0f, true);
+    }
+
     // Suscribimos la muerte del jugador
     APlayingPlayer* Player = Cast<APlayingPlayer>(
         UGameplayStatics::GetPlayerPawn(this, 0));

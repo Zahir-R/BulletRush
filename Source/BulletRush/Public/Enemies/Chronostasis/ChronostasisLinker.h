@@ -5,6 +5,7 @@
 
 class ABossBase;
 class UPlayerStatsDecorator;
+class USplineMeshComponent;
 
 UCLASS(Blueprintable)
 class BULLETRUSH_API AChronostasisLinker : public AEnemyBase
@@ -16,7 +17,6 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-	// How close the player must be to the Linker-Boss line to be slowed
 	UPROPERTY(EditAnywhere, Category = "Linker")
 	float LinkLineWidth = 150.0f;
 
@@ -26,6 +26,9 @@ protected:
 
 	UPROPERTY()
 	UPlayerStatsDecorator* AppliedPlayerDebuff;
+
+	UPROPERTY(VisibleAnywhere)
+	USplineMeshComponent* LinkBeam;
 
 	UFUNCTION()
 	void OnBossKilled(AEnemyBase* DeadBoss);
