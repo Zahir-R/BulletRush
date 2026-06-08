@@ -4,6 +4,8 @@
 #include "Player/PlayingPlayer.h"
 #include "Buffs/PowerUpManager.h"
 #include "Components/BuffComponent.h"
+#include "Core/PowerUpUsagePublisher.h"
+#include "Kismet/GameplayStatics.h"
 
 void APowerUpBase::SetManager(APowerUpManager* Manager)
 {
@@ -38,6 +40,14 @@ void APowerUpBase::OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 	if (BuffComp && BuffClass) 
 	{
 		BuffComp->ApplyBuff(BuffClass, BuffDuration, BuffMagnitude);
+
+		TArray<AActor*> Publishers;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), APowerUpUsagePublisher::StaticClass(), Publishers);
+		if (Publishers.Num() > 0)
+		{
+			Cast<APowerUpUsagePublisher>(Publishers[0])->MarkPowerUpUsed();
+		}
+
 		if (ManagerRef.IsValid()) ManagerRef->OnPowerUpCollected(this);
 		Destroy();
 	}

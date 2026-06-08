@@ -138,7 +138,7 @@ class BULLETRUSH_API UOrcheDead : public UBossStateDead
 public:
 	virtual void EnterState(ABossBase* Boss) override;
 	virtual void ExitState(ABossBase* Boss) override;
-	virtual FName GetStateTagName() const override { return "Dead"; }
+	virtual FName GetStateTagName() const override { return "OrcheDead"; }
 
 private:
 	UPROPERTY()

@@ -6,6 +6,9 @@
 #include "VaultKeeper/enemies/MechaChargerEnemy.h"
 #include "Map/LevelPortal.h"
 #include "Core/BulletRushGameInstance.h"
+#include "Core/Requirements/RequirementManager.h"
+#include "Core/Requirements/NoPowerUpRequirement.h"
+#include "Core/PowerUpUsagePublisher.h"
 #include "Components/HealthComponent.h"
 #include "Player/PlayingPlayer.h"
 #include "Kismet/GameplayStatics.h"
@@ -56,6 +59,10 @@ void ALevel21Facade::BeginPlay()
         ALevelPortal::StaticClass(),
         FVector(0.f, 0.f, 100.f), FRotator::ZeroRotator);
     PortalToBoss->SetActorHiddenInGame(true);
+
+    PowerUpPublisher = GetWorld()->SpawnActor<APowerUpUsagePublisher>(
+        APowerUpUsagePublisher::StaticClass(),
+        FVector::ZeroVector, FRotator::ZeroRotator);
 }
 
 
@@ -75,7 +82,19 @@ void ALevel21Facade::StartLevel()
     APlayingPlayer* Player = Cast<APlayingPlayer>(
         UGameplayStatics::GetPlayerPawn(this, 0));
 
-    
+    // RequirementManager: detecta si el jugador uso power-ups
+    APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+    if (PC)
+    {
+        URequirementManager* ReqMgr = NewObject<URequirementManager>(PC);
+        ReqMgr->RegisterComponent();
+
+        UNoPowerUpRequirement* NoPowerUpReq = NewObject<UNoPowerUpRequirement>(ReqMgr);
+        ReqMgr->SecretRequirements.Add(NoPowerUpReq);
+
+        ReqMgr->InitializeRequirements(PC);
+        RequirementManagerRef = ReqMgr;
+    }
 
     // Timer de 3 minutos
     GetWorld()->GetTimerManager().SetTimer(
@@ -169,14 +188,15 @@ void ALevel21Facade::CheckLevelComplete()
     GetWorld()->GetTimerManager().ClearTimer(LevelTimer);
 
     UE_LOG(LogTemp, Warning, TEXT("[Level21Facade] Nivel completado!"));
-    OpenPortal(!bPlayerDied); // si no murio ? secreto, si murio ? jefe
+    bool bSecretUnlocked = RequirementManagerRef.IsValid() && RequirementManagerRef->AreSecretRequirementsMet();
+    OpenPortal(bSecretUnlocked);
 }
 
 void ALevel21Facade::OnTimerExpired()
 {
     if (bLevelComplete) return;
 
-    UE_LOG(LogTemp, Warning, TEXT("[Level21Facade] Tiempo agotado — reintento"));
+    UE_LOG(LogTemp, Warning, TEXT("[Level21Facade] Tiempo agotado ï¿½ reintento"));
 
     // Reiniciamos el nivel
     UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()));
@@ -185,7 +205,7 @@ void ALevel21Facade::OnTimerExpired()
 void ALevel21Facade::OnPlayerDeath()
 {
     bPlayerDied = true;
-    UE_LOG(LogTemp, Warning, TEXT("[Level21Facade] Jugador murio — no accede al secreto"));
+    UE_LOG(LogTemp, Warning, TEXT("[Level21Facade] Jugador murio ï¿½ no accede al secreto"));
 }
 
 void ALevel21Facade::OpenPortal(bool bToSecret)
