@@ -11,7 +11,7 @@ ABulletBase::ABulletBase()
 
 	BulletMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BulletMesh"));
 	RootComponent = BulletMesh;
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> BulletMeshAsset(TEXT("/Engine/BasicShapes/Sphere"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> BulletMeshAsset(TEXT("StaticMesh'/Game/ParagonMuriel/FX/Meshes/Shapes/SM_Sphere.SM_Sphere'"));
 	if (BulletMeshAsset.Succeeded()) {
 
 		BulletMesh->SetStaticMesh(BulletMeshAsset.Object);

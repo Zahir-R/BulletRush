@@ -14,8 +14,5 @@ class BULLETRUSH_API UTesserielVulnerableStrategy
 
 public:
 
-	virtual bool CanTakeDamage() const override
-	{
-		return true;
-	}
+	virtual bool CanTakeDamage() const override;
 };

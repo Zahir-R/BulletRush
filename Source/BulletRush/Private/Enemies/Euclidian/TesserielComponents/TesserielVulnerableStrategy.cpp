@@ -3,3 +3,7 @@
 
 #include "Enemies/Euclidian/TesserielComponents/TesserielVulnerableStrategy.h"
 
+bool UTesserielVulnerableStrategy::CanTakeDamage() const
+{
+    return true;
+}

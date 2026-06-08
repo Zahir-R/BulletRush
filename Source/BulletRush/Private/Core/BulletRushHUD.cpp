@@ -421,8 +421,8 @@ FString ABulletRushHUD::GetWeaponDisplayName(UWeaponBaseComponent* Weapon) const
 
     if (CachedPlayer.IsValid())
     {
-        if (Weapon == CachedPlayer->TestWeapon) return TEXT("VOLLEY");
-        if (Weapon == CachedPlayer->TestWeapontwo) return TEXT("SPREAD");
+        //if (Weapon == CachedPlayer->TestWeapon) return TEXT("VOLLEY");
+        //if (Weapon == CachedPlayer->TestWeapontwo) return TEXT("SPREAD");
     }
     return TEXT("AUTO");
 }

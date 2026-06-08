@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Enemies/BossBase.h"
+#include "TimerManager.h"
 
 #include "Enemies/Euclidian/Planes.h"
 #include "Tesseriel.generated.h"
@@ -24,7 +25,15 @@ public:
 
 	ATesseriel();
 
+	virtual void Tick(float DeltaTime) override;
+
 	virtual void BeginPlay() override;
+
+	virtual void Attack() override;
+
+	virtual void Die() override;
+
+	void RespawnPlanes();
 
 	UPROPERTY()
 	UTesserielStrategy* CurrentStrategy;
@@ -39,6 +48,9 @@ public:
 	UTesserielDeadStrategy* DeadStrategy;
 
 	UPROPERTY()
+	int32 RemainingVulnerablePlanes;
+
+	UPROPERTY()
 	UTesserielBuilder* Builder;
 
 	UPROPERTY()
@@ -46,4 +58,16 @@ public:
 
 	UPROPERTY()
 	TArray<APlanes*> VulnerablePlanes;
+
+	void OnPlaneDestroyed(APlanes* Plane);
+
+	virtual float TakeDamage(
+		float DamageAmount,
+		const FDamageEvent& DamageEvent,
+		AController* EventInstigator,
+		AActor* DamageCauser
+	) override;
+protected:
+
+	FTimerHandle RespawnTimer;
 };
