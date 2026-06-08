@@ -19,7 +19,7 @@ ALevelPortal::ALevelPortal()
 	
 	
 	CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
-	CollisionBox->SetBoxExtent(FVector(10.0f, 10.0f, 10.0f));
+	CollisionBox->SetBoxExtent(FVector(20.0f, 70.0f, 200.0f));
 	RootComponent = CollisionBox;
 
 
@@ -30,13 +30,14 @@ ALevelPortal::ALevelPortal()
 	PortalMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_NarrowCapsule.Shape_NarrowCapsule'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/PORTAL_ASSET/ASSET_PORTAL_01.ASSET_PORTAL_01'"));
 
 	if (MeshAsset.Succeeded())
 	{
 		PortalMesh->SetStaticMesh(MeshAsset.Object);
 		//ubicacion respecto al box
-		PortalMesh->SetRelativeLocation(FVector(0.0f, 0.0f, 10.0f));
+		PortalMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -200.0f));
+		PortalMesh->SetWorldScale3D(FVector(1.0f));
 	}
 
 	CollisionBox->OnComponentBeginOverlap.AddDynamic(this, &ALevelPortal::OnOverlapBegin);
