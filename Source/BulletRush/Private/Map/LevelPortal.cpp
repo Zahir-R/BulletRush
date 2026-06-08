@@ -62,6 +62,8 @@ void ALevelPortal::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 		APlayingPlayer* Player2 = Cast<APlayingPlayer>(OtherActor);
 		if ((Player || Player2) && !TargetLevelName.IsNone())
 		{
+			OnBeforeLevelTravel.Broadcast();
+
 			ULevelRoutingSubsystem* LevelRouter = GetGameInstance()->GetSubsystem<ULevelRoutingSubsystem>();
 			if (LevelRouter)
 			{

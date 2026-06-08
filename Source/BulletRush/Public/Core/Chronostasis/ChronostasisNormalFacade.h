@@ -6,7 +6,7 @@
 #include "Core/BulletRushGameInstance.h"
 #include "ChronostasisNormalFacade.generated.h"
 
-class APortalTrigger;
+class ALevelPortal;
 class UChronostasisWaveManager;
 class UChronostasisSlowSystem;
 class URequirementManager;
@@ -32,23 +32,10 @@ public:
 	void OnEnemyKilled(AEnemyBase* Enemy);
 
 	UPROPERTY(EditAnywhere, Category = "Portals")
-	FVector SecretPortalLocation = FVector(300.0f, 300.0f, 300.0f);
-
-	UPROPERTY(EditAnywhere, Category = "Portals")
-	FVector BossPortalLocation = FVector(500.0f, 500.0f, 500.0f);
+	FVector PortalLocation = FVector(500.0f, 500.0f, 500.0f);
 
 private:
 	void OnAllWavesComplete();
-	void ActivateBossPortal();
-	void ActivateSecretPortal();
-
-	UFUNCTION()
-	void OnBossPortalTriggered();
-
-	UFUNCTION()
-	void OnSecretPortalTriggered();
-
-	void TravelToMap(FName MapName, ELevelState NextState);
 
 	UPROPERTY()
 	UChronostasisWaveManager* WaveManager;
@@ -63,10 +50,7 @@ private:
 	TWeakObjectPtr<UHealthComponent> PlayerHealthComp;
 
 	UPROPERTY()
-	APortalTrigger* PortalBossTrigger = nullptr;
-
-	UPROPERTY()
-	APortalTrigger* PortalSecretTrigger = nullptr;
+	ALevelPortal* PortalToBoss = nullptr;
 
 	UFUNCTION()
 	void OnPlayerHealthChanged(float NewHealth);
@@ -84,5 +68,4 @@ private:
 	TArray<FWaveConfig> Waves;
 
 	bool bPlayerTookDamage = false;
-	bool bPortalsActivated = false;
 };

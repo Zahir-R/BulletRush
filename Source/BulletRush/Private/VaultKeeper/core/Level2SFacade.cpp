@@ -11,10 +11,15 @@
 #include "Player/PlayingPlayer.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
+#include "Subsystems/MusicManagerSubsystem.h"
+#include "Sound/SoundBase.h"
+#include "UObject/ConstructorHelpers.h"
 
 ALevel2SFacade::ALevel2SFacade()
 {
     PrimaryActorTick.bCanEverTick = false;
+    static ConstructorHelpers::FObjectFinder<USoundBase> CombatFinder(TEXT("SoundWave'/Game/Audio/1-_Brave_reaction.1-_Brave_reaction'"));
+    if (CombatFinder.Succeeded()) CombatSong = CombatFinder.Object;
 }
 
 void ALevel2SFacade::BeginPlay()
@@ -34,6 +39,13 @@ void ALevel2SFacade::BeginPlay()
 
 void ALevel2SFacade::StartLevel()
 {
+    if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+    {
+        float StartTime = CombatStartOffset;
+        if (Music->IsPositionSaved()) StartTime = Music->ConsumeSavedPosition();
+        Music->PlaySong(CombatSong, StartTime, 2.0f, true);
+    }
+
     APlayingPlayer* Player = Cast<APlayingPlayer>(
         UGameplayStatics::GetPlayerPawn(this, 0));
 

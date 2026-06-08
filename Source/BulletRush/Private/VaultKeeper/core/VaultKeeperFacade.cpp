@@ -10,6 +10,9 @@
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
+#include "Subsystems/MusicManagerSubsystem.h"
+#include "Sound/SoundBase.h"
+#include "UObject/ConstructorHelpers.h"
 
 AVaultKeeperFacade::AVaultKeeperFacade()
 {
@@ -21,6 +24,9 @@ AVaultKeeperFacade::AVaultKeeperFacade()
         FVector(400.f, -400.f, 100.f),
         FVector(-400.f,-400.f, 100.f),
     };
+
+    static ConstructorHelpers::FObjectFinder<USoundBase> CombatFinder(TEXT("SoundWave'/Game/Audio/1-_Brave_reaction.1-_Brave_reaction'"));
+    if (CombatFinder.Succeeded()) CombatSong = CombatFinder.Object;
 }
 
 void AVaultKeeperFacade::BeginPlay()
@@ -43,6 +49,13 @@ void AVaultKeeperFacade::BeginPlay()
 
 void AVaultKeeperFacade::StartLevel()
 {
+    if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+    {
+        float StartTime = CombatStartOffset;
+        if (Music->IsPositionSaved()) StartTime = Music->ConsumeSavedPosition();
+        Music->PlaySong(CombatSong, StartTime, 2.0f, true);
+    }
+
     SpawnBoss();
 
     // Drones cada 30s

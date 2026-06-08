@@ -10,7 +10,6 @@
 #include "Enemies/Chronostasis/ChronostasisCharger.h"
 #include "Enemies/EnemyBase.h"
 #include "Components/BuffComponent.h"
-#include "Map/PortalTrigger.h"
 #include "Player/PlayingPlayer.h"
 #include "Subsystems/ProjectilesSubsystem.h"
 #include "Subsystems/MusicManagerSubsystem.h"
@@ -26,24 +25,13 @@ AChronostasisBossFacade::AChronostasisBossFacade()
 	static ConstructorHelpers::FObjectFinder<USoundBase> AmbientFinder(TEXT("SoundWave'/Game/Audio/Ambient.Ambient'"));
 	if (AmbientFinder.Succeeded()) AmbientSong = AmbientFinder.Object;
 
-	static ConstructorHelpers::FObjectFinder<USoundBase> CombatFinder(TEXT("SoundWave'/Game/Audio/Combat.Combat'"));
+	static ConstructorHelpers::FObjectFinder<USoundBase> CombatFinder(TEXT("SoundWave'/Game/Audio/1-_Brave_reaction.1-_Brave_reaction'"));
 	if (CombatFinder.Succeeded()) CombatSong = CombatFinder.Object;
 }
 
 void AChronostasisBossFacade::BeginPlay()
 {
 	Super::BeginPlay();
-
-	PortalHubTrigger = GetWorld()->SpawnActor<APortalTrigger>(
-		APortalTrigger::StaticClass(),
-		PortalLocation, FRotator::ZeroRotator);
-	if (PortalHubTrigger)
-	{
-		PortalHubTrigger->bIsActive = false;
-		PortalHubTrigger->SetActorHiddenInGame(true);
-		PortalHubTrigger->SetActorEnableCollision(false);
-		PortalHubTrigger->OnPortalTriggered.AddUObject(this, &AChronostasisBossFacade::OnPortalToHubTriggered);
-	}
 }
 
 void AChronostasisBossFacade::StartLevel()
@@ -132,16 +120,4 @@ void AChronostasisBossFacade::OnBossDeath(AEnemyBase* DeadEnemy)
 	{
 		Player->BuffComp->RemoveAllDecorators();
 	}
-
-	if (PortalHubTrigger)
-	{
-		PortalHubTrigger->bIsActive = true;
-		PortalHubTrigger->SetActorHiddenInGame(false);
-		PortalHubTrigger->SetActorEnableCollision(true);
-	}
-}
-
-void AChronostasisBossFacade::OnPortalToHubTriggered()
-{
-	UGameplayStatics::OpenLevel(this, FName("Map_CupHeadMap"));
 }

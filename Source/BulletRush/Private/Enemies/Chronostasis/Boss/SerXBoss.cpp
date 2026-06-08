@@ -14,6 +14,9 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Engine/World.h"
+#include "EngineUtils.h"
+// Subsystem to return active enemy projectiles to pool
+#include "Subsystems/ProjectilesSubsystem.h"
 
 ASerXBoss::ASerXBoss()
 	: ABossBase()
@@ -583,6 +586,26 @@ void ASerXBoss::Die()
 	{
 		World->GetTimerManager().ClearTimer(LinkerSpawnTimerHandle);
 		World->GetTimerManager().ClearTimer(ZoneSpawnTimerHandle);
+	}
+
+	for (TActorIterator<AEnemyBase> It(GetWorld()); It; ++It)
+	{
+		AEnemyBase* Enemy = *It;
+		if (Enemy && Enemy != this)
+		{
+			Enemy->Die();
+		}
+	}
+
+	if (UWorld* World = GetWorld())
+	{
+		if (UGameInstance* GI = World->GetGameInstance())
+		{
+			if (UProjectilesSubsystem* ProjSub = GI->GetSubsystem<UProjectilesSubsystem>())
+			{
+				ProjSub->ReturnAllActiveBullets();
+			}
+		}
 	}
 
 	Super::Die();

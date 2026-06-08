@@ -9,6 +9,7 @@ class AMechaEnemyFactory;
 class ADronMecha;
 class ABatteryActor;
 class ALevelPortal;
+class USoundBase;
 
 UCLASS()
 class BULLETRUSH_API ALevel21Facade : public AActor
@@ -53,6 +54,13 @@ public:
 private:
     UPROPERTY()
     AMechaEnemyFactory* Factory;
+
+
+    UPROPERTY(EditAnywhere, Category = "Music")
+    USoundBase* CombatSong;
+
+    UPROPERTY(EditAnywhere, Category = "Music")
+    float CombatStartOffset = 0.0f;
 
   
 

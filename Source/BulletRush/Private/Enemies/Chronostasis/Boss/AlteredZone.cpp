@@ -1,6 +1,8 @@
 #include "Enemies/Chronostasis/Boss/AlteredZone.h"
 #include "Combat/BulletBase.h"
 #include "Engine/World.h"
+#include "UObject/ConstructorHelpers.h"
+#include "Components/StaticMeshComponent.h"
 
 AAlteredZone::AAlteredZone()
 {
@@ -12,6 +14,21 @@ AAlteredZone::AAlteredZone()
 	SphereCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	SphereCollision->SetCollisionResponseToAllChannels(ECR_Overlap);
 	SphereCollision->SetGenerateOverlapEvents(true);
+
+	VisualMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualMesh"));
+	VisualMesh->SetupAttachment(RootComponent);
+	VisualMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> SphereMesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
+	if (SphereMesh.Succeeded())
+	{
+		VisualMesh->SetStaticMesh(SphereMesh.Object);
+		float RadiusToScale = ZoneRadius / 50.f;
+		VisualMesh->SetWorldScale3D(FVector(RadiusToScale));
+		VisualMesh->SetRelativeLocation(FVector(0.f, 0.f, -ZoneRadius));
+	}
+
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> MaterialAsset(TEXT("Material'/Game/Assets/ChronoEnemies/Boss/Opacity.Opacity'"));
+	if (MaterialAsset.Succeeded()) VisualMesh->SetMaterial(0, MaterialAsset.Object);
 }
 
 void AAlteredZone::BeginPlay()

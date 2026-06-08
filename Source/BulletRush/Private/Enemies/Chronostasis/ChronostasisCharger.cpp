@@ -4,6 +4,9 @@
 #include "Buffs/ParalysisDecorator.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Pawn.h"
+#include "Components/StaticMeshComponent.h"
+#include "UObject/ConstructorHelpers.h"
+#include "Kismet/KismetMathLibrary.h"
 
 AChronostasisCharger::AChronostasisCharger()
 {
@@ -17,6 +20,12 @@ AChronostasisCharger::AChronostasisCharger()
 	HitCollision->InitSphereRadius(100.f);
 	HitCollision->SetupAttachment(RootComponent);
 	HitCollision->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/Assets/ChronoEnemies/Charger/Nebula_Freight_texture.Nebula_Freight_texture'"));
+	if (MeshAsset.Succeeded()) MeshEnemy->SetStaticMesh(MeshAsset.Object);
+
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> MaterialAsset(TEXT("Material'/Game/Assets/ChronoEnemies/Charger/M_Nebula_Freight.M_Nebula_Freight'"));
+	if (MaterialAsset.Succeeded()) MeshEnemy->SetMaterial(0, MaterialAsset.Object);
 }
 
 void AChronostasisCharger::BeginPlay()
@@ -40,6 +49,19 @@ void AChronostasisCharger::Tick(float DeltaSeconds)
 			NewPos = ApplyEnemySeparation(NewPos);
 			SetActorLocation(NewPos);
 		}
+	}
+	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+
+	if (PlayerPawn)
+	{
+		FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), PlayerPawn->GetActorLocation());
+		TargetRotation.Roll = 0.0f;
+		TargetRotation.Yaw += 180.0f;
+		TargetRotation.Pitch *= -1.0f;
+
+		FRotator CurrRotation = GetActorRotation();
+		FRotator SmoothRotation = UKismetMathLibrary::RInterpTo(CurrRotation, TargetRotation, DeltaSeconds, 5.0f);
+		SetActorRotation(SmoothRotation);
 	}
 }
 

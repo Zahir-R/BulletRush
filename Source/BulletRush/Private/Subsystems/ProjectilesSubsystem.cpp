@@ -181,10 +181,7 @@ ABulletBase* UProjectilesSubsystem::RequestBullet(FVector Loc, FVector Dir, floa
 		if (Bullet && !Bullet->BulletData.bIsActive)
 		{
 			Bullet->ActivateBullet(SpawnLocation, Dir, Spd, bIsPlayer, Damage, SpawnLocation, Owner);
-			if (bSecretLevelActive && bIsPlayer)
-			{
-				Bullet->BulletData.RemainingLifetime = 1.0f;
-			}
+
 			if (Scale != FVector(0.4f))
 			{
 				Bullet->SetActorRelativeScale3D(Scale);
@@ -198,7 +195,7 @@ ABulletBase* UProjectilesSubsystem::RequestBullet(FVector Loc, FVector Dir, floa
 void UProjectilesSubsystem::ReturnBullet(ABulletBase* Bullet)
 {
 	if (!Bullet)	return;
-	// Código del ataque esferico para no interrumpir el ataque del jefe...
+	// Cï¿½digo del ataque esferico para no interrumpir el ataque del jefe...
 	if (!Bullet->BulletData.bIsPlayerBullet && Bullet->BulletData.bIsActive && Bullet->GetActorRelativeScale3D().X > 2.0f)
 	{
 		if (Bullet->BulletData.OwnerActor)
@@ -209,7 +206,7 @@ void UProjectilesSubsystem::ReturnBullet(ABulletBase* Bullet)
 			if (Spawner)
 			{
 				FAttackStep ExplosionStep(EAttackType::Sphere, 24, 1200.0f, 0.0f, Bullet->GetActorLocation(), 0.0f, 0.0f, 5.0f);
-				ExplosionStep.BulletScale = FVector(0.4f); // Queremos que las esquirlas sean pequeñas
+				ExplosionStep.BulletScale = FVector(0.4f); // Queremos que las esquirlas sean pequeï¿½as
 
 				Spawner->ExecuteSingleAttack(ExplosionStep);
 			}
@@ -274,11 +271,6 @@ void UProjectilesSubsystem::ReinitializePool()
 	UE_LOG(LogTemp, Warning, TEXT("[ProjectilesSubsystem] Pool reinicializado con %d balas."), BulletPool.Num());
 }
 
-void UProjectilesSubsystem::SetSecretLevel(bool bActive)
-{
-	bSecretLevelActive = bActive;
-	ReturnAllActiveBullets();
-}
 
 void UProjectilesSubsystem::ReturnAllActiveBullets()
 {
@@ -306,7 +298,7 @@ void UProjectilesSubsystem::RedirectAllBossBulletsToTarget(FVector TargetLocatio
 			}
 			else
 			{
-				// Calculamos el nuevo vector de dirección directo al objetivo (el jugador)
+				// Calculamos el nuevo vector de direcciï¿½n directo al objetivo (el jugador)
 				FVector NewDir = (TargetLocation - Bullet->GetActorLocation()).GetSafeNormal();
 				Bullet->BulletData.Direction = NewDir;
 				Bullet->BulletData.Speed = NewSpeed;
@@ -329,14 +321,14 @@ void UProjectilesSubsystem::ExecuteSilenceCollapse(FVector TargetLocation, float
 	{
 		if (Bullet && Bullet->BulletData.bIsActive && !Bullet->BulletData.bIsPlayerBullet)
 		{
-			// Calculamos dirección
+			// Calculamos direcciï¿½n
 			FVector Dir = (TargetLocation - Bullet->GetActorLocation()).GetSafeNormal();
 			Bullet->BulletData.Direction = Dir;
 
-			// Asignamos la velocidad supersónica
+			// Asignamos la velocidad supersï¿½nica
 			Bullet->BulletData.Speed = CollapseSpeed;
 
-			// ¡NO tocamos ConvergeDelay! Así el Tick() no nos bajará la velocidad a 600.f
+			// ï¿½NO tocamos ConvergeDelay! Asï¿½ el Tick() no nos bajarï¿½ la velocidad a 600.f
 		}
 	}
 }

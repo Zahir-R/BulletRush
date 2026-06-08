@@ -11,7 +11,7 @@
 #include "Enemies/Chronostasis/ChronostasisExpansive.h"
 #include "Enemies/Chronostasis/ChronostasisCharger.h"
 #include "Enemies/Chronostasis/ChronostasisLinker.h"
-#include "Map/PortalTrigger.h"
+#include "Map/LevelPortal.h"
 #include "Components/HealthComponent.h"
 #include "Player/PlayingPlayer.h"
 #include "Subsystems/MusicManagerSubsystem.h"
@@ -27,7 +27,7 @@ AChronostasisNormalFacade::AChronostasisNormalFacade()
 	static ConstructorHelpers::FObjectFinder<USoundBase> AmbientFinder(TEXT("SoundWave'/Game/Audio/Ambient.Ambient'"));
 	if (AmbientFinder.Succeeded()) AmbientSong = AmbientFinder.Object;
 
-	static ConstructorHelpers::FObjectFinder<USoundBase> CombatFinder(TEXT("SoundWave'/Game/Audio/Combat.Combat'"));
+	static ConstructorHelpers::FObjectFinder<USoundBase> CombatFinder(TEXT("SoundWave'/Game/Audio/1-_Brave_reaction.1-_Brave_reaction'"));
 	if (CombatFinder.Succeeded()) CombatSong = CombatFinder.Object;
 
 	FWaveConfig NW1; NW1.DroneCount = 3; NW1.MassCount = 2;
@@ -50,27 +50,7 @@ void AChronostasisNormalFacade::BeginPlay()
 	WaveManager->OnWaveEnemyKilled.AddUObject(this, &AChronostasisNormalFacade::OnEnemyKilled);
 	SlowSystem->OnSlowTriggered.AddUObject(this, &AChronostasisNormalFacade::NotifySubscribers);
 
-	PortalBossTrigger = GetWorld()->SpawnActor<APortalTrigger>(
-		APortalTrigger::StaticClass(),
-		BossPortalLocation, FRotator::ZeroRotator);
-	if (PortalBossTrigger)
-	{
-		PortalBossTrigger->bIsActive = false;
-		PortalBossTrigger->SetActorHiddenInGame(true);
-		PortalBossTrigger->SetActorEnableCollision(false);
-		PortalBossTrigger->OnPortalTriggered.AddUObject(this, &AChronostasisNormalFacade::OnBossPortalTriggered);
-	}
 
-	PortalSecretTrigger = GetWorld()->SpawnActor<APortalTrigger>(
-		APortalTrigger::StaticClass(),
-		SecretPortalLocation, FRotator::ZeroRotator);
-	if (PortalSecretTrigger)
-	{
-		PortalSecretTrigger->bIsActive = false;
-		PortalSecretTrigger->SetActorHiddenInGame(true);
-		PortalSecretTrigger->SetActorEnableCollision(false);
-		PortalSecretTrigger->OnPortalTriggered.AddUObject(this, &AChronostasisNormalFacade::OnSecretPortalTriggered);
-	}
 }
 
 void AChronostasisNormalFacade::StartLevel()
@@ -150,57 +130,24 @@ void AChronostasisNormalFacade::OnAllWavesComplete()
 
 	bool bSecretUnlocked = RequirementManagerRef.IsValid() && RequirementManagerRef->AreSecretRequirementsMet();
 
-	ActivateBossPortal();
-
-	if (bSecretUnlocked)
-	{
-		ActivateSecretPortal();
-	}
-}
-
-void AChronostasisNormalFacade::ActivateBossPortal()
-{
-	if (bPortalsActivated || !PortalBossTrigger) return;
-	PortalBossTrigger->bIsActive = true;
-	PortalBossTrigger->SetActorHiddenInGame(false);
-	PortalBossTrigger->SetActorEnableCollision(true);
-}
-
-void AChronostasisNormalFacade::ActivateSecretPortal()
-{
-	if (!PortalSecretTrigger) return;
-	PortalSecretTrigger->bIsActive = true;
-	PortalSecretTrigger->SetActorHiddenInGame(false);
-	PortalSecretTrigger->SetActorEnableCollision(true);
-}
-
-void AChronostasisNormalFacade::OnBossPortalTriggered()
-{
-	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
-	{
-		Music->SavePlaybackPosition();
-	}
-	TravelToMap(FName("Map_03Boss"), ELevelState::Boss);
-}
-
-void AChronostasisNormalFacade::OnSecretPortalTriggered()
-{
-	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
-	{
-		Music->SavePlaybackPosition();
-	}
-	TravelToMap(FName("Map_03Boss"), ELevelState::Secret);
-}
-
-void AChronostasisNormalFacade::TravelToMap(FName MapName, ELevelState NextState)
-{
 	UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
-	if (!GI) return;
+	if (GI)
+	{
+		GI->ChronostasisState = bSecretUnlocked ? ELevelState::Secret : ELevelState::Boss;
+	}
 
-	GI->ChronostasisState = NextState;
-	bPortalsActivated = true;
+	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+	{
+		Music->SavePlaybackPosition();
+	}
 
-	UGameplayStatics::OpenLevel(this, MapName);
+	PortalToBoss = GetWorld()->SpawnActor<ALevelPortal>(
+		ALevelPortal::StaticClass(),
+		PortalLocation, FRotator::ZeroRotator);
+	if (PortalToBoss)
+	{
+		PortalToBoss->TargetLevelName = FName("Map_03Boss");
+	}
 }
 
 void AChronostasisNormalFacade::OnPlayerHealthChanged(float NewHealth)

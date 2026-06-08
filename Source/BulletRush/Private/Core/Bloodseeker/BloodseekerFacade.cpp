@@ -7,6 +7,8 @@
 #include "TimerManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/HealthComponent.h"
+#include "Subsystems/MusicManagerSubsystem.h"
+#include "Sound/SoundBase.h"
 
 ABloodseekerFacade::ABloodseekerFacade()
 {
@@ -19,6 +21,9 @@ ABloodseekerFacade::ABloodseekerFacade()
     KamikazeFactory = nullptr;
     LineWelderFactory = nullptr;
     GravitySiphonFactory = nullptr;
+
+    static ConstructorHelpers::FObjectFinder<USoundBase> CombatFinder(TEXT("SoundWave'/Game/Audio/1-_Brave_reaction.1-_Brave_reaction'"));
+    if (CombatFinder.Succeeded()) CombatSong = CombatFinder.Object;
 }
 
 void ABloodseekerFacade::BeginPlay()
@@ -81,7 +86,15 @@ void ABloodseekerFacade::SetupDefaultBossWaves()
 
 void ABloodseekerFacade::StartGame()
 {
-  
+
+    if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+    {
+        float StartTime = CombatStartOffset;
+        if (Music->IsPositionSaved()) StartTime = Music->ConsumeSavedPosition();
+        Music->PlaySong(CombatSong, StartTime, 2.0f, true);
+    }
+
+
     //nivel-s
     bPlayerHurt = false;
     bSecretLevel = false;
