@@ -16,6 +16,15 @@ ADrone::ADrone()
     Damage = 10.f;
     CurrentProjectileSpeedMultiplier = 1.f;
     MovementStrategy = CreateDefaultSubobject<USinusoidalSeekMovement>(TEXT("SinusoidalMovement"));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(
+        TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_QuadPyramid.Shape_QuadPyramid'")
+    );
+
+    if (MeshAsset.Succeeded() && MeshEnemy)
+    {
+        MeshEnemy->SetStaticMesh(MeshAsset.Object);
+        MeshEnemy->SetRelativeRotation(FRotator(0.f, 0.f, 0.f));
+    }
 }
 
 void ADrone::BeginPlay()
@@ -39,6 +48,14 @@ void ADrone::Tick(float DeltaSeconds)
             FVector NewPos = MovementStrategy->GetNextPosition(this, DeltaSeconds, Target);
             NewPos = ApplyEnemySeparation(NewPos);
             SetActorLocation(NewPos);
+
+            FVector Direction = (Target - GetActorLocation()).GetSafeNormal();
+            Direction.Z -= Target.Z+90.f;
+            if (!Direction.IsNearlyZero())
+            {
+                FRotator LookAtRotation = Direction.Rotation();
+                SetActorRotation(LookAtRotation);
+            }
         }
     }
 }

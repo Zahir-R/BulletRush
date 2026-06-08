@@ -8,7 +8,7 @@ public class BulletRush : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "Slate", "SlateCore", "SignificanceManager" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "Slate", "SlateCore", "SignificanceManager","Umg" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

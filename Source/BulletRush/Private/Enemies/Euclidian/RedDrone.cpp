@@ -8,7 +8,7 @@ ARedDrone::ARedDrone()
 {
 	static ConstructorHelpers::FObjectFinder<UMaterialInterface>
 		MaterialAsset(
-			TEXT("Material'/Game/StarterContent/Materials/M_Wood_Walnut.M_Wood_Walnut'")
+			TEXT("Material'/Game/StarterContent/Materials/M_Metal_Gold.M_Metal_Gold'")
 		);
 
 	if (MaterialAsset.Succeeded() && MeshEnemy)
