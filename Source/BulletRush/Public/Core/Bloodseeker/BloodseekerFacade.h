@@ -10,6 +10,7 @@
 
 class AEnemyBase;
 class UHealthComponent;
+class USoundBase;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAllWavesCompleteSignature);
 
@@ -52,6 +53,13 @@ public:
 
     
     FOnAllWavesCompleteSignature OnAllWavesComplete;
+
+    UPROPERTY(EditAnywhere, Category = "Music")
+    USoundBase* CombatSong;
+
+    UPROPERTY(EditAnywhere, Category = "Music")
+    float CombatStartOffset = 0.0f;
+
 
     //nivel-s
     bool bPlayerHurt;

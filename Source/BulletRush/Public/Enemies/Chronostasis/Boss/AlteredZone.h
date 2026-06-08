@@ -43,4 +43,6 @@ public:
 	TMap<ABulletBase*, float> OriginalSpeeds;
 
 	FTimerHandle LifetimeTimerHandle;
+
+	UStaticMeshComponent* VisualMesh;
 };

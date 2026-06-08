@@ -38,7 +38,7 @@ public:
 	float BaseDamage = 10.0f;
 
 	float BaseProjectileSpeed = 7500.f;
-	
+
 	void SetFireStrategy(
 		TScriptInterface<IWeaponsInterface> NewStrategy
 	);

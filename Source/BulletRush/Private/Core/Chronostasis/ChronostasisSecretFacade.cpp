@@ -11,7 +11,7 @@
 #include "Enemies/Chronostasis/ChronostasisLinker.h"
 #include "Enemies/EnemyBase.h"
 #include "Components/BuffComponent.h"
-#include "Map/PortalTrigger.h"
+#include "Map/LevelPortal.h"
 #include "Subsystems/ProjectilesSubsystem.h"
 #include "Subsystems/MusicManagerSubsystem.h"
 #include "Sound/SoundBase.h"
@@ -28,7 +28,7 @@ AChronostasisSecretFacade::AChronostasisSecretFacade()
 	static ConstructorHelpers::FObjectFinder<USoundBase> AmbientFinder(TEXT("SoundWave'/Game/Audio/Ambient.Ambient'"));
 	if (AmbientFinder.Succeeded()) AmbientSong = AmbientFinder.Object;
 
-	static ConstructorHelpers::FObjectFinder<USoundBase> CombatFinder(TEXT("SoundWave'/Game/Audio/Combat.Combat'"));
+	static ConstructorHelpers::FObjectFinder<USoundBase> CombatFinder(TEXT("SoundWave'/Game/Audio/1-_Brave_reaction.1-_Brave_reaction'"));
 	if (CombatFinder.Succeeded()) CombatSong = CombatFinder.Object;
 
 	FWaveConfig SW1; SW1.DroneCount = 5;
@@ -50,15 +50,14 @@ void AChronostasisSecretFacade::BeginPlay()
 	WaveManager->OnAllWavesCompleted.AddUObject(this, &AChronostasisSecretFacade::OnAllWavesComplete);
 	WaveManager->OnWaveEnemyKilled.AddUObject(this, &AChronostasisSecretFacade::OnEnemyKilled);
 
-	PortalBossTrigger = GetWorld()->SpawnActor<APortalTrigger>(
-		APortalTrigger::StaticClass(),
+	PortalToBoss = GetWorld()->SpawnActor<ALevelPortal>(
+		ALevelPortal::StaticClass(),
 		PortalLocation, FRotator::ZeroRotator);
-	if (PortalBossTrigger)
+	if (PortalToBoss)
 	{
-		PortalBossTrigger->bIsActive = false;
-		PortalBossTrigger->SetActorHiddenInGame(true);
-		PortalBossTrigger->SetActorEnableCollision(false);
-		PortalBossTrigger->OnPortalTriggered.AddUObject(this, &AChronostasisSecretFacade::OnPortalToBossTriggered);
+		PortalToBoss->SetActorHiddenInGame(true);
+		PortalToBoss->SetActorEnableCollision(false);
+		PortalToBoss->OnBeforeLevelTravel.AddUObject(this, &AChronostasisSecretFacade::OnBeforePortalTravel);
 	}
 }
 
@@ -80,9 +79,6 @@ void AChronostasisSecretFacade::StartLevel()
 	TimeRemaining = TimeLimit;
 	GetWorld()->GetTimerManager().SetTimer(
 		CountdownTimerHandle, this, &AChronostasisSecretFacade::TickTimer, 1.0f, true);
-
-	UProjectilesSubsystem* ProjSys = GetWorld()->GetGameInstance()->GetSubsystem<UProjectilesSubsystem>();
-	if (ProjSys) ProjSys->SetSecretLevel(true);
 
 	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	ABulletRushHUD* HUD = PC ? Cast<ABulletRushHUD>(PC->GetHUD()) : nullptr;
@@ -114,9 +110,6 @@ void AChronostasisSecretFacade::OnAllWavesComplete()
 		Music->TransitionTo(AmbientSong, 3.0f, 0.5f, 0.0f);
 	}
 
-	UProjectilesSubsystem* ProjSys = World ? World->GetGameInstance()->GetSubsystem<UProjectilesSubsystem>() : nullptr;
-	if (ProjSys) ProjSys->SetSecretLevel(false);
-
 	SlowSystem->Stop();
 
 	if (GI)
@@ -137,11 +130,11 @@ void AChronostasisSecretFacade::OnAllWavesComplete()
 		Player->BuffComp->RemoveAllDecorators();
 	}
 
-	if (PortalBossTrigger)
+	if (PortalToBoss)
 	{
-		PortalBossTrigger->bIsActive = true;
-		PortalBossTrigger->SetActorHiddenInGame(false);
-		PortalBossTrigger->SetActorEnableCollision(true);
+		PortalToBoss->TargetLevelName = FName("Map_03Boss");
+		PortalToBoss->SetActorHiddenInGame(false);
+		PortalToBoss->SetActorEnableCollision(true);
 	}
 }
 
@@ -155,9 +148,6 @@ void AChronostasisSecretFacade::OnTimeUp()
 	{
 		World->GetTimerManager().ClearTimer(CountdownTimerHandle);
 	}
-
-	UProjectilesSubsystem* ProjSys = World ? World->GetGameInstance()->GetSubsystem<UProjectilesSubsystem>() : nullptr;
-	if (ProjSys) ProjSys->SetSecretLevel(false);
 
 	SlowSystem->Stop();
 	TArray<AActor*> Found;
@@ -183,11 +173,11 @@ void AChronostasisSecretFacade::OnTimeUp()
 		Player->BuffComp->RemoveAllDecorators();
 	}
 
-	if (PortalBossTrigger)
+	if (PortalToBoss)
 	{
-		PortalBossTrigger->bIsActive = true;
-		PortalBossTrigger->SetActorHiddenInGame(false);
-		PortalBossTrigger->SetActorEnableCollision(true);
+		PortalToBoss->TargetLevelName = FName("Map_03Boss");
+		PortalToBoss->SetActorHiddenInGame(false);
+		PortalToBoss->SetActorEnableCollision(true);
 	}
 
 	if (World)
@@ -218,17 +208,17 @@ void AChronostasisSecretFacade::TickTimer()
 	}
 }
 
-void AChronostasisSecretFacade::OnPortalToBossTriggered()
+void AChronostasisSecretFacade::OnBeforePortalTravel()
 {
 	UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
 	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
 	{
 		Music->SavePlaybackPosition();
 	}
-	if (!GI) return;
-
-	GI->ChronostasisState = ELevelState::Boss;
-	UGameplayStatics::OpenLevel(this, FName("Map_03Boss"));
+	if (GI)
+	{
+		GI->ChronostasisState = ELevelState::Boss;
+	}
 }
 
 void AChronostasisSecretFacade::OnAutoTeleportToBoss()

@@ -17,10 +17,11 @@ class BULLETRUSH_API ALevelPortal : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
 	ALevelPortal();
-	// var para el nombre del nivel
+
 	FName TargetLevelName;
+
+	FSimpleMulticastDelegate OnBeforeLevelTravel;
 
 protected:
 	// Called when the game starts or when spawned

@@ -1,6 +1,5 @@
 #include "Core/Chronostasis/ChronostasisSecretManager.h"
 #include "Core/BulletRushHUD.h"
-#include "Subsystems/ProjectilesSubsystem.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
@@ -60,13 +59,7 @@ void UChronostasisSecretManager::OnTimeUpTeleport()
 {
     bIsActive = false;
 
-    UWorld* World = OwnerActor ? OwnerActor->GetWorld() : nullptr;
-    if (World)
-    {
-        UProjectilesSubsystem* ProjSys = World->GetGameInstance()->GetSubsystem<UProjectilesSubsystem>();
-        if (ProjSys) ProjSys->SetSecretLevel(false);
-    }
-
+    // Unused — ChronostasisSecretFacade manages its own timer
     OnSecretTimeUp.Broadcast();
 }
 

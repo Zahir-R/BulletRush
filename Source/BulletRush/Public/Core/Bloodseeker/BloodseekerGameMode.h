@@ -10,6 +10,8 @@ class ABossSpawnTrigger;
 class ALevelPortal;
 class AEnemyBase;
 class ASkySphereWorld;
+
+class APlayingPlayer;   
 UCLASS()
 class BULLETRUSH_API ABloodseekerGameMode : public ABulletRushGameModeBase
 {
@@ -19,6 +21,7 @@ public:
     ABloodseekerGameMode();
 
     virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
     UFUNCTION()
     void OnAllWavesComplete();
@@ -28,6 +31,9 @@ public:
 
     UFUNCTION()
     void OnBossSpawned(ABloodseekerBoss* SpawnedBoss);
+
+    UFUNCTION()
+    void OnPlayerDeath();
 
 protected:
     UPROPERTY()

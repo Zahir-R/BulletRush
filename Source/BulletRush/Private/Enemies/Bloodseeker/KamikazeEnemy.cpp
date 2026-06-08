@@ -19,10 +19,11 @@ AKamikazeEnemy::AKamikazeEnemy()
 
     bHasReachedTarget = false;
 
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cone.Shape_Cone'"));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/Assets/PESADO_UFFO/UFFO_PESADO.UFFO_PESADO'"));
     if (MeshAsset.Succeeded())
     {
         MeshEnemy->SetStaticMesh(MeshAsset.Object);
+        MeshEnemy->SetRelativeScale3D(FVector(0.02));
     }
 }
 

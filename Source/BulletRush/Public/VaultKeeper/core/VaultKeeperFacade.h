@@ -11,6 +11,7 @@ class ADronMecha;
 class ABatteryActor;
 class ALevelPortal;
 class UBulletRushGameInstance;
+class USoundBase;
 
 UCLASS()
 class BULLETRUSH_API AVaultKeeperFacade : public AActor
@@ -40,6 +41,12 @@ public:
     ALevelPortal* PortalToMap;
 
     void StartLevel();
+
+    UPROPERTY(EditAnywhere, Category = "Music")
+    USoundBase* CombatSong;
+
+    UPROPERTY(EditAnywhere, Category = "Music")
+    float CombatStartOffset = 0.0f;
 
     UFUNCTION()
     void OnBossDeath(AEnemyBase* DeadEnemy);

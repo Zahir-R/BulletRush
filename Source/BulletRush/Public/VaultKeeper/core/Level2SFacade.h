@@ -11,6 +11,7 @@ class AMechaChargerEnemy;
 class AMechaKamikazeEnemy;
 class ABatteryActor;
 class ALevelPortal;
+class USoundBase;
 
 USTRUCT()
 struct FHiveData
@@ -48,6 +49,12 @@ public:
 
     UFUNCTION()
     void OnEnemyKilled(AEnemyBase* DeadEnemy);
+
+    UPROPERTY(EditAnywhere, Category = "Music")
+    USoundBase* CombatSong;
+
+    UPROPERTY(EditAnywhere, Category = "Music")
+    float CombatStartOffset = 0.0f;
 
 private:
     UPROPERTY()

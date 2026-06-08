@@ -23,8 +23,18 @@ public:
 
 private:
     UPROPERTY(EditAnywhere, Category = "Movement")
-    float Speed = 300.0f;
+    float Speed;
 
     UPROPERTY(EditAnywhere, Category = "Movement")
-    float StopDistance = 600.0f;
+    float StopDistance;
+
+	
+    UFUNCTION()
+    void RotateTowardsPlayer(float DeltaTime);
+
+    UPROPERTY(EditAnywhere, Category = "Movement")
+    FRotator MeshRotationOffset = FRotator(0.0f, 90.0f, 0.0f);
+
+    UPROPERTY(EditAnywhere, Category = "Movement")
+    float RotationSpeed = 5.0f;
 };
