@@ -1,5 +1,6 @@
 #include "VaultKeeper/enemies/MechaKamikazeEnemy.h"
 #include "Components/StaticMeshComponent.h"
+//#include "Components/MaterialInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 
@@ -9,6 +10,11 @@ AMechaKamikazeEnemy::AMechaKamikazeEnemy()
     bAutoStartAttack = false;
     AttackInterval = 0.0f;
     Tags.Add(FName("Enemigo"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/AccuCities/meshes/uasset/mesh/spaceship1.spaceship1'"));
+	if (MeshAsset.Succeeded()) MeshEnemy->SetStaticMesh(MeshAsset.Object);
+	MeshEnemy->SetRelativeScale3D(FVector(0.8f));
+	//MeshEnemy->SetRelativeRotationExact(FRotator(0.0f, 0.0f, 90.0f));
+	
 }
 
 void AMechaKamikazeEnemy::BeginPlay()

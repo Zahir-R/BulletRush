@@ -19,7 +19,10 @@ void UPlusFireStrategy::StartFiring(
 	Weapon->GetWorld()->GetTimerManager().SetTimer(Weapon->FiringTimer,
 		[WeakThis, WeakWeapon]()
 		{
-			WeakThis->ExecuteFire(WeakWeapon.Get());
+			if (WeakThis.IsValid() && WeakWeapon.IsValid())
+			{
+				WeakThis->ExecuteFire(WeakWeapon.Get());
+			}
 		}, NewFireRate, true);
 }
 

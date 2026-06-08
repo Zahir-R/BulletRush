@@ -39,6 +39,10 @@ public:
 	UFUNCTION()
 	int32 DecrementarVida(FName NombreMapa);
 
+	// Resetea las vidas de un nivel a 3 (usar al ir a CupHead o al completar)
+	UFUNCTION()
+	void ResetVidas(FName NombreMapa);
+
 	// Maneja la muerte del jugador: si quedan vidas reinicia el nivel; si no, vuelve al mapa CupHead
     UFUNCTION()
 	void HandlePlayerDeath(UObject* WorldContextObject);
