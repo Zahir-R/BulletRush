@@ -9,6 +9,8 @@ class AMechaEnemyFactory;
 class ADronMecha;
 class ABatteryActor;
 class ALevelPortal;
+class URequirementManager;
+class APowerUpUsagePublisher;
 
 UCLASS()
 class BULLETRUSH_API ALevel21Facade : public AActor
@@ -54,10 +56,14 @@ private:
     UPROPERTY()
     AMechaEnemyFactory* Factory;
 
-  
+    UPROPERTY()
+    TWeakObjectPtr<URequirementManager> RequirementManagerRef;
+
+    UPROPERTY()
+    APowerUpUsagePublisher* PowerUpPublisher = nullptr;
 
     int32 EnemiesKilled = 0;
-    int32 TotalEnemies= 1;
+    int32 TotalEnemies= 15;
     bool bPlayerDied = false;
     bool bLevelComplete = false;
 
