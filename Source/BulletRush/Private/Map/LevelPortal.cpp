@@ -30,7 +30,7 @@ ALevelPortal::ALevelPortal()
 	PortalMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_NarrowCapsule.Shape_NarrowCapsule'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/Assets/portal/Meshy_AI_Portal_of_the_Floatin_0607235308_texture.Meshy_AI_Portal_of_the_Floatin_0607235308_texture'"));
 
 	if (MeshAsset.Succeeded())
 	{

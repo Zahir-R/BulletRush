@@ -11,12 +11,13 @@ ABulletBase::ABulletBase()
 
 	BulletMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BulletMesh"));
 	RootComponent = BulletMesh;
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> BulletMeshAsset(TEXT("/Engine/BasicShapes/Sphere"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> BulletMeshAsset(TEXT("StaticMesh'/Game/Assets/Laser2.Laser2'"));
 	if (BulletMeshAsset.Succeeded()) {
 
 		BulletMesh->SetStaticMesh(BulletMeshAsset.Object);
-		BulletMesh->SetWorldScale3D(FVector(0.4f)); // Escalamos la esfera para que parezca una bala
+		//BulletMesh->SetRelativeScale3D(FVector(30.f)); // Escalamos la esfera para que parezca una bala
 	}
+	BulletMesh->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
 
 	// Bullet uses QueryOnly collision with Overlap responses so that
 	// WeakPointComponent can detect overlaps via OnComponentBeginOverlap.
@@ -25,14 +26,14 @@ ABulletBase::ABulletBase()
 	BulletMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	BulletMesh->SetCollisionResponseToAllChannels(ECR_Overlap);
 	BulletMesh->SetGenerateOverlapEvents(true);
-	
+	/*
 	TrailFX = CreateDefaultSubobject<UNiagaraComponent>(TEXT("TrailFX"));
 	TrailFX->SetupAttachment(RootComponent);
 	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> TrailAsset(
 		TEXT("NiagaraSystem'/Game/MixedVFX/Particles/Projectiles/NS_GalaxyArrow.NS_GalaxyArrow'"));
 	if (TrailAsset.Succeeded()) TrailSystem = TrailAsset.Object;
 	TrailFX->bAutoActivate = false;
-
+*/
 	DesactivateBullet();
 	
 
