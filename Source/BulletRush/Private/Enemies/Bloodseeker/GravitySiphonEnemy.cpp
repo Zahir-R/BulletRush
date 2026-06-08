@@ -18,7 +18,7 @@ AGravitySiphonEnemy::AGravitySiphonEnemy()
         MeshEnemy->SetWorldScale3D(FVector(0.9f));
     }
     bAutoStartAttack = true;
-    AttackInterval = 2.0f;
+    AttackInterval = 0.5f;
 
     PullForce = 150.0f;
     DamagePerSecond = 15.0f;

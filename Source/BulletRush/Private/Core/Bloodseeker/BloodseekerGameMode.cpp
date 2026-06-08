@@ -8,6 +8,7 @@
 #include "Subsystems/ProjectilesSubsystem.h"
 #include "Engine/World.h"
 #include "Enemies/Bloodseeker/SkySphereWorld.h"
+#include "Player/PlayingPlayer.h"
 #include "Kismet/GameplayStatics.h"
 
 ABloodseekerGameMode::ABloodseekerGameMode()
@@ -42,6 +43,10 @@ void ABloodseekerGameMode::BeginPlay()
         UE_LOG(LogTemp, Warning, TEXT("[BloodseekerGameMode] Facade creado exitosamente, iniciando juego..."));
         Facade->OnAllWavesComplete.AddDynamic(this, &ABloodseekerGameMode::OnAllWavesComplete);
         Facade->StartGame();
+        //suscribirse a muerte del ugador
+        APlayingPlayer* Player = Cast<APlayingPlayer>(UGameplayStatics::GetPlayerPawn(this, 0));
+        if (Player && Player->HealthComp)
+            Player->HealthComp->OnDeath.AddDynamic(this, &ABloodseekerGameMode::OnPlayerDeath);
     }
     else
     {
@@ -139,5 +144,31 @@ void ABloodseekerGameMode::CleanupLevel()
         BossTrigger = nullptr;
     }
 }
+//BRGI
+void ABloodseekerGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    APlayingPlayer* Player = Cast<APlayingPlayer>(UGameplayStatics::GetPlayerPawn(this, 0));
+    if (Player && Player->HealthComp)
+        Player->HealthComp->OnDeath.RemoveDynamic(this, &ABloodseekerGameMode::OnPlayerDeath);
+    Super::EndPlay(EndPlayReason);
+}
+void ABloodseekerGameMode::OnPlayerDeath()
+{
+    UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
+    if (!GI) return;
 
+    FName MapName = FName(*GetWorld()->GetName());
+    int32 VidasRestantes = GI->DecrementarVida(MapName);
+
+    if (VidasRestantes > 0)
+    {
+        UGameplayStatics::OpenLevel(this, MapName);
+    }
+    else
+    {
+        // Sin vidas
+        GI->ResetVidas(MapName);
+        UGameplayStatics::OpenLevel(this, FName("Map_CupHeadMap"));
+    }
+}
 

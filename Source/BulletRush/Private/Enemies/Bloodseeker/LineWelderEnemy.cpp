@@ -8,7 +8,7 @@ ALineWelderEnemy::ALineWelderEnemy()
 {
     PrimaryActorTick.bCanEverTick = true;
     bAutoStartAttack = true;
-    AttackInterval = 1.5f;
+    AttackInterval = 0.8f;
 
     Speed = 900.0f;
     StopDistance = 600.0f;
