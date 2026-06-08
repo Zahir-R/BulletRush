@@ -19,7 +19,7 @@ ALevelPortal::ALevelPortal()
 	
 	
 	CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
-	CollisionBox->SetBoxExtent(FVector(20.0f, 70.0f, 200.0f));
+	CollisionBox->SetBoxExtent(FVector(100.0f, 100.0f, 100.0f));
 	RootComponent = CollisionBox;
 
 
@@ -35,7 +35,7 @@ ALevelPortal::ALevelPortal()
 	{
 		PortalMesh->SetStaticMesh(MeshAsset.Object);
 		//ubicacion respecto al box
-		PortalMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -200.0f));
+		PortalMesh->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
 		PortalMesh->SetWorldScale3D(FVector(1.0f));
 	}
 
