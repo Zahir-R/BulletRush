@@ -73,7 +73,7 @@ APlayingPlayer::APlayingPlayer()
 	TestWeapontwo->SetRelativeLocation(FVector(100.0f, 100.0f, 0.0f));
 
 	HealthComp= CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
-	HealthComp->MaxHealth = 100.0f;
+	HealthComp->MaxHealth = 1000.0f;
 
 	BuffComp = CreateDefaultSubobject<UBuffComponent>(TEXT("BuffComp"));
 }
@@ -219,7 +219,7 @@ void APlayingPlayer::RefreshStatsFromChain()
 	float NewSpeed = BaseSpeed * GetTotalSpeedMultiplier();
 	GetCharacterMovement()->MaxFlySpeed = NewSpeed;
 
-	float NewMaxHealth = 100.0f + GetTotalMaxHealthBonus();
+	float NewMaxHealth = 1000.0f + GetTotalMaxHealthBonus();
 	HealthComp->MaxHealth = NewMaxHealth;
 	if (HealthComp->CurrentHealth > NewMaxHealth) HealthComp->CurrentHealth = NewMaxHealth;
 
