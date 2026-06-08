@@ -90,7 +90,7 @@ void ABloodseekerBoss::BeginPlay()
     LinearBurstCombo.Add(FAttackStep(EAttackType::Fan, 50, 500.0f, 0.1f, 100.0f));
 
     // Explosión radial 360 grados
-    RadialCombo.Add(FAttackStep(EAttackType::Sphere, 1000, 800.0f, 0.5f, 0.1f));
+    RadialCombo.Add(FAttackStep(EAttackType::Sphere, 400, 800.0f, 0.5f, 0.1f));
 
     if (HealthComp)
     {
