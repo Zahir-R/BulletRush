@@ -52,9 +52,9 @@ void ALevel2SFacade::SpawnHives()
     // Centros de cada colmena separados en el mapa
 
     TArray<FVector> HiveCenters = {
-        FVector(-1500.f,    3000.f, 200.f),
-        FVector(-1800.f,    -2300.f, 900.f),
-        FVector(3400.f, 1200.f, 2100.f),
+        FVector(-1500.f,    3000.f, 400.f),
+        FVector(-1800.f,    -2300.f, 200.f),
+        FVector(5400.f, -200.f, 1000.f),
     };
 
     // Limpiamos antes de llenar

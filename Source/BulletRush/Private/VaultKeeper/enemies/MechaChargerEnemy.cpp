@@ -11,6 +11,12 @@ AMechaChargerEnemy::AMechaChargerEnemy()
     PrimaryActorTick.bCanEverTick = true;
     bAutoStartAttack = false;
     AttackInterval = 0.0f;
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/AccuCities/meshes/Meshy_AI_Iron_Spiked_Sphere_0607054312_texture.Meshy_AI_Iron_Spiked_Sphere_0607054312_texture'"));
+    if(MeshAsset.Succeeded())
+    {
+        MeshEnemy->SetStaticMesh(MeshAsset.Object);
+        
+	}
 
     // SeekMovement: persigue al jugador directamente
     MovementStrategy = CreateDefaultSubobject<USeekMovement>(TEXT("SeekMovement"));

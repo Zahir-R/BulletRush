@@ -30,7 +30,11 @@ ALevelPortal::ALevelPortal()
 	PortalMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	
+<<<<<<< HEAD
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/PORTAL_ASSET/ASSET_PORTAL_01.ASSET_PORTAL_01'"));
+=======
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/Assets/portal/Meshy_AI_Portal_of_the_Floatin_0607235308_texture.Meshy_AI_Portal_of_the_Floatin_0607235308_texture'"));
+>>>>>>> 27fa71849fbb364727b5ed2e598b21de21a2f33f
 
 	if (MeshAsset.Succeeded())
 	{

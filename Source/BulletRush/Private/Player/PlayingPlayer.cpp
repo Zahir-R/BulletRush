@@ -228,18 +228,17 @@ void APlayingPlayer::RefreshStatsFromChain()
 
 float APlayingPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	if (!HealthComp) return 0.0f;
-	if (HealthComp->IsInvulnerable()) return 0.0f;
+    if (!HealthComp) return 0.0f;
+    if (HealthComp->IsInvulnerable()) return 0.0f;
 
-	float Dmg = HealthComp->TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+    float Dmg = HealthComp->TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	if (HealthComp->CurrentHealth <= 0.0f) {
-		Destroy();
-		return 0.0f;
-	}
+    if (HealthComp->CurrentHealth <= 0.0f) {
+        return 0.0f;
+    }
 
-	HealthComp->SetInvulnerable(true, 1.0f);
-	return Dmg;
+    HealthComp->SetInvulnerable(true, 1.0f);
+    return Dmg;
 }
 
 void APlayingPlayer::OnPlayerDeath()

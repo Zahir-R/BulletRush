@@ -34,6 +34,11 @@ int32 UBulletRushGameInstance::DecrementarVida(FName NombreMapa)
 	return Vidas;
 }
 
+void UBulletRushGameInstance::ResetVidas(FName NombreMapa)
+{
+	VidasPorNivel.Add(NombreMapa, 3);
+}
+
 void UBulletRushGameInstance::HandlePlayerDeath(UObject* WorldContextObject)
 {
 	if (!WorldContextObject) return;

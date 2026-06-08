@@ -12,18 +12,19 @@ ABatteryActor::ABatteryActor()
 {
     PrimaryActorTick.bCanEverTick = false;
 
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cube.Shape_Cube'"));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/AccuCities/meshes/uasset/mesh/station.station'"));
     BatteryMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BatteryMesh"));
     RootComponent = BatteryMesh;
     if (MeshAsset.Succeeded())
     {
         BatteryMesh->SetStaticMesh(MeshAsset.Object);
     }
+	BatteryMesh->SetRelativeScale3D(FVector(0.5f));
 
 	BatteryMesh->SetGenerateOverlapEvents(true);
 
     HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
-    HealthComp->MaxHealth = 150.0f;
+    HealthComp->MaxHealth = 250.0f;
 
     Tags.Add(FName("Enemigo"));
     BulletSpawner = CreateDefaultSubobject<UBulletSpawnerComponent>(TEXT("BulletSpawner"));
