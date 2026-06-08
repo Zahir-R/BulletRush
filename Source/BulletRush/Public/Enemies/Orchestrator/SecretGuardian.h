@@ -28,5 +28,12 @@ public:
 
 protected:
 	void BeginPlay();
+
+public:
+	// Sobreescribimos el ataque base de AEnemyBase
+	virtual void StartAttack() override;
+
+	// Para que giren la cabeza/cuerpo hacia el jugador
+	virtual void Tick(float DeltaTime) override;
 	
 };
