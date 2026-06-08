@@ -64,7 +64,7 @@ ATopDownPlayer::ATopDownPlayer()
         MoveComp->bOrientRotationToMovement = true;
 
         // No momentum
-        float AbsurdAcceleration = 100000000.0f;
+        float AbsurdAcceleration = 100000.0f;
         GetCharacterMovement()->MaxAcceleration = AbsurdAcceleration;
         GetCharacterMovement()->BrakingDecelerationFlying = AbsurdAcceleration;
         GetCharacterMovement()->BrakingFrictionFactor = 1.0f;

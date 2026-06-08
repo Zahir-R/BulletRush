@@ -216,6 +216,12 @@ UButton* UMainMenuWidget::CreateMenuButton(const FString& Text, UTexture2D* Icon
 
 void UMainMenuWidget::OnJugarClicked()
 {
+    APlayerController* PC = GetOwningPlayer();
+    if (PC)
+    {
+        PC->SetShowMouseCursor(false);
+        PC->SetInputMode(FInputModeGameOnly());
+    }
     UGameplayStatics::OpenLevel(this, TEXT("Map_CupHeadMap"));
 }
 
