@@ -41,6 +41,9 @@ public:
 	float BuffMagnitude = 1.0f;
 
 	virtual void Tick(float DeltaTime) override;
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 protected:
 	UPROPERTY(VisibleAnywhere)
 	class USphereComponent* CollisionSphere;

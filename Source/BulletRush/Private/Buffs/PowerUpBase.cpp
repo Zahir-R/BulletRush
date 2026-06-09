@@ -53,6 +53,16 @@ void APowerUpBase::OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 	}
 }
 
+void APowerUpBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (NiagaraComponent)
+	{
+		NiagaraComponent->Deactivate();
+		NiagaraComponent->SetAsset(nullptr);
+	}
+	Super::EndPlay(EndPlayReason);
+}
+
 void APowerUpBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);

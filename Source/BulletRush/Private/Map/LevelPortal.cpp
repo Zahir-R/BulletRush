@@ -62,6 +62,16 @@ void ALevelPortal::BeginPlay()
 	Super::BeginPlay();
 
 }
+void ALevelPortal::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (NiagaraComponent)
+	{
+		NiagaraComponent->Deactivate();
+		NiagaraComponent->SetAsset(nullptr);
+	}
+	Super::EndPlay(EndPlayReason);
+}
+
 void ALevelPortal::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	// Verificamos que el actor que chocó no sea nulo y no sea el portal mismo
