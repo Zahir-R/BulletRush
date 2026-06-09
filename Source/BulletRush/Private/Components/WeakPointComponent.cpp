@@ -18,7 +18,8 @@ UWeakPointComponent::UWeakPointComponent()
 	// Detecta daï¿½o mediante Overlaps, siempre serï¿½ true
     InitSphereRadius(40.0f);
 	SetGenerateOverlapEvents(true);
-
+    SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+    SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
     //----Zona de Test, borralo o modificalo si no quieres que tu Unreal crasheï¿½ sin querer----
     VisualMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualMesh"));
     VisualMesh->SetupAttachment(this);
@@ -114,7 +115,7 @@ void UWeakPointComponent::SetVisualMaterial(UMaterialInterface* NewMat)
 void UWeakPointComponent::ResetWeakPoint()
 {
     CurrentHealth = MaxHealth;
-    SetGenerateOverlapEvents(false); // Se reactivará en Open()
+    SetGenerateOverlapEvents(false); // Se reactivarï¿½ en Open()
     if (VisualMesh) VisualMesh->SetVisibility(true);
 }
 

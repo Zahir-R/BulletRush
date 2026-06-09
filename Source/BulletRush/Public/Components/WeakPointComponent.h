@@ -27,7 +27,7 @@ public:
 	FOnWeakPointDestroyed OnDestroyedEvent;
     
 	float CurrentHealth;
-    
+
 	void TakeDamageFromHit(float DamageAmount);
     void ResetWeakPoint();
     bool IsDestroyed() const { return CurrentHealth <= 0.0f; }

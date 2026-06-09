@@ -14,7 +14,7 @@ AMechaKamikazeEnemy::AMechaKamikazeEnemy()
 	if (MeshAsset.Succeeded()) MeshEnemy->SetStaticMesh(MeshAsset.Object);
 	MeshEnemy->SetRelativeScale3D(FVector(0.8f));
 	//MeshEnemy->SetRelativeRotationExact(FRotator(0.0f, 0.0f, 90.0f));
-	
+    MeshEnemy->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 }
 
 void AMechaKamikazeEnemy::BeginPlay()
