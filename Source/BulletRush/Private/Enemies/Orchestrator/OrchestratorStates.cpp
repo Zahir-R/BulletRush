@@ -2,6 +2,7 @@
 
 
 #include "Enemies/Orchestrator/OrchestratorStates.h"
+#include "Animation/AnimSequence.h"
 #include "Enemies/Orchestrator/Orchestrator.h"
 #include "Components/RhytmConductorComponent.h"
 #include "Components/BulletSpawnerComponent.h"
@@ -9,6 +10,7 @@
 #include "Subsystems/ProjectilesSubsystem.h"
 #include "Engine/World.h"
 #include "Engine/GameInstance.h"
+#include "AIController.h"
 #include "Kismet/GameplayStatics.h"
 
 FVector GetScaleFromBPM(float CurrentBPM)
@@ -418,25 +420,50 @@ void UOrchePhaseTransition::HandleBeat()
 void UOrcheDead::EnterState(ABossBase* Boss)
 {
 	OrchestratorRef = Cast<AOrchestrator>(Boss);
-	OrchestratorRef->BossAudioComp->FadeOut(2.5f, 0.0f);
+	AOrchestrator* Master = Cast<AOrchestrator>(Boss);
 
-	UE_LOG(LogTemp, Warning, TEXT("Entra a UOrcheDeadState"));
+	if (OrchestratorRef->RhythmConductor) OrchestratorRef->RhythmConductor->StopRhythm();
 
-	UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(OrchestratorRef->GetGameInstance());
-	if (GI)
-	{
-		GI->MarcarMapaCompletado(FName("Map_05Boss"));
-	}
-	OrchestratorRef->GetWorld()->GetTimerManager().SetTimer(OrchestratorRef->DeathTimerHandle, [this]()
+	if (AAIController* AI = Cast<AAIController>(OrchestratorRef->GetController())) {
+		float TimeToFall = 0.5f; // Valor por defecto seguro
+
+		if (OrchestratorRef->DownLimits.Z != 0.0f)
 		{
-			if (OrchestratorRef)
+			OrchestratorRef->MovementComp->MaxSpeed = 3000.0f; // Velocidad de caída dramática
+			FVector CurrentLoc = OrchestratorRef->GetActorLocation();
+			FVector NewLocation = CurrentLoc;
+			NewLocation.Z = OrchestratorRef->DownLimits.Z - 400.0f;
+
+			// Ordenamos la caída
+			AI->MoveToLocation(NewLocation, 10.0f, false, false);
+
+			// --- CÁLCULO DEL IMPACTO ---
+			float FallDistance = FMath::Abs(CurrentLoc.Z - NewLocation.Z);
+			TimeToFall = FallDistance / 3000.0f; // Tiempo = Distancia / Velocidad
+		};
+
+		UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(OrchestratorRef->GetGameInstance());
+		if (GI)
+		{
+			GI->MarcarMapaCompletado(FName("Map_05Boss"));
+		}
+
+		if (OrchestratorRef->BossAudioComp) {
+			OrchestratorRef->BossAudioComp->FadeOut(2.5f, 0.0f);
+			// Si declaras un OrchestratorRef->DeathSound en tu jefe, lo reproduces aquí:
+			// OrchestratorRef->BossAudioComp->SetSound(OrchestratorRef->DeathSound);
+			// OrchestratorRef->BossAudioComp->Play();
+		}
+		if (OrchestratorRef->DeathAnimation && OrchestratorRef->OrchestMesh)
+		{
+			OrchestratorRef->OrchestMesh->PlayAnimation(OrchestratorRef->DeathAnimation, false);
+		}
+		OrchestratorRef->GetWorld()->GetTimerManager().SetTimer(OrchestratorRef->DeathTimerHandle, [Master]()
 			{
-				OrchestratorRef->Die();
-			}
-		}, 3.0f, false);
+				if (Master) Master->Die();
+			}, TimeToFall, false);
+		
+	}
 }
 
-void UOrcheDead::ExitState(ABossBase* Boss)
-{
-	UE_LOG(LogTemp, Warning, TEXT("Orchestrator sale de estado Dead"));
-}
+	void UOrcheDead::ExitState(ABossBase * Boss) {};
