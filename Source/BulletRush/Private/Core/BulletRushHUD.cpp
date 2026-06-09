@@ -7,6 +7,9 @@
 #include "Components/HealthComponent.h"
 #include "Components/BuffComponent.h"
 #include "Components/WeaponBaseComponent.h"
+#include "Components/Weapons/AutoFireStrategy.h"
+#include "Components/Weapons/VolleyStrategy.h"
+#include "Components/Weapons/PlusFireStrategy.h"
 #include "Buffs/PlayerStatsDecorator.h"
 #include "Core/BulletRushGameInstance.h"
 #include "Enemies/EnemyBase.h"
@@ -373,7 +376,7 @@ void ABulletRushHUD::DrawBottomRightPanel()
         FString WName = GetWeaponDisplayName(Weapon);
         FString Line = FString::Printf(TEXT("[ %s ]"), *WName);
 
-        FLinearColor LineColor = (Idx == 0)
+        FLinearColor LineColor = (Weapon == CachedPlayer->CurrentWeapon)
             ? FLinearColor(0.f, 1.f, 0.6f, 1.f)
             : FLinearColor(0.4f, 0.9f, 1.f, 1.f);
 
@@ -421,14 +424,13 @@ void ABulletRushHUD::RefreshTargetData()
 
 FString ABulletRushHUD::GetWeaponDisplayName(UWeaponBaseComponent* Weapon) const
 {
-    if (!Weapon) return TEXT("NONE");
+    if (!Weapon || !Weapon->FireStrategy) return TEXT("NONE");
 
-    if (CachedPlayer.IsValid())
-    {
-        //if (Weapon == CachedPlayer->TestWeapon) return TEXT("VOLLEY");
-        //if (Weapon == CachedPlayer->TestWeapontwo) return TEXT("SPREAD");
-    }
-    return TEXT("AUTO");
+    if (Cast<UAutoFireStrategy>(Weapon->FireStrategy.GetObject())) return TEXT("AUTO");
+    if (Cast<UVolleyStrategy>(Weapon->FireStrategy.GetObject()))   return TEXT("VOLLEY");
+    if (Cast<UPlusFireStrategy>(Weapon->FireStrategy.GetObject())) return TEXT("SPREAD");
+
+    return TEXT("UNKNOWN");
 }
 
 void ABulletRushHUD::DrawShadowedText(const FString& Text, FLinearColor Color,

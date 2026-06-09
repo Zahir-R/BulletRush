@@ -107,7 +107,7 @@ void UBossRecorderComponent::StopRecordingAndSpawnClone()
 
 	FTransform SpawnTransform(FRotator::ZeroRotator, OwnerBoss->GetActorLocation() + FVector(800.f, 0.f, 0.f));
 
-	ASerXBoss* Clone = GetWorld()->SpawnActorDeferred<ASerXBoss>(OwnerBoss->GetClass(), SpawnTransform);
+	ASerXBoss* Clone = GetWorld()->SpawnActorDeferred<ASerXBoss>(OwnerBoss->GetClass(), SpawnTransform, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 	if (Clone)
 	{
 		Clone->bIsClone = true;

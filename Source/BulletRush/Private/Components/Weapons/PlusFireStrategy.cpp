@@ -77,7 +77,7 @@ void UPlusFireStrategy::ExecuteFire(
 		Weapon->GetComponentLocation();
 
 	FRotator BaseRotation =
-		Weapon->GetComponentRotation();
+		Player->GetAimDirection().Rotation();
 
 	TArray<FRotator> Rotations;
 

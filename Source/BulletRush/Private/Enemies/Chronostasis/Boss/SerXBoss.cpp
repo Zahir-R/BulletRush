@@ -40,8 +40,7 @@ ASerXBoss::ASerXBoss()
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/Assets/ChronoEnemies/Boss/Nebula_Voyager_boss_texture.Nebula_Voyager_boss_texture'"));
 	if (MeshAsset.Succeeded()) MeshEnemy->SetStaticMesh(MeshAsset.Object);
 
-	// Escalado para que de miedo
-	MeshEnemy->SetRelativeScale3D(FVector(10.0f, 10.0f, 10.0f));
+	MeshEnemy->SetRelativeScale3D(FVector(7.5f, 7.5f, 7.5f));
 	static ConstructorHelpers::FObjectFinder<UMaterialInterface> MaterialAsset(TEXT("Material'/Game/Assets/ChronoEnemies/Boss/M_Nebula_Voyager_boss.M_Nebula_Voyager_boss'"));
 	if (MaterialAsset.Succeeded()) MeshEnemy->SetMaterial(0, MaterialAsset.Object);
 }
@@ -160,7 +159,7 @@ void ASerXBoss::SetupMovementStrategies()
 	{
 		MoveBehindStrat = NewObject<UMoveBehindMovement>(this);
 		MoveBehindStrat->Speed = 5000.f;
-		MoveBehindStrat->Distance = 1500.f;
+		MoveBehindStrat->Distance = 2500.f;
 	}
 	if (!TriangulationStrat)
 	{
@@ -551,6 +550,7 @@ void ASerXBoss::OnZoneSpawnTimer()
 	if (!bIsClone && RecorderComponent)
 	{
 		RecorderComponent->TryStartRecording(AttackIdentifier);
+		UE_LOG(LogTemp, Warning, TEXT("Boss should have started recording"));
 	}
 }
 

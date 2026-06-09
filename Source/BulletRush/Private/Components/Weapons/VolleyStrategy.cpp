@@ -91,7 +91,7 @@ void UVolleyStrategy::ExecuteFire(
 		Weapon->GetComponentLocation();
 
 	FVector Direction =
-		Weapon->GetComponentRotation().Vector();
+		Player->GetAimDirection();
 
 	ABulletBase* Bullet =
 		Pool->RequestBullet(
