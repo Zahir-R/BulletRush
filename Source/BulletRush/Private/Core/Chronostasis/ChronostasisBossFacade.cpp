@@ -46,7 +46,16 @@ void AChronostasisBossFacade::StartLevel()
 		Music->PlaySong(CombatSong, StartTime, 2.0f, true);
 	}
 
-	SpawnBoss();
+    {
+        APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+        ABulletRushHUD* HUD = PC ? Cast<ABulletRushHUD>(PC->GetHUD()) : nullptr;
+        if (HUD)
+        {
+            HUD->SetObjective(TEXT("Derrota al Ser X"));
+        }
+    }
+
+    SpawnBoss();
 }
 
 void AChronostasisBossFacade::SpawnBoss()

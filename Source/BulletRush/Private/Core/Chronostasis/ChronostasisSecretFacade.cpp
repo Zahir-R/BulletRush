@@ -73,19 +73,20 @@ void AChronostasisSecretFacade::StartLevel()
 		Music->PlaySong(CombatSong, StartTime, 2.0f, true);
 	}
 
-	WaveManager->StartSecretWaves(Waves);
-	SlowSystem->Start();
+    WaveManager->StartSecretWaves(Waves);
+    SlowSystem->Start();
 
-	TimeRemaining = TimeLimit;
-	GetWorld()->GetTimerManager().SetTimer(
-		CountdownTimerHandle, this, &AChronostasisSecretFacade::TickTimer, 1.0f, true);
+    TimeRemaining = TimeLimit;
+    GetWorld()->GetTimerManager().SetTimer(
+        CountdownTimerHandle, this, &AChronostasisSecretFacade::TickTimer, 1.0f, true);
 
-	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	ABulletRushHUD* HUD = PC ? Cast<ABulletRushHUD>(PC->GetHUD()) : nullptr;
-	if (HUD)
-	{
-		HUD->ShowMessage("SECRET LEVEL", 3.0f);
-	}
+    APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+    ABulletRushHUD* HUD = PC ? Cast<ABulletRushHUD>(PC->GetHUD()) : nullptr;
+    if (HUD)
+    {
+        HUD->SetObjective(TEXT("Derriba 3 oleadas de enemigos"));
+        HUD->ShowMessage("SECRET LEVEL", 3.0f);
+    }
 }
 
 void AChronostasisSecretFacade::OnEnemyKilled(AEnemyBase* Enemy)

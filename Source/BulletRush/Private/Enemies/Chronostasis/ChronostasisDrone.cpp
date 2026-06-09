@@ -78,10 +78,13 @@ void AChronostasisDrone::Tick(float DeltaTime)
 
     if (PlayerPawn)
     {
-		FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), PlayerPawn->GetActorLocation());
-        // Drones are facing up 
+        FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), PlayerPawn->GetActorLocation());
+        TargetRotation.Roll = 0.0f;
+        TargetRotation.Yaw += 180.0f;
+        TargetRotation.Pitch *= -1.0f;
+
         FRotator CurrRotation = GetActorRotation();
         FRotator SmoothRotation = UKismetMathLibrary::RInterpTo(CurrRotation, TargetRotation, DeltaTime, RotationSpeed);
-		SetActorRotation(SmoothRotation);
+        SetActorRotation(SmoothRotation);
     }
 }

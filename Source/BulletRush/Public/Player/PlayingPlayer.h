@@ -12,6 +12,7 @@
 class USpringArmComponent;
 class UCameraComponent;
 class UStaticMeshComponent;
+class USphereComponent;
 class UWeaponBaseComponent;
 class UPlayerStatsBase;
 
@@ -26,6 +27,9 @@ public:
 	USpringArmComponent* CameraBoom;
 	UCameraComponent* FollowCamera;
 	UStaticMeshComponent* VisualMesh;
+
+	UPROPERTY()
+	USphereComponent* Hitbox;
 
 	// TESTING
 	UBulletSpawnerComponent* Spawner;

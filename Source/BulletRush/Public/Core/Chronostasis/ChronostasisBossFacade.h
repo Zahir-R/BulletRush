@@ -28,7 +28,7 @@ public:
 	TSubclassOf<ASerXBoss> SerXBossClass;
 
 	UPROPERTY(EditAnywhere, Category = "Boss")
-	FVector BossSpawnLocation = FVector(0.0f, 0.0f, 300.0f);
+	FVector BossSpawnLocation = FVector(500.0f, 500.0f, 300.0f);
 
 	UPROPERTY(EditAnywhere, Category = "Music")
 	USoundBase* AmbientSong;

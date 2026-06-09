@@ -48,14 +48,6 @@ void ADrone::Tick(float DeltaSeconds)
             FVector NewPos = MovementStrategy->GetNextPosition(this, DeltaSeconds, Target);
             NewPos = ApplyEnemySeparation(NewPos);
             SetActorLocation(NewPos);
-
-            FVector Direction = (Target - GetActorLocation()).GetSafeNormal();
-            Direction.Z -= Target.Z+90.f;
-            if (!Direction.IsNearlyZero())
-            {
-                FRotator LookAtRotation = Direction.Rotation();
-                SetActorRotation(LookAtRotation);
-            }
         }
     }
 }

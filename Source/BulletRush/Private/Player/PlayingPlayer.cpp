@@ -4,6 +4,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/SphereComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/HealthComponent.h"
 #include "Components/WeaponBaseComponent.h"
@@ -33,7 +35,7 @@ APlayingPlayer::APlayingPlayer()
 	if (MeshAsset.Succeeded())
 	{
 		VisualMesh->SetStaticMesh(MeshAsset.Object);
-		VisualMesh->SetRelativeLocation(FVector(0, 0, -45)); // Donde se crear� la malla en el objeto
+		VisualMesh->SetRelativeLocation(FVector(0, 0, 0)); // Donde se crear� la malla en el objeto
 		VisualMesh->SetRelativeRotation(FRotator(0.f, -90.f, 0.f));
 		VisualMesh->SetRelativeScale3D(
 			FVector(
@@ -43,6 +45,17 @@ APlayingPlayer::APlayingPlayer()
 			)
 		);
 	}
+
+	// Hitbox (bullet hell — tiny hitbox, visual mesh and capsule ignore bullet traces)
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
+	VisualMesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
+
+	Hitbox = CreateDefaultSubobject<USphereComponent>(TEXT("Hitbox"));
+	Hitbox->SetupAttachment(RootComponent);
+	Hitbox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	Hitbox->SetCollisionResponseToAllChannels(ECR_Ignore);
+	Hitbox->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	Hitbox->SetSphereRadius(15.0f);
 
 	// C�mara
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));

@@ -84,7 +84,10 @@ void AEnemyBase::OnHealthUpdated(float NewHealth)
 		}
 
 		HealthBarWidget->SetDrawSize(GetHealthBarSize());
-		HealthBarWidget->SetRelativeLocation(FVector(0.f, 0.f, GetHealthBarVerticalOffset()));
+		float OffsetZ = GetHealthBarVerticalOffset();
+		FVector RootScale = RootComponent ? RootComponent->GetComponentScale() : FVector(1.0f);
+		if (RootScale.Z != 0.f) OffsetZ /= RootScale.Z;
+		HealthBarWidget->SetRelativeLocation(FVector(0.f, 0.f, OffsetZ));
 	}
 }
 

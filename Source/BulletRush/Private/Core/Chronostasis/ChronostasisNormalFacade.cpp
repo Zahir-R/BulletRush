@@ -6,6 +6,7 @@
 #include "Core/Requirements/NoDamageRequirement.h"
 #include "Core/Requirements/TimeStopRequirement.h"
 #include "Core/BulletRushGameInstance.h"
+#include "Core/BulletRushHUD.h"
 #include "Enemies/Chronostasis/ChronostasisDrone.h"
 #include "Enemies/Chronostasis/ChronostasisMass.h"
 #include "Enemies/Chronostasis/ChronostasisExpansive.h"
@@ -65,9 +66,18 @@ void AChronostasisNormalFacade::StartLevel()
 		Music->PlaySong(CombatSong, StartTime, 2.0f, true);
 	}
 
-	WaveManager->SetWaves(Waves);
-	SlowSystem->Start();
-	WaveManager->StartGame();
+    WaveManager->SetWaves(Waves);
+    SlowSystem->Start();
+    WaveManager->StartGame();
+
+    {
+        APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+        ABulletRushHUD* HUD = PC ? Cast<ABulletRushHUD>(PC->GetHUD()) : nullptr;
+        if (HUD)
+        {
+            HUD->SetObjective(TEXT("Derriba 3 oleadas de enemigos"));
+        }
+    }
 
 	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	if (PC)
