@@ -7,6 +7,7 @@
 #include "Enemies/Orchestrator/Orchestrator.h"
 #include "Enemies/EnemyBase.h"
 #include "Core/Orchestrator/OrchestratorGameMode.h"
+#include "Core/BulletRushHUD.h"
 #include "Enemies/Orchestrator/BossArenaTrigger.h"
 #include "Enemies/Bloodseeker/KamikazeEnemy.h"
 #include "Enemies/Orchestrator/SecretGuardian.h"
@@ -17,7 +18,7 @@
 
 AOrchestratorFacade::AOrchestratorFacade()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	bIsPlayerDetected = false;
 	bSecretPuzzleSolved = false;
@@ -102,10 +103,17 @@ void AOrchestratorFacade::ReportGeneratorDestroyed()
 	if (GeneratorsDestroyed == 1)
 	{
 		// Inicia el cronómetro de 5 segundos para el puzzle
+		PuzzleTimeRemaining = 5.0f;
+		bPuzzleActive = true;
 		GetWorld()->GetTimerManager().SetTimer(PuzzleTimerHandle, this, &AOrchestratorFacade::FailSecretPuzzle, 5.0f, false);
 	}
 	else if (GeneratorsDestroyed >= 3)
 	{
+		bPuzzleActive = false;
+		if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
+		{
+			if (ABulletRushHUD* HUD = Cast<ABulletRushHUD>(PC->GetHUD())) HUD->SetCountdown(-1.0f);
+		}
 		// Puzzle resuelto a tiempo
 		GetWorld()->GetTimerManager().ClearTimer(PuzzleTimerHandle);
 		UE_LOG(LogTemp, Warning, TEXT("Fachada: Puzzle a tiempo. Spawneando Guardianes Secretos."));
@@ -155,9 +163,14 @@ void AOrchestratorFacade::ReportGeneratorDestroyed()
 
 void AOrchestratorFacade::FailSecretPuzzle()
 {
-	UE_LOG(LogTemp, Error, TEXT("Fachada: Tiempo agotado. Puzzle 5-1-S fallado."));
 	GeneratorsDestroyed = 0;
+	bPuzzleActive = false;
 
+	// Ocultamos el cronómetro al fallar
+	if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
+	{
+		if (ABulletRushHUD* HUD = Cast<ABulletRushHUD>(PC->GetHUD())) HUD->SetCountdown(-1.0f);
+	}
 	if (TriggerRef)
 	{
 		TriggerRef->PrepareArena();
@@ -294,6 +307,25 @@ void AOrchestratorFacade::SpawnSecretGuardians()
 			if (HealthComp)
 			{
 				HealthComp->OnDeath.AddDynamic(this, &AOrchestratorFacade::ReportGuardianDefeated);
+			}
+		}
+	}
+}
+
+void AOrchestratorFacade::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (bPuzzleActive)
+	{
+		PuzzleTimeRemaining -= DeltaTime;
+
+		// Actualizamos el HUD en cada frame
+		if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
+		{
+			if (ABulletRushHUD* HUD = Cast<ABulletRushHUD>(PC->GetHUD()))
+			{
+				HUD->SetCountdown(PuzzleTimeRemaining);
 			}
 		}
 	}

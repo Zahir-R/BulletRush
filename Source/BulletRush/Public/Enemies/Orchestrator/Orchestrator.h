@@ -50,6 +50,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Music")
 	USoundBase* Phase4Music;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Animaciones")
+	class UAnimSequence* DeathAnimation;
+
 	FTimerHandle DeathTimerHandle;
 
 protected:
@@ -101,6 +104,9 @@ public:
 
 	UFUNCTION()
 	void Die() override;
+
+	UFUNCTION()
+	void HandleBossDeath();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mundo")
 	FVector DownLimits = FVector(2300.0f, -6710.0f, 500.0f);
