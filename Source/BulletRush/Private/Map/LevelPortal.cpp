@@ -40,6 +40,18 @@ ALevelPortal::ALevelPortal()
 	}
 
 	CollisionBox->OnComponentBeginOverlap.AddDynamic(this, &ALevelPortal::OnOverlapBegin);
+	//niagara
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> NiagaraAsset(TEXT("NiagaraSystem'/Game/MixedVFX/Particles/Mix/NS_Mix_03.NS_Mix_03'"));
+	if (NiagaraAsset.Succeeded())
+	{
+		NiagaraSystem = NiagaraAsset.Object;
+
+
+		NiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComponent"));
+		NiagaraComponent->SetAsset(NiagaraSystem);
+		NiagaraComponent->SetupAttachment(RootComponent);
+		NiagaraComponent->bAutoActivate = true;
+	}
 
 
 }
