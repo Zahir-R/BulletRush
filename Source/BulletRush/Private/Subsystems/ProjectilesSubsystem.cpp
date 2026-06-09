@@ -87,7 +87,17 @@ void UProjectilesSubsystem::Tick(float DeltaTime)
 					{
 						if (bIsBoss)
 						{
-							// Check if boss has active weak points
+							UWeakPointComponent* HitWP = Cast<UWeakPointComponent>(Hit.GetComponent());
+							if (HitWP)
+							{
+								if (HitWP->GetGenerateOverlapEvents() && HitWP->CurrentHealth > 0.0f)
+								{
+									HitWP->TakeDamageFromHit(Bullet->BulletData.Damage);
+								}
+								ReturnBullet(Bullet);
+								continue;
+							}
+
 							bool bHasActiveWeakPoints = false;
 							TArray<UWeakPointComponent*> WPs;
 							OtherActor->GetComponents<UWeakPointComponent>(WPs);
@@ -102,10 +112,8 @@ void UProjectilesSubsystem::Tick(float DeltaTime)
 
 							if (bHasActiveWeakPoints)
 							{
-								// Let the WeakPointComponent overlap handler process
-								// damage + return. Don't ApplyDamage or ReturnBullet here.
-								// The sweep movement (SetActorLocation with bSweep=true)
-								// will trigger OnComponentBeginOverlap on the weak point.
+								ReturnBullet(Bullet);
+								continue;
 							}
 							else
 							{
