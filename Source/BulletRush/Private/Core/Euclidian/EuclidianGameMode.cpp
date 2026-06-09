@@ -6,6 +6,7 @@
 #include "Core/Euclidian/PhaseS.h"
 #include "Core/Euclidian/Phase2.h"
 #include "Engine/World.h"
+#include "Map/PortalManager.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Core/Euclidian/Strategies/RedTurretObjective.h"
 
@@ -24,7 +25,7 @@ void AEuclidianGameMode::BeginPlay()
     }
 
 	ChangePhase(
-		NewObject<UPhase1>(this)
+		NewObject<UPhase2>(this)
 	);
 
 	UGameplayStatics::GetAllActorsOfClass(
@@ -111,11 +112,32 @@ void AEuclidianGameMode::OnObservedEnemyDeath(AEnemyBase* Enemy)
 
 	Objective->OnEnemyKilled(Enemy);
 
-	if (Objective->IsCompleted())
+	if (!Objective->IsCompleted())
+	{
+		return;
+	}
+
+	// Phase 1 finished -> go to Phase 2
+	if (Cast<UPhase1>(CurrentPhase))
 	{
 		ChangePhase(
 			NewObject<UPhase2>(this)
 		);
+		return;
+	}
+
+	// Phase 2 finished -> spawn CupHead portal
+	if (Cast<UPhase2>(CurrentPhase))
+	{
+		APortalManager* PortalManager =
+			GetWorld()->SpawnActor<APortalManager>();
+
+		if (PortalManager)
+		{
+			PortalManager->VolverCupHead(
+				Enemy->GetActorLocation()
+			);
+		}
 	}
 }
 void AEuclidianGameMode::SetObjective(
