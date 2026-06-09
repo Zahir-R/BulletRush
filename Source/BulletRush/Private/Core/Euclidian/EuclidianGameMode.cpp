@@ -5,16 +5,27 @@
 #include "Core/Euclidian/Phase1.h"
 #include "Core/Euclidian/PhaseS.h"
 #include "Core/Euclidian/Phase2.h"
+#include "Engine/World.h"
+#include "UObject/ConstructorHelpers.h"
 #include "Core/Euclidian/Strategies/RedTurretObjective.h"
 
 void AEuclidianGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
+	
+    if (GetWorld())
+    {
+        SkySphere =
+            GetWorld()->SpawnActor<ASkySphereWorld>(
+                ASkySphereWorld::StaticClass(),
+                FTransform(FVector::ZeroVector)
+            );
+    }
+
 	ChangePhase(
 		NewObject<UPhase1>(this)
 	);
-	TArray<AActor*>FoundDrones;
 
 	UGameplayStatics::GetAllActorsOfClass(
 		GetWorld(),
@@ -64,9 +75,6 @@ void AEuclidianGameMode::SpawnRedDrone()
 }
 void AEuclidianGameMode::RefreshDroneList()
 {
-	Drones.Empty();
-
-	TArray<AActor*> FoundDrones;
 
 	UGameplayStatics::GetAllActorsOfClass(
 		GetWorld(),
@@ -88,7 +96,6 @@ void AEuclidianGameMode::RefreshDroneList()
 				&AEuclidianGameMode::OnDroneDestroyed
 			);
 
-			Drones.Add(Drone);
 		}
 	}
 }
@@ -136,6 +143,8 @@ void AEuclidianGameMode::ChangePhase(
 	{
 		CurrentPhase->EnterPhase(this);
 	}
+
+	RefreshDroneList();
 }
 void AEuclidianGameMode::EnableRedTurretVulnerability(
 	float Duration)

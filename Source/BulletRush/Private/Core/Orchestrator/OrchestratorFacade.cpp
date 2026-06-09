@@ -68,8 +68,18 @@ void AOrchestratorFacade::BeginPlay()
 	UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
 	if (GI)
 	{
-		//GI->MarcarMapaCompletado(FName("Map_05Boss"));
-		GI->OrchestratorLState = ELevelState::Normal;
+		if (GI->OrchestratorLState == ELevelState::Boss)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Fachada: El nivel se ha cargado en estado BOSS. Preparando arena..."));
+			if (TriggerRef)
+			{
+				TriggerRef->PrepareArena();
+			}
+		}
+		else 
+		{
+			GI->OrchestratorLState = ELevelState::Normal;
+		}
 	}
 }
 
@@ -178,6 +188,12 @@ void AOrchestratorFacade::PrepareBossArena(FTransform BossSpawnTransform)
 
 	UE_LOG(LogTemp, Warning, TEXT("Fachada: Combate de Jefe Registrado."));
 
+	UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
+	if (GI)
+	{
+		GI->OrchestratorLState = ELevelState::Boss;
+		bBossFightStarted = false;
+	}
 	if (GetWorld())
 	{
 		AOrchestrator* FinalBoss = GetWorld()->SpawnActor<AOrchestrator>(AOrchestrator::StaticClass(), BossSpawnTransform);
@@ -239,12 +255,6 @@ void AOrchestratorFacade::PrepareBossArena(FTransform BossSpawnTransform)
 	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	APlayingPlayer* PlayingPlayer = Cast<APlayingPlayer>(PC->GetPawn());
 	PlayingPlayer->SetActorLocation(FVector(4410.0f, -2710.0f, 50.0f));
-
-	UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
-	if (GI)
-	{
-		GI->OrchestratorLState = ELevelState::Boss;
-	}
 }
 
 void AOrchestratorFacade::SpawnZoneAReinforcements(FVector SpawnOrigin)

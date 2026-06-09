@@ -22,6 +22,7 @@ public:
 
     void SetCountdown(float TimeLeft);
     void ShowMessage(const FString& Msg, float Duration);
+    void SetObjective(const FString& NewObjective);
 
 protected:
     void BindToPlayer();
@@ -60,7 +61,7 @@ protected:
     void ClearMessage();
     TWeakObjectPtr<APlayingPlayer> CachedPlayer;
 
-    // Animación
+    // Animaciï¿½n
     float TimeAccumulator = 0.f;
     float DamageFlashTime = 0.f;
 
@@ -69,7 +70,7 @@ protected:
 
     // Cache nuevo
     float CachedSpeed = 0.f;
-    FString CachedObjective;
+    FString CachedObjective = TEXT("COMPLETE THE LEVEL");
     FString CachedTargetName;
     float CachedTargetDist = 0.f;
     bool bHasTarget = false;

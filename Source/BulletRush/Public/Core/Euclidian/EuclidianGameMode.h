@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Core/BulletRushGameModeBase.h"
 #include "Enemies/Common/Drone.h"
+#include "Enemies/Bloodseeker/SkySphereWorld.h"
 #include "EuclidianGameMode.generated.h"
 
 class UEuclidianPhase;
@@ -28,6 +29,9 @@ public:
 	UPROPERTY()
 	TArray<ADrone*> Drones;
 
+	UPROPERTY()
+	ASkySphereWorld* SkySphere;
+
 	void RefreshDroneList();
 	UPROPERTY()
 	UObject* CurrentObjective;
@@ -42,6 +46,8 @@ public:
 
 	UPROPERTY()
 	bool bRedTurretsVulnerable = false;
+
+	TArray<AActor*>FoundDrones;
 
 	FTimerHandle RedTurretVulnerabilityTimer;
 

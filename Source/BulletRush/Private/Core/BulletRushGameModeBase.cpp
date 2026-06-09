@@ -24,18 +24,7 @@ ABulletRushGameModeBase::ABulletRushGameModeBase()
 void ABulletRushGameModeBase::BeginPlay() 
 {
 	Super::BeginPlay();
-	//para testeo 
     if (GetWorld()) {
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		FTransform SpawnTransform(FRotator::ZeroRotator, FVector(300.0f, 300.0f, 50.0f));
-		ALevelPortal* NivelRetorno = GetWorld()->SpawnActor<ALevelPortal>(ALevelPortal::StaticClass(), SpawnTransform, SpawnParams);
-		if (NivelRetorno)
-		{
-			NivelRetorno->TargetLevelName = "Map_CupHeadMap";
-		}
-		//spawneamos el nivel para volver al cuphead
-
 		SpawnPowerUpsForLevel(GetWorld(), FName(GetWorld()->GetMapName()));
 	}
 }

@@ -5,12 +5,14 @@
 #include "Components/BulletSpawnerComponent.h"
 #include "Components/HealthComponent.h"
 #include "Components/BuffComponent.h"
+#include "Blueprint/UserWidget.h"
 #include "PlayerStatsInterface.h"
 #include "PlayingPlayer.generated.h"
 
 class USpringArmComponent;
 class UCameraComponent;
 class UStaticMeshComponent;
+class USphereComponent;
 class UWeaponBaseComponent;
 class UPlayerStatsBase;
 
@@ -25,6 +27,9 @@ public:
 	USpringArmComponent* CameraBoom;
 	UCameraComponent* FollowCamera;
 	UStaticMeshComponent* VisualMesh;
+
+	UPROPERTY()
+	USphereComponent* Hitbox;
 
 	// TESTING
 	UBulletSpawnerComponent* Spawner;
@@ -53,12 +58,27 @@ public:
 
 	TArray<UWeaponBaseComponent*> EquippedWeapons;
 	UPROPERTY()
-	UWeaponBaseComponent* TestWeapon;
-	UPROPERTY()
-	UWeaponBaseComponent* TestWeapontwo;
-
+	UWeaponBaseComponent* CurrentWeapon;
 	UHealthComponent* HealthComp;
 	UBuffComponent* BuffComp;
+
+	UFUNCTION()
+	void SelectWeapon1();
+
+	UFUNCTION()
+	void SelectWeapon2();
+
+	UFUNCTION()
+	void SelectWeapon3();
+
+	UFUNCTION(BlueprintCallable)
+	void SelectWeapon(int32 Index);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<UUserWidget> WeaponWidgetClass;
+
+	UPROPERTY()
+	UUserWidget* WeaponWidget;
 
 	void WrapStats(class UPlayerStatsDecorator* NewDecorator);
 	void UnwrapStats();

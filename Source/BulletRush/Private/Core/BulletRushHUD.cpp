@@ -16,7 +16,6 @@ void ABulletRushHUD::BeginPlay()
 {
     Super::BeginPlay();
     BindToPlayer();
-    CachedObjective = TEXT("COMPLETE THE LEVEL");
 }
 
 void ABulletRushHUD::EndPlay(const EEndPlayReason::Type Reason)
@@ -103,6 +102,11 @@ void ABulletRushHUD::ShowMessage(const FString& Msg, float Duration)
 void ABulletRushHUD::ClearMessage()
 {
     CurrentMessage.Empty();
+}
+
+void ABulletRushHUD::SetObjective(const FString& NewObjective)
+{
+    CachedObjective = NewObjective;
 }
 
 void ABulletRushHUD::DrawPanelBorder(float X, float Y, float W, float H, float GlowAlpha, float CornerRadius)
@@ -421,8 +425,8 @@ FString ABulletRushHUD::GetWeaponDisplayName(UWeaponBaseComponent* Weapon) const
 
     if (CachedPlayer.IsValid())
     {
-        if (Weapon == CachedPlayer->TestWeapon) return TEXT("VOLLEY");
-        if (Weapon == CachedPlayer->TestWeapontwo) return TEXT("SPREAD");
+        //if (Weapon == CachedPlayer->TestWeapon) return TEXT("VOLLEY");
+        //if (Weapon == CachedPlayer->TestWeapontwo) return TEXT("SPREAD");
     }
     return TEXT("AUTO");
 }

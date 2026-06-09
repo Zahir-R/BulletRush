@@ -14,6 +14,9 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Engine/World.h"
+#include "EngineUtils.h"
+// Subsystem to return active enemy projectiles to pool
+#include "Subsystems/ProjectilesSubsystem.h"
 
 ASerXBoss::ASerXBoss()
 	: ABossBase()
@@ -37,6 +40,8 @@ ASerXBoss::ASerXBoss()
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/Assets/ChronoEnemies/Boss/Nebula_Voyager_boss_texture.Nebula_Voyager_boss_texture'"));
 	if (MeshAsset.Succeeded()) MeshEnemy->SetStaticMesh(MeshAsset.Object);
 
+	// Escalado para que de miedo
+	MeshEnemy->SetRelativeScale3D(FVector(10.0f, 10.0f, 10.0f));
 	static ConstructorHelpers::FObjectFinder<UMaterialInterface> MaterialAsset(TEXT("Material'/Game/Assets/ChronoEnemies/Boss/M_Nebula_Voyager_boss.M_Nebula_Voyager_boss'"));
 	if (MaterialAsset.Succeeded()) MeshEnemy->SetMaterial(0, MaterialAsset.Object);
 }
@@ -154,26 +159,26 @@ void ASerXBoss::SetupMovementStrategies()
 	if (!MoveBehindStrat)
 	{
 		MoveBehindStrat = NewObject<UMoveBehindMovement>(this);
-		MoveBehindStrat->Speed = 3000.f;
-		MoveBehindStrat->Distance = 200.f;
+		MoveBehindStrat->Speed = 5000.f;
+		MoveBehindStrat->Distance = 1500.f;
 	}
 	if (!TriangulationStrat)
 	{
 		TriangulationStrat = NewObject<UTriangulationMovement>(this);
-		TriangulationStrat->Speed = 3000.f;
-		TriangulationStrat->TriangleSize = 1000.f;
+		TriangulationStrat->Speed = 5000.f;
+		TriangulationStrat->TriangleSize = 2000.f;
 	}
 	if (!AscendStrat)
 	{
 		AscendStrat = NewObject<UAscendMovement>(this);
 		AscendStrat->Speed = 4000.f;
-		AscendStrat->MaxDelta = 700.f;
+		AscendStrat->MaxDelta = 1200.f;
 	}
 	if (!DescendStrat)
 	{
 		DescendStrat = NewObject<UDescendMovement>(this);
 		DescendStrat->Speed = 4000.f;
-		DescendStrat->MaxDelta = 700.f;
+		DescendStrat->MaxDelta = 1200.f;
 	}
 	if (!StaticStrat)
 	{
@@ -572,13 +577,17 @@ void ASerXBoss::OnLinkerDied(AEnemyBase* DeadLinker)
 
 float ASerXBoss::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+	if (bIsClone) return AEnemyBase::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	return ABossBase::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 }
 
 void ASerXBoss::Die()
 {
 	if (bIsDead) return;
-
+	if (bIsClone) {
+		AEnemyBase::Die();
+		return;
+	}
 	if (UWorld* World = GetWorld())
 	{
 		World->GetTimerManager().ClearTimer(LinkerSpawnTimerHandle);
@@ -586,4 +595,13 @@ void ASerXBoss::Die()
 	}
 
 	Super::Die();
+
+	for (TActorIterator<AEnemyBase> It(GetWorld()); It; ++It)
+	{
+		AEnemyBase* Enemy = *It;
+		if (Enemy && Enemy != this)
+		{
+			Enemy->Die();
+		}
+	}
 }

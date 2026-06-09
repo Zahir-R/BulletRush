@@ -16,7 +16,12 @@ ASecretGuardian::ASecretGuardian()
 	CollisionComponent->InitCapsuleSize(140.f, 40.f);
 	CollisionComponent->SetCollisionProfileName(TEXT("Pawn"));
 	CollisionComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
-	RootComponent = CollisionComponent;
+	SetRootComponent(CollisionComponent);
+	if (MeshEnemy)
+	{
+		MeshEnemy->DestroyComponent();
+		MeshEnemy = nullptr;
+	}
 
 	static ConstructorHelpers::FObjectFinder<USkeleton> SkelAsset(TEXT("/Game/ParagonMuriel/Characters/Heroes/Muriel/Meshes/Muriel_Skeleton.Muriel_Skeleton"));
 
@@ -56,6 +61,14 @@ ASecretGuardian::ASecretGuardian()
 	HealthComp->MaxHealth = 500.0f;
 	HealthComp->SetInvulnerable(false);
 
+	if (HealthBarWidget)
+		HealthBarWidget->DetachFromParent(true);
+
+	HealthBarWidget->SetupAttachment(RootComponent);
+	HealthBarWidget->SetRelativeLocation(FVector(0.0f, 0.0f, 120.0f));
+	HealthBarWidget->SetWidgetSpace(EWidgetSpace::Screen);
+	HealthBarWidget->SetDrawSize(FVector2D(120.0f, 20.0f));
+	HealthBarWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ASecretGuardian::BeginPlay()
@@ -93,10 +106,6 @@ void ASecretGuardian::StartAttack()
 	FAttackStep FanStep(EAttackType::Fan, 5, 900.0f, 0.0f, 45.0f, 15.0f, 0.0f, FVector(0.5f));
 	FanStep.bUseBossLocation = true; // El origen es el guardián
 	GuardianCombo.Add(FanStep);
-
-	FAttackStep BurstStep(EAttackType::Burst, 3, 1200.0f, 0.0f, 0.0f, 20.0f, 0.2f, FVector(0.4f));
-	BurstStep.bUseBossLocation = true; // El origen es el guardián
-	GuardianCombo.Add(BurstStep);
 
 	BulletSpawner->StartSequence(GuardianCombo);
 }

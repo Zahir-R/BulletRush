@@ -420,12 +420,13 @@ void UOrcheDead::EnterState(ABossBase* Boss)
 	OrchestratorRef = Cast<AOrchestrator>(Boss);
 	OrchestratorRef->BossAudioComp->FadeOut(2.5f, 0.0f);
 
+	UE_LOG(LogTemp, Warning, TEXT("Entra a UOrcheDeadState"));
+
 	UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(OrchestratorRef->GetGameInstance());
 	if (GI)
 	{
 		GI->MarcarMapaCompletado(FName("Map_05Boss"));
 	}
-
 	OrchestratorRef->GetWorld()->GetTimerManager().SetTimer(OrchestratorRef->DeathTimerHandle, [this]()
 		{
 			if (OrchestratorRef)

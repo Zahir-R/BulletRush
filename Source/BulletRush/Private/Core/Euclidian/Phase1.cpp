@@ -21,9 +21,7 @@ void UPhase1::EnterPhase(AEuclidianGameMode* GameMode)
 		return;
 	}
 
-	//--------------------------------------------------
 	// 4 Drone Spawners
-	//--------------------------------------------------
 
 	TArray<FVector> SpawnerPositions =
 	{
@@ -50,9 +48,7 @@ void UPhase1::EnterPhase(AEuclidianGameMode* GameMode)
 		}
 	}
 
-	//--------------------------------------------------
 	// 3 Red Turrets
-	//--------------------------------------------------
 
 	World->SpawnActor<ARedTurret>(
 		ARedTurret::StaticClass(),

@@ -15,11 +15,11 @@ AVaultKeeper::AVaultKeeper()
         MeshEnemy = nullptr;
     }
     //mesh del boss
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/AccuCities/meshes/VaultKeeper.VaultKeeper'"));
-	VaultMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VaultMesh"));
-	RootComponent = VaultMesh;
-	if (MeshAsset.Succeeded()) VaultMesh->SetStaticMesh(MeshAsset.Object);
-	VaultMesh->SetRelativeScale3D(FVector(3.5f, 3.5f, 3.5f));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/AccuCities/meshes/VaultKeeper.VaultKeeper'"));
+    VaultMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VaultMesh"));
+    RootComponent = VaultMesh;
+    if (MeshAsset.Succeeded()) VaultMesh->SetStaticMesh(MeshAsset.Object);
+    VaultMesh->SetRelativeScale3D(FVector(3.5f, 3.5f, 3.5f));
 
     if (HealthBarWidget)
     {
@@ -121,7 +121,7 @@ void AVaultKeeper::Tick(float DeltaTime)
             FVector OrbitOffset = FVector(
                 FMath::Cos(Rad) * WPOrbitRadius,
                 FMath::Sin(Rad) * WPOrbitRadius,
-                FMath::Sin(Rad * 2.f) * 50.f // peque�a oscilacion en Z
+                FMath::Sin(Rad * 2.f) * 50.f // peque a oscilacion en Z
             );
 
             CachedWeakPoints[i]->SetRelativeLocation(OrbitOffset);
@@ -414,3 +414,5 @@ float AVaultKeeper::GetHealthBarVerticalOffset() const
 {
     return 250.f;
 }
+
+

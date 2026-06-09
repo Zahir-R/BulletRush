@@ -4,10 +4,13 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/SphereComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/HealthComponent.h"
 #include "Components/WeaponBaseComponent.h"
 #include "Components/ChargedWeaponComponent.h"
+#include "UObject/ConstructorHelpers.h"
 #include "GameFramework/CharacterMovementComponent.h"
 //////Strategies//////
 #include "Components/Weapons/AutoFireStrategy.h"
@@ -28,12 +31,31 @@ APlayingPlayer::APlayingPlayer()
 	VisualMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualMesh"));
 	VisualMesh->SetupAttachment(RootComponent);
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Pipe.Shape_Pipe'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/nave/Cube_011.Cube_011'"));
 	if (MeshAsset.Succeeded())
 	{
 		VisualMesh->SetStaticMesh(MeshAsset.Object);
-		VisualMesh->SetRelativeLocation(FVector(0, 0, -45)); // Donde se crear� la malla en el objeto
+		VisualMesh->SetRelativeLocation(FVector(0, 0, 0)); // Donde se crear� la malla en el objeto
+		VisualMesh->SetRelativeRotation(FRotator(0.f, -90.f, 0.f));
+		VisualMesh->SetRelativeScale3D(
+			FVector(
+				10.f,  // Length
+				10.f,  // Width
+				10.f   // Thickness
+			)
+		);
 	}
+
+	// Hitbox (bullet hell — tiny hitbox, visual mesh and capsule ignore bullet traces)
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
+	VisualMesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
+
+	Hitbox = CreateDefaultSubobject<USphereComponent>(TEXT("Hitbox"));
+	Hitbox->SetupAttachment(RootComponent);
+	Hitbox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	Hitbox->SetCollisionResponseToAllChannels(ECR_Ignore);
+	Hitbox->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	Hitbox->SetSphereRadius(15.0f);
 
 	// C�mara
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -65,35 +87,60 @@ APlayingPlayer::APlayingPlayer()
 	GetCharacterMovement()->BrakingFrictionFactor = 1.0f;
 	GetCharacterMovement()->bRequestedMoveUseAcceleration = false;
 
-	TestWeapon = CreateDefaultSubobject<UWeaponBaseComponent>(TEXT("ArmaPrincipal"));
-	TestWeapontwo = CreateDefaultSubobject<UWeaponBaseComponent>(TEXT("ArmaSecundaria"));
-	TestWeapon->SetupAttachment(RootComponent);
-	TestWeapontwo->SetupAttachment(RootComponent);
-	TestWeapon->SetRelativeLocation(FVector(100.0f, 0.0f, 0.0f));
-	TestWeapontwo->SetRelativeLocation(FVector(100.0f, 100.0f, 0.0f));
-
 	HealthComp= CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
 	HealthComp->MaxHealth = 100.0f;
 
 	BuffComp = CreateDefaultSubobject<UBuffComponent>(TEXT("BuffComp"));
+
+	static ConstructorHelpers::FClassFinder<UUserWidget>
+		WidgetBPClass(
+			TEXT("/Game/UI/WBP_WeaponSelection")
+		);
+
+	if (WidgetBPClass.Succeeded())
+	{
+		WeaponWidgetClass =
+			WidgetBPClass.Class;
+	}
 }
 
 void APlayingPlayer::BeginPlay()
 {
 	Super::BeginPlay();
-	// TestWeapons
-	
-	EquippedWeapons.Add(TestWeapon);
-	EquippedWeapons.Add(TestWeapontwo);
 
+	EquippedWeapons.Empty();
+
+	UWeaponBaseComponent* AutoWeapon = NewObject<UWeaponBaseComponent>(this);
+	UWeaponBaseComponent* VolleyWeapon = NewObject<UWeaponBaseComponent>(this);
+	UWeaponBaseComponent* PlusWeapon = NewObject<UWeaponBaseComponent>(this);
+
+	AutoWeapon->RegisterComponent();
+	VolleyWeapon->RegisterComponent();
+	PlusWeapon->RegisterComponent();
+
+	AutoWeapon->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	VolleyWeapon->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	PlusWeapon->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+
+	AutoWeapon->SetFireStrategy(NewObject<UAutoFireStrategy>(this));
+	VolleyWeapon->SetFireStrategy(NewObject<UVolleyStrategy>(this));
+	PlusWeapon->SetFireStrategy(NewObject<UPlusFireStrategy>(this));
+
+	EquippedWeapons.Add(AutoWeapon);
+	EquippedWeapons.Add(VolleyWeapon);
+	EquippedWeapons.Add(PlusWeapon);
+
+	CurrentWeapon = EquippedWeapons[0];
 	BaseStats = NewObject<UPlayerStatsBase>();
 	CurrentStats = BaseStats;
 
 	// TODO: Esto deberia hacer que el jugador muera, redirija al nivel CupHead y resetee el progreso
 	if (HealthComp) HealthComp->OnDeath.AddDynamic(this, &APlayingPlayer::OnPlayerDeath);
+	
+	//<<<<<<< HEAD
 	if (HealthComp)	HealthComp->CurrentHealth = HealthComp->MaxHealth;
 	// Weapon 1 Strategy
-
+	/*
 	UVolleyStrategy* VolleyStrategy =
 		NewObject<UVolleyStrategy>(this);
 
@@ -104,7 +151,9 @@ void APlayingPlayer::BeginPlay()
 	UPlusFireStrategy* PlusStrategy =
 		NewObject<UPlusFireStrategy>(this);
 	TestWeapontwo->SetFireStrategy(PlusStrategy);
-}
+=======
+>>>>>>> origin/Final-Commit
+*/}
 
 void APlayingPlayer::Tick(float DeltaTime)
 {
@@ -123,11 +172,10 @@ void APlayingPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
-	/*
-	PlayerInputComponent->BindKey(EKeys::One, IE_Pressed, this, &APlayingPlayer::TestCircle);
-	PlayerInputComponent->BindKey(EKeys::Two, IE_Pressed, this, &APlayingPlayer::TestSpiral);
-	PlayerInputComponent->BindKey(EKeys::Three, IE_Pressed, this, &APlayingPlayer::TestBurst);
-	*/
+
+	PlayerInputComponent->BindKey(EKeys::One, IE_Pressed, this, &APlayingPlayer::SelectWeapon1);
+	PlayerInputComponent->BindKey(EKeys::Two, IE_Pressed, this, &APlayingPlayer::SelectWeapon2);
+	PlayerInputComponent->BindKey(EKeys::Three, IE_Pressed, this, &APlayingPlayer::SelectWeapon3);
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayingPlayer::OnFirePressed);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayingPlayer::OnFireReleased);
@@ -162,17 +210,17 @@ void APlayingPlayer::MoveUp(float Val)
 
 void APlayingPlayer::OnFirePressed()
 {
-	for (UWeaponBaseComponent* Weapon : EquippedWeapons)
+	if (CurrentWeapon)
 	{
-		Weapon->StartFiring();
+		CurrentWeapon->StartFiring();
 	}
 }
 
 void APlayingPlayer::OnFireReleased()
 {
-	for (UWeaponBaseComponent* Weapon : EquippedWeapons)
+	if (CurrentWeapon)
 	{
-		Weapon->StopFiring();
+		CurrentWeapon->StopFiring();
 	}
 }
 
@@ -244,4 +292,31 @@ float APlayingPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 void APlayingPlayer::OnPlayerDeath()
 {
 	Destroy();
+}
+void APlayingPlayer::SelectWeapon(int32 Index)
+{
+	if (!EquippedWeapons.IsValidIndex(Index))
+	{
+		return;
+	}
+
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->StopFiring();
+	}
+	CurrentWeapon = EquippedWeapons[Index];
+}
+void APlayingPlayer::SelectWeapon1()
+{
+	SelectWeapon(0);
+}
+
+void APlayingPlayer::SelectWeapon2()
+{
+	SelectWeapon(1);
+}
+
+void APlayingPlayer::SelectWeapon3()
+{
+	SelectWeapon(2);
 }

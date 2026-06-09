@@ -4,7 +4,6 @@
 #include "GameFramework/Actor.h"
 #include "ChronostasisBossFacade.generated.h"
 
-class APortalTrigger;
 class ASerXBoss;
 class UChronostasisFactoryEnemy;
 class UGenericEnemyFactory;
@@ -29,10 +28,7 @@ public:
 	TSubclassOf<ASerXBoss> SerXBossClass;
 
 	UPROPERTY(EditAnywhere, Category = "Boss")
-	FVector BossSpawnLocation = FVector(0.0f, 0.0f, 300.0f);
-
-	UPROPERTY(EditAnywhere, Category = "Portals")
-	FVector PortalLocation = FVector(0.0f, 0.0f, 100.0f);
+	FVector BossSpawnLocation = FVector(500.0f, 500.0f, 300.0f);
 
 	UPROPERTY(EditAnywhere, Category = "Music")
 	USoundBase* AmbientSong;
@@ -48,12 +44,6 @@ private:
 
 	UFUNCTION()
 	void OnBossDeath(AEnemyBase* DeadEnemy);
-
-	UFUNCTION()
-	void OnPortalToHubTriggered();
-
-	UPROPERTY()
-	APortalTrigger* PortalHubTrigger = nullptr;
 
 	UPROPERTY()
 	ASerXBoss* BossInstance = nullptr;

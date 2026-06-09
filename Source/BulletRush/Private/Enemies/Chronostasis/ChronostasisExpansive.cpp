@@ -5,10 +5,17 @@
 #include "Engine/World.h"
 #include "Components/BuffComponent.h"
 #include "Buffs/SlowDecorator.h"
+#include "Components/StaticMeshComponent.h"
+#include "UObject/ConstructorHelpers.h"
 
 AChronostasisExpansive::AChronostasisExpansive()
 {
     PrimaryActorTick.bCanEverTick = false;
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/Assets/ChronoEnemies/Expansive/Temporal_Vortex_texture.Temporal_Vortex_texture'"));
+	if (MeshAsset.Succeeded()) MeshEnemy->SetStaticMesh(MeshAsset.Object);
+
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> MaterialAsset(TEXT("Material'/Game/Assets/ChronoEnemies/Expansive/M_Temporal_Vortex.M_Temporal_Vortex'"));
+	if (MaterialAsset.Succeeded()) MeshEnemy->SetMaterial(0, MaterialAsset.Object);
 }
 
 void AChronostasisExpansive::BeginPlay()

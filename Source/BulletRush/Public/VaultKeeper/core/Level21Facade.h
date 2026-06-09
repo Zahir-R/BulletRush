@@ -9,6 +9,10 @@ class AMechaEnemyFactory;
 class ADronMecha;
 class ABatteryActor;
 class ALevelPortal;
+class USoundBase;
+class URequirementManager;
+class APowerUpUsagePublisher;
+class AEnemyBase;
 
 UCLASS()
 class BULLETRUSH_API ALevel21Facade : public AActor
@@ -54,10 +58,24 @@ private:
     UPROPERTY()
     AMechaEnemyFactory* Factory;
 
+
+    UPROPERTY(EditAnywhere, Category = "Music")
+    USoundBase* CombatSong;
+
+    UPROPERTY(EditAnywhere, Category = "Music")
+    float CombatStartOffset = 0.0f;
+
   
 
+    UPROPERTY()
+    TWeakObjectPtr<URequirementManager> RequirementManagerRef;
+
+    UPROPERTY()
+    APowerUpUsagePublisher* PowerUpPublisher = nullptr;
+
+
     int32 EnemiesKilled = 0;
-    int32 TotalEnemies= 1;
+    int32 TotalEnemies= 15;
     bool bPlayerDied = false;
     bool bLevelComplete = false;
 

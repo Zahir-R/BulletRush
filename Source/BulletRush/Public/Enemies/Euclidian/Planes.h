@@ -18,11 +18,22 @@ public:
 
 	void SetBoss(AActor* NewBoss);
 
+	virtual void Die() override;
+
 	void SetShielded(bool bNewShielded);
 
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void StartAttack() override;
+	void InitializeOrbit(
+		float StartAngle,
+		float Radius
+	);
+	bool bOrbitX = false;
+	bool bOrbitY = false;
+
+	UPROPERTY()
+	FRotator FaceRotation;
 protected:
 
 	UPROPERTY()
@@ -30,4 +41,10 @@ protected:
 
 	UPROPERTY()
 	bool bShielded;
+
+	float OrbitAngle;
+
+	float OrbitRadius;
+
+	float OrbitSpeed;
 };

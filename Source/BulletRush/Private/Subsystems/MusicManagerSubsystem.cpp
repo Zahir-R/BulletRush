@@ -16,7 +16,7 @@ UMusicManagerSubsystem::UMusicManagerSubsystem()
 void UMusicManagerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
-	GetOrCreateChannel(FName("Music"));
+	// GetOrCreateChannel(FName("Music"));
 }
 
 void UMusicManagerSubsystem::Deinitialize()
@@ -41,6 +41,7 @@ int32 UMusicManagerSubsystem::GetOrCreateChannel(FName ChannelName)
 	Comp->bIsUISound = true;
 	Comp->bAutoDestroy = false;
 	Comp->bStopWhenOwnerDestroyed = false;
+	Comp->RegisterComponentWithWorld(GetWorld());
 
 	ChannelComponents.Add(Comp);
 	ChannelIndex.Add(ChannelName, NewIdx);
