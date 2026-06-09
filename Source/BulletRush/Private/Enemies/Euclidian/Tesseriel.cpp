@@ -120,14 +120,6 @@ void ATesseriel::OnPlaneDestroyed(
 
 			CurrentStrategy =
 				VulnerableStrategy;
-
-			GetWorldTimerManager().SetTimer(
-				RespawnTimer,
-				this,
-				&ATesseriel::RespawnPlanes,
-				15.f,
-				false
-			);
 		}
 	}
 }
@@ -153,19 +145,6 @@ float ATesseriel::TakeDamage(
 		EventInstigator,
 		DamageCauser
 	);
-}
-void ATesseriel::RespawnPlanes()
-{
-	ShieldedPlanes.Empty();
-	VulnerablePlanes.Empty();
-
-	Builder->BuildBoss(this);
-
-	RemainingVulnerablePlanes = 3;
-
-	SetInvulnerable(true);
-
-	CurrentStrategy = ImmuneStrategy;
 }
 void ATesseriel::Die()
 {

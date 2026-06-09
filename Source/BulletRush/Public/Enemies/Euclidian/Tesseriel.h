@@ -33,8 +33,6 @@ public:
 
 	virtual void Die() override;
 
-	void RespawnPlanes();
-
 	UPROPERTY()
 	UTesserielStrategy* CurrentStrategy;
 
@@ -67,7 +65,4 @@ public:
 		AController* EventInstigator,
 		AActor* DamageCauser
 	) override;
-protected:
-
-	FTimerHandle RespawnTimer;
 };
