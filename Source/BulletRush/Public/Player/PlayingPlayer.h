@@ -13,6 +13,7 @@ class UCameraComponent;
 class UStaticMeshComponent;
 class UWeaponBaseComponent;
 class UPlayerStatsBase;
+class UPauseMenuWidget;
 
 UCLASS(Blueprintable)
 class BULLETRUSH_API APlayingPlayer : public ACharacter
@@ -51,6 +52,15 @@ public:
 
 	void OnPlayerDeath();
 
+	UFUNCTION()
+	void TogglePauseMenu();
+
+	UFUNCTION()
+	void OnPauseVolverAlMapa();
+
+	UFUNCTION()
+	void OnPauseContinuar();
+
 	TArray<UWeaponBaseComponent*> EquippedWeapons;
 	UPROPERTY()
 	UWeaponBaseComponent* TestWeapon;
@@ -59,6 +69,12 @@ public:
 
 	UHealthComponent* HealthComp;
 	UBuffComponent* BuffComp;
+
+	UPROPERTY()
+	UPauseMenuWidget* PauseMenuWidget;
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UPauseMenuWidget> PauseMenuWidgetClass;
 
 	void WrapStats(class UPlayerStatsDecorator* NewDecorator);
 	void UnwrapStats();

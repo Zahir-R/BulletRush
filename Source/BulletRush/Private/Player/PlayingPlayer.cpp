@@ -17,6 +17,7 @@
 #include "Buffs/PlayerStatsDecorator.h"
 #include "Core/BulletRushGameInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "UI/PauseMenuWidget.h"
 
 APlayingPlayer::APlayingPlayer()
 {
@@ -58,12 +59,12 @@ APlayingPlayer::APlayingPlayer()
 
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 
-	// No momentum
-	float AbsurdAcceleration = 100000000.0f;
-	GetCharacterMovement()->MaxAcceleration = AbsurdAcceleration;
-	GetCharacterMovement()->BrakingDecelerationFlying = AbsurdAcceleration;
+	// No momentum - valores finitos para evitar bug de movimiento infinito
+	GetCharacterMovement()->MaxAcceleration = 20000.0f;
+	GetCharacterMovement()->BrakingDecelerationFlying = 20000.0f;
 	GetCharacterMovement()->BrakingFrictionFactor = 1.0f;
-	GetCharacterMovement()->bRequestedMoveUseAcceleration = false;
+	GetCharacterMovement()->bRequestedMoveUseAcceleration = true;
+	GetCharacterMovement()->GroundFriction = 0.0f;
 
 	TestWeapon = CreateDefaultSubobject<UWeaponBaseComponent>(TEXT("ArmaPrincipal"));
 	TestWeapontwo = CreateDefaultSubobject<UWeaponBaseComponent>(TEXT("ArmaSecundaria"));
@@ -76,6 +77,8 @@ APlayingPlayer::APlayingPlayer()
 	HealthComp->MaxHealth = 100.0f;
 
 	BuffComp = CreateDefaultSubobject<UBuffComponent>(TEXT("BuffComp"));
+
+	PauseMenuWidgetClass = LoadClass<UPauseMenuWidget>(nullptr, TEXT("/Script/BulletRush.PauseMenuWidget"));
 }
 
 void APlayingPlayer::BeginPlay()
@@ -131,6 +134,7 @@ void APlayingPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayingPlayer::OnFirePressed);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayingPlayer::OnFireReleased);
+	PlayerInputComponent->BindAction("Pause", IE_Pressed, this, &APlayingPlayer::TogglePauseMenu);
 }
 
 void APlayingPlayer::MoveForward(float Val)
@@ -244,4 +248,55 @@ float APlayingPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 void APlayingPlayer::OnPlayerDeath()
 {
 	Destroy();
+}
+
+void APlayingPlayer::TogglePauseMenu()
+{
+    APlayerController* PC = Cast<APlayerController>(GetController());
+    if (!PC) return;
+
+    if (PauseMenuWidget && PauseMenuWidget->IsInViewport())
+    {
+        PauseMenuWidget->RemoveFromViewport();
+        PC->SetShowMouseCursor(false);
+        PC->SetInputMode(FInputModeGameOnly());
+        UGameplayStatics::SetGamePaused(GetWorld(), false);
+    }
+    else
+    {
+        if (!PauseMenuWidget && PauseMenuWidgetClass)
+        {
+            PauseMenuWidget = CreateWidget<UPauseMenuWidget>(GetWorld(), PauseMenuWidgetClass);
+            if (PauseMenuWidget)
+            {
+                PauseMenuWidget->OnVolverAlMapa.AddDynamic(this, &APlayingPlayer::OnPauseVolverAlMapa);
+                PauseMenuWidget->OnContinuar.AddDynamic(this, &APlayingPlayer::OnPauseContinuar);
+            }
+        }
+        if (PauseMenuWidget)
+        {
+            PauseMenuWidget->AddToViewport();
+            PC->SetShowMouseCursor(true);
+            PC->SetInputMode(FInputModeUIOnly());
+            UGameplayStatics::SetGamePaused(GetWorld(), true);
+        }
+    }
+}
+
+void APlayingPlayer::OnPauseVolverAlMapa()
+{
+    if (PauseMenuWidget) PauseMenuWidget->RemoveFromViewport();
+    UGameplayStatics::SetGamePaused(GetWorld(), false);
+    APlayerController* PC = Cast<APlayerController>(GetController());
+    if (PC)
+    {
+        PC->SetShowMouseCursor(false);
+        PC->SetInputMode(FInputModeGameOnly());
+    }
+    UGameplayStatics::OpenLevel(this, TEXT("Map_CupHeadMap"));
+}
+
+void APlayingPlayer::OnPauseContinuar()
+{
+    TogglePauseMenu();
 }
