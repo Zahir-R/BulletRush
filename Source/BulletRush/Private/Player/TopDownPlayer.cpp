@@ -1,4 +1,4 @@
-#include "../../Public/Player/TopDownPlayer.h" // Ajusta esta ruta seg˙n tu proyecto
+#include "Player/TopDownPlayer.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -14,33 +14,34 @@ ATopDownPlayer::ATopDownPlayer()
     VisualMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualMesh"));
     VisualMesh->SetupAttachment(RootComponent);
 
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_TriPyramid.Shape_TriPyramid'"));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/nave/Cube_011.Cube_011'"));
     if (MeshAsset.Succeeded())
     {
         VisualMesh->SetStaticMesh(MeshAsset.Object);
-        VisualMesh->SetRelativeLocation(FVector(0, 0, -45));
+        VisualMesh->SetRelativeScale3D(FVector(10.f, 10.f, 10.f));
+        VisualMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
     }
 
-    // C¡MARA CINEM¡TICA CON LAG 
+    // C√ÅMARA CINEM√ÅTICA CON LAG 
     CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
     CameraBoom->SetupAttachment(RootComponent);
 
     //  Rotar el brazo -90 grados en Pitch para que mire hacia abajo
     CameraBoom->SetRelativeRotation(FRotator(-70.0f, 0.0f, 0.0f));
-    CameraBoom->TargetArmLength = 1500.0f; // Aumentado para que la c·mara no estÈ pegada al piso
+    CameraBoom->TargetArmLength = 1500.0f; // Aumentado para que la c√°mara no est√© pegada al piso
 
     CameraBoom->bUsePawnControlRotation = false;
     CameraBoom->bDoCollisionTest = false;
 
     // Activando el suavizado Lag
     CameraBoom->bEnableCameraLag = true;
-    CameraBoom->CameraLagSpeed = 5.0f; // 5.0 da un efecto m·s "cinem·tico" que 10.0
+    CameraBoom->CameraLagSpeed = 5.0f; // 5.0 da un efecto m√°s "cinem√°tico" que 10.0
 
     CameraBoom->bInheritPitch = false;
     CameraBoom->bInheritYaw = false;
     CameraBoom->bInheritRoll = false;
 
-    // C·mara
+    // C√°mara
     FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
     FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
     FollowCamera->bUsePawnControlRotation = false;
@@ -49,13 +50,13 @@ ATopDownPlayer::ATopDownPlayer()
     bUseControllerRotationYaw = false;
     bUseControllerRotationRoll = false;
 
-    // RESTRICCI”N DE EJES (PLANO 2D)
+    // RESTRICCI√ìN DE EJES (PLANO 2D)
     UCharacterMovementComponent* MoveComp = GetCharacterMovement();
     if (MoveComp)
     {
-        //Bloquear el eje Z por cÛdigo
+        //Bloquear el eje Z por c√≥digo
         MoveComp->bConstrainToPlane = true;
-        MoveComp->SetPlaneConstraintNormal(FVector::UpVector); // Fija la restricciÛn mirando hacia arriba (bloquea Z)
+        MoveComp->SetPlaneConstraintNormal(FVector::UpVector); // Fija la restricci√≥n mirando hacia arriba (bloquea Z)
         MoveComp->SetPlaneConstraintOrigin(FVector::ZeroVector);
 
         //Ajustes base para que el jugador flote en el mapa
@@ -65,10 +66,12 @@ ATopDownPlayer::ATopDownPlayer()
 
         // No momentum
         float AbsurdAcceleration = 100000.0f;
-        GetCharacterMovement()->MaxAcceleration = AbsurdAcceleration;
-        GetCharacterMovement()->BrakingDecelerationFlying = AbsurdAcceleration;
-        GetCharacterMovement()->BrakingFrictionFactor = 1.0f;
-        GetCharacterMovement()->bRequestedMoveUseAcceleration = false;
+        MoveComp->MaxAcceleration = AbsurdAcceleration;
+        MoveComp->BrakingDecelerationFlying = AbsurdAcceleration;
+        MoveComp->bUseSeparateBrakingFriction = true;
+        MoveComp->BrakingFrictionFactor = 1.0f;
+        MoveComp->BrakingFriction = 1000.0f;
+        MoveComp->bRequestedMoveUseAcceleration = false;
     }
 }
 
@@ -91,12 +94,12 @@ void ATopDownPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 }void ATopDownPlayer::MoveForward(float Val)
 {
-    if (Val) AddMovementInput(FVector::ForwardVector, Val); // X axis
+    AddMovementInput(FVector::ForwardVector, Val); // X axis
     
 }
 
 void ATopDownPlayer::MoveRight(float Val)
 {
-    if (Val)AddMovementInput(FVector::RightVector, Val); // Y axis
+    AddMovementInput(FVector::RightVector, Val); // Y axis
     
 }
