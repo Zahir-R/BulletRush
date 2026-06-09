@@ -70,4 +70,7 @@ public:
 	// Orchestrator...
 	UPROPERTY()
 	ELevelState OrchestratorLState = ELevelState::Normal;
+
+	UPROPERTY()
+	int32 CurrentWeaponIndex = 0;
 };

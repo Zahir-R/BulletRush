@@ -91,4 +91,7 @@ public:
 	void UpdateMovementSpeed();
 
 	void RefreshStatsFromChain();
+
+	UFUNCTION(BlueprintCallable)
+	FVector GetAimDirection() const;
 };

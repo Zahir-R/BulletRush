@@ -130,7 +130,13 @@ void APlayingPlayer::BeginPlay()
 	EquippedWeapons.Add(VolleyWeapon);
 	EquippedWeapons.Add(PlusWeapon);
 
-	CurrentWeapon = EquippedWeapons[0];
+	UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
+	int32 WeaponIdx = 0;
+	if (GI && EquippedWeapons.IsValidIndex(GI->CurrentWeaponIndex))
+	{
+		WeaponIdx = GI->CurrentWeaponIndex;
+	}
+	CurrentWeapon = EquippedWeapons[WeaponIdx];
 	BaseStats = NewObject<UPlayerStatsBase>();
 	CurrentStats = BaseStats;
 
@@ -305,6 +311,12 @@ void APlayingPlayer::SelectWeapon(int32 Index)
 		CurrentWeapon->StopFiring();
 	}
 	CurrentWeapon = EquippedWeapons[Index];
+
+	UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
+	if (GI)
+	{
+		GI->CurrentWeaponIndex = Index;
+	}
 }
 void APlayingPlayer::SelectWeapon1()
 {
@@ -319,4 +331,16 @@ void APlayingPlayer::SelectWeapon2()
 void APlayingPlayer::SelectWeapon3()
 {
 	SelectWeapon(2);
+}
+
+FVector APlayingPlayer::GetAimDirection() const
+{
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if (!PC) return GetActorForwardVector();
+
+	FVector CamLoc;
+	FRotator CamRot;
+	PC->GetPlayerViewPoint(CamLoc, CamRot);
+
+	return CamRot.Vector();
 }
