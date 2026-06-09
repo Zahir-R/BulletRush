@@ -3,6 +3,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "PlayerStatsDecorator.h"
+#include "NiagaraComponent.h"
+#include "NiagaraSystem.h"
 #include "PowerUpBase.generated.h"
 
 class APowerUpManager;
@@ -45,6 +47,13 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* Mesh;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	UNiagaraSystem* NiagaraSystem;
+
+	
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	UNiagaraComponent* NiagaraComponent;
 
 	UFUNCTION()
 	virtual void OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
