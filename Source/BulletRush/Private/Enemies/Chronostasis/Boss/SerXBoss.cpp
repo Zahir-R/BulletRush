@@ -575,18 +575,24 @@ void ASerXBoss::OnLinkerDied(AEnemyBase* DeadLinker)
 
 float ASerXBoss::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+	if (bIsClone) return AEnemyBase::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	return ABossBase::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 }
 
 void ASerXBoss::Die()
 {
 	if (bIsDead) return;
-
+	if (bIsClone) {
+		AEnemyBase::Die();
+		return;
+	}
 	if (UWorld* World = GetWorld())
 	{
 		World->GetTimerManager().ClearTimer(LinkerSpawnTimerHandle);
 		World->GetTimerManager().ClearTimer(ZoneSpawnTimerHandle);
 	}
+
+	Super::Die();
 
 	for (TActorIterator<AEnemyBase> It(GetWorld()); It; ++It)
 	{
@@ -596,17 +602,4 @@ void ASerXBoss::Die()
 			Enemy->Die();
 		}
 	}
-
-	if (UWorld* World = GetWorld())
-	{
-		if (UGameInstance* GI = World->GetGameInstance())
-		{
-			if (UProjectilesSubsystem* ProjSub = GI->GetSubsystem<UProjectilesSubsystem>())
-			{
-				ProjSub->ReturnAllActiveBullets();
-			}
-		}
-	}
-
-	Super::Die();
 }

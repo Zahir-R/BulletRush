@@ -3,6 +3,7 @@
 
 #include "Enemies/Orchestrator/Orchestrator.h"
 #include "Animation/AnimInstance.h"
+#include "Animation/AnimSequence.h"
 #include "Enemies/State/BossStateBase.h"
 #include "Enemies/State/BossStateDead.h"
 #include "Enemies/Orchestrator/OrchestratorStates.h"
@@ -59,6 +60,12 @@ AOrchestrator::AOrchestrator()
 	if (AnimBP.Succeeded())
 	{
 		OrchestMesh->SetAnimInstanceClass(AnimBP.Class);
+	}
+
+	static ConstructorHelpers::FObjectFinder<UAnimSequence> AnimMuerteAsset(TEXT("AnimSequence'/Game/ParagonMuriel/Characters/Heroes/Muriel/Animations/Knock_Back_Fwd.Knock_Back_Fwd'"));
+	if (AnimMuerteAsset.Succeeded())
+	{
+		DeathAnimation = AnimMuerteAsset.Object;
 	}
 
 	TeamTag = FName("Enemy");
@@ -165,7 +172,8 @@ void AOrchestrator::BeginPlay()
 	if (HealthComp)
 	{
 		HealthComp->CurrentHealth = HealthComp->MaxHealth;
-		HealthComp->OnDeath.AddDynamic(this, &AOrchestrator::Die);
+		HealthComp->OnDeath.RemoveDynamic(this, &AEnemyBase::OnHealthDeath);
+		HealthComp->OnDeath.AddDynamic(this, &AOrchestrator::HandleBossDeath);
 	}
 
 	if (bSecretLevelCleared)
@@ -280,24 +288,28 @@ void AOrchestrator::ErraticTeleport()
 
 void AOrchestrator::Die()
 {
-	if (GetCurrentBossStateName() == FName("OrcheDead"))
+	UE_LOG(LogTemp, Warning, TEXT("Entra al condicional OrcheDead"));
+	if (AAIController* AI = Cast<AAIController>(GetController()))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Entra al condicional OrcheDead"));
-		GetWorld()->GetTimerManager().ClearTimer(DeathTimerHandle);
-		if (GetWorld() && GetWorld()->GetGameInstance())
-		{
-			UProjectilesSubsystem* ProjSys = GetWorld()->GetGameInstance()->GetSubsystem<UProjectilesSubsystem>();
-			if (ProjSys)
-			{
-				ProjSys->ReturnAllActiveBullets();
-			}
-			FVector BossLocation = GetActorLocation();
-			PortalManagerRef->VolverCupHead(BossLocation);
-		}
-		bIsDead = true;
-		Destroy();
-		return;
+		AI->StopMovement();
 	}
-	else
-		ChangeState(OrcheDeadState);
+	GetWorld()->GetTimerManager().ClearTimer(DeathTimerHandle);
+	FTimerHandle EndLevelTimer;
+	GetWorld()->GetTimerManager().SetTimer(EndLevelTimer, [this]()
+		{
+			MovementComp->StopMovementImmediately();
+			if (PortalManagerRef)
+			{
+				PortalManagerRef->VolverCupHead(GetActorLocation());
+			}
+			// Ahora sí, después de la animación y cambiar de nivel, limpiamos el actor
+			Destroy();
+		}, 5.0f, false);
+	bIsDead = true;
+	return;
+}
+
+void AOrchestrator::HandleBossDeath()
+{
+	ChangeState(OrcheDeadState);
 }

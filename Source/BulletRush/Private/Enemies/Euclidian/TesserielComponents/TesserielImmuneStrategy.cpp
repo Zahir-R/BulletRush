@@ -3,3 +3,7 @@
 
 #include "Enemies/Euclidian/TesserielComponents/TesserielImmuneStrategy.h"
 
+bool UTesserielImmuneStrategy::CanTakeDamage() const
+{
+    return false;
+}

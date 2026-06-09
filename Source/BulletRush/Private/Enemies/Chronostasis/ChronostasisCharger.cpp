@@ -23,6 +23,7 @@ AChronostasisCharger::AChronostasisCharger()
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("StaticMesh'/Game/Assets/ChronoEnemies/Charger/Nebula_Freight_texture.Nebula_Freight_texture'"));
 	if (MeshAsset.Succeeded()) MeshEnemy->SetStaticMesh(MeshAsset.Object);
+	MeshEnemy->SetRelativeRotation(FRotator(0.f, 180.f, 0.f));
 
 	static ConstructorHelpers::FObjectFinder<UMaterialInterface> MaterialAsset(TEXT("Material'/Game/Assets/ChronoEnemies/Charger/M_Nebula_Freight.M_Nebula_Freight'"));
 	if (MaterialAsset.Succeeded()) MeshEnemy->SetMaterial(0, MaterialAsset.Object);
@@ -56,8 +57,6 @@ void AChronostasisCharger::Tick(float DeltaSeconds)
 	{
 		FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), PlayerPawn->GetActorLocation());
 		TargetRotation.Roll = 0.0f;
-		TargetRotation.Yaw += 180.0f;
-		TargetRotation.Pitch *= -1.0f;
 
 		FRotator CurrRotation = GetActorRotation();
 		FRotator SmoothRotation = UKismetMathLibrary::RInterpTo(CurrRotation, TargetRotation, DeltaSeconds, 5.0f);

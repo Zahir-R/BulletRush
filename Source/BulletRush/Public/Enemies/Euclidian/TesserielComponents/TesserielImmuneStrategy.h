@@ -14,8 +14,5 @@ class BULLETRUSH_API UTesserielImmuneStrategy
 
 public:
 
-	virtual bool CanTakeDamage() const override
-	{
-		return false;
-	}
+	virtual bool CanTakeDamage() const override;
 };

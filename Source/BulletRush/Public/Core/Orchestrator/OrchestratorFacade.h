@@ -21,6 +21,8 @@ class BULLETRUSH_API AOrchestratorFacade : public AActor
 public:	
 	AOrchestratorFacade();
 
+	virtual void Tick(float DeltaTime) override;
+
 	// --- ZONA A (Nivel 5-1: Infiltración) ---
 	UFUNCTION(BlueprintCallable, Category = "Facade|Zone A")
 	void HandlePlayerDetected(FVector DetectionLocation);
@@ -69,6 +71,8 @@ private:
 	int32 GuardiansDefeated;
 	int32 TotalGuardiansToSpawn;
 	FTimerHandle PuzzleTimerHandle;
+	float PuzzleTimeRemaining;
+	bool bPuzzleActive;
 
 	// Funciones internas ocultas
 	void FailSecretPuzzle();
