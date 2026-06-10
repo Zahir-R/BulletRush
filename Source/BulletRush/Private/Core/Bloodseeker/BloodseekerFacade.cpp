@@ -39,30 +39,30 @@ void ABloodseekerFacade::SetupDefaultWaves()
     HordasWaves.Empty();
 
     FBloodseekerWaveConfig Wave1;
-    Wave1.KamikazeCount = 3;
-    Wave1.LineWelderCount = 0;
-    Wave1.GravitySiphonCount = 0;
+    Wave1.KamikazeCount = 6;
+    Wave1.LineWelderCount = 3;
+    Wave1.GravitySiphonCount = 1;
     Wave1.DelayBetweenSpawns = 0.5f;
     HordasWaves.Add(Wave1);
 
     FBloodseekerWaveConfig Wave2;
-    Wave2.KamikazeCount = 5;
-    Wave2.LineWelderCount = 4;
-    Wave2.GravitySiphonCount = 0;
+    Wave2.KamikazeCount = 8;
+    Wave2.LineWelderCount = 5;
+    Wave2.GravitySiphonCount = 3;
     Wave2.DelayBetweenSpawns = 0.4f;
     HordasWaves.Add(Wave2);
 
     FBloodseekerWaveConfig Wave3;
-    Wave3.KamikazeCount = 8;
-    Wave3.LineWelderCount = 3;
-    Wave3.GravitySiphonCount = 2;
+    Wave3.KamikazeCount = 10;
+    Wave3.LineWelderCount = 10;
+    Wave3.GravitySiphonCount = 6;
     Wave3.DelayBetweenSpawns = 0.3f;
     HordasWaves.Add(Wave3);
 
     FBloodseekerWaveConfig Wave4;
-    Wave4.KamikazeCount = 10;
-    Wave4.LineWelderCount = 8;
-    Wave4.GravitySiphonCount = 4;
+    Wave4.KamikazeCount = 15;
+    Wave4.LineWelderCount = 15;
+    Wave4.GravitySiphonCount = 15;
     Wave4.DelayBetweenSpawns = 0.25f;
     HordasWaves.Add(Wave4);
 }
