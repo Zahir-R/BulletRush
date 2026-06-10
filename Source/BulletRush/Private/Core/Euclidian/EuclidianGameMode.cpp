@@ -9,6 +9,19 @@
 #include "Map/PortalManager.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Core/Euclidian/Strategies/RedTurretObjective.h"
+#include "Core/BulletRushGameInstance.h"
+#include "Player/PlayingPlayer.h"
+#include "Subsystems/MusicManagerSubsystem.h"
+#include "Sound/SoundBase.h"
+
+AEuclidianGameMode::AEuclidianGameMode()
+{
+	static ConstructorHelpers::FObjectFinder<USoundBase> CombatFinder(TEXT("SoundWave'/Game/Audio/1-_Brave_reaction.1-_Brave_reaction'"));
+	if (CombatFinder.Succeeded()) CombatSong = CombatFinder.Object;
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> AmbientFinder(TEXT("SoundWave'/Game/Audio/Ambient.Ambient'"));
+	if (AmbientFinder.Succeeded()) AmbientSong = AmbientFinder.Object;
+}
 
 void AEuclidianGameMode::BeginPlay()
 {
@@ -28,22 +41,61 @@ void AEuclidianGameMode::BeginPlay()
 		NewObject<UPhase2>(this)
 	);
 
-	UGameplayStatics::GetAllActorsOfClass(
-		GetWorld(),
-		ADrone::StaticClass(),
-		FoundDrones
-	);
-	for (AActor* Actor : FoundDrones)
+	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
 	{
-		ADrone* Drone = Cast<ADrone>(Actor);
+		float StartTime = CombatStartOffset;
+		if (Music->IsPositionSaved()) StartTime = Music->ConsumeSavedPosition();
+		Music->PlaySong(CombatSong, StartTime, 2.0f, true);
+	}
 
-		if (Drone)
-		{
-			Drone->OnEnemyDeath.AddDynamic(
-				this,
-				&AEuclidianGameMode::OnDroneDestroyed
-			);
-		}
+	APlayingPlayer* Player = Cast<APlayingPlayer>(
+		UGameplayStatics::GetPlayerPawn(this, 0)
+	);
+	if (Player && Player->HealthComp)
+	{
+		Player->HealthComp->OnDeath.AddDynamic(
+			this,
+			&AEuclidianGameMode::OnPlayerDeath
+		);
+	}
+}
+
+void AEuclidianGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	APlayingPlayer* Player = Cast<APlayingPlayer>(
+		UGameplayStatics::GetPlayerPawn(this, 0)
+	);
+	if (Player && Player->HealthComp)
+	{
+		Player->HealthComp->OnDeath.RemoveDynamic(
+			this,
+			&AEuclidianGameMode::OnPlayerDeath
+		);
+	}
+	Super::EndPlay(EndPlayReason);
+}
+
+void AEuclidianGameMode::OnPlayerDeath()
+{
+	if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+		Music->NotifyLevelTravel();
+
+	UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(
+		GetGameInstance()
+	);
+	if (!GI) return;
+
+	FName MapName = FName(*GetWorld()->GetName());
+	int32 VidasRestantes = GI->DecrementarVida(MapName);
+
+	if (VidasRestantes > 0)
+	{
+		UGameplayStatics::OpenLevel(this, MapName);
+	}
+	else
+	{
+		GI->ResetVidas(MapName);
+		UGameplayStatics::OpenLevel(this, FName("Map_CupHeadMap"));
 	}
 }
 
@@ -129,6 +181,9 @@ void AEuclidianGameMode::OnObservedEnemyDeath(AEnemyBase* Enemy)
 	// Phase 2 finished -> spawn CupHead portal
 	if (Cast<UPhase2>(CurrentPhase))
 	{
+		if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+			Music->PlaySong(AmbientSong, 0.0f, 2.0f);
+
 		APortalManager* PortalManager =
 			GetWorld()->SpawnActor<APortalManager>();
 

@@ -27,6 +27,9 @@ AVaultKeeperFacade::AVaultKeeperFacade()
 
     static ConstructorHelpers::FObjectFinder<USoundBase> CombatFinder(TEXT("SoundWave'/Game/Audio/1-_Brave_reaction.1-_Brave_reaction'"));
     if (CombatFinder.Succeeded()) CombatSong = CombatFinder.Object;
+
+    static ConstructorHelpers::FObjectFinder<USoundBase> AmbientFinder(TEXT("SoundWave'/Game/Audio/Ambient.Ambient'"));
+    if (AmbientFinder.Succeeded()) AmbientSong = AmbientFinder.Object;
 }
 
 void AVaultKeeperFacade::BeginPlay()
@@ -150,6 +153,9 @@ void AVaultKeeperFacade::OnBossDeath(AEnemyBase* DeadEnemy)
         if (Enemy && IsValid(Cast<UObject>(Enemy)))
             Enemy->Destroy();
     ActiveEnemies.Empty();
+
+    if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+        Music->TransitionTo(AmbientSong, 3.0f, 0.5f, 0.0f);
 
     UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
     if (GI)

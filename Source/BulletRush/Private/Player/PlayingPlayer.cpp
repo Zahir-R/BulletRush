@@ -19,6 +19,7 @@
 ////////Buffs////////
 #include "Buffs/PlayerStatsDecorator.h"
 #include "Core/BulletRushGameInstance.h"
+#include "Subsystems/MusicManagerSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/PauseMenuWidget.h"
 
@@ -390,6 +391,8 @@ void APlayingPlayer::OnPauseVolverAlMapa()
         PC->SetShowMouseCursor(false);
         PC->SetInputMode(FInputModeGameOnly());
     }
+    if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+        Music->NotifyLevelTravel();
     UGameplayStatics::OpenLevel(this, TEXT("Map_CupHeadMap"));
 }
 

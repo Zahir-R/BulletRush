@@ -63,9 +63,10 @@ private:
     USoundBase* CombatSong;
 
     UPROPERTY(EditAnywhere, Category = "Music")
-    float CombatStartOffset = 0.0f;
+    USoundBase* AmbientSong;
 
-  
+    UPROPERTY(EditAnywhere, Category = "Music")
+    float CombatStartOffset = 0.0f;
 
     UPROPERTY()
     TWeakObjectPtr<URequirementManager> RequirementManagerRef;

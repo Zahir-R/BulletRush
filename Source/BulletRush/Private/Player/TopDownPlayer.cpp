@@ -72,6 +72,7 @@ ATopDownPlayer::ATopDownPlayer()
         MoveComp->BrakingFrictionFactor = 1.0f;
         MoveComp->BrakingFriction = 1000.0f;
         MoveComp->bRequestedMoveUseAcceleration = false;
+        MoveComp->RotationRate = FRotator(0.0f, 1000.0f, 0.0f);
     }
 }
 

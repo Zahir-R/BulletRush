@@ -25,6 +25,8 @@ bool UProjectilesSubsystem::Tick(float DeltaTime)
 {
 	if (!bIsActive) return true;
 
+	if (GetWorld() && GetWorld()->IsPaused()) return true;
+
 	if (BulletPool.Num() == 0) InitializePool();
 
 	for (ABulletBase* Bullet : BulletPool)

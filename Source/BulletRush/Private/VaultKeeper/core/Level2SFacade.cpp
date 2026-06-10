@@ -20,6 +20,9 @@ ALevel2SFacade::ALevel2SFacade()
     PrimaryActorTick.bCanEverTick = false;
     static ConstructorHelpers::FObjectFinder<USoundBase> CombatFinder(TEXT("SoundWave'/Game/Audio/1-_Brave_reaction.1-_Brave_reaction'"));
     if (CombatFinder.Succeeded()) CombatSong = CombatFinder.Object;
+
+    static ConstructorHelpers::FObjectFinder<USoundBase> AmbientFinder(TEXT("SoundWave'/Game/Audio/Ambient.Ambient'"));
+    if (AmbientFinder.Succeeded()) AmbientSong = AmbientFinder.Object;
 }
 
 void ALevel2SFacade::BeginPlay()
@@ -156,7 +159,7 @@ void ALevel2SFacade::SpawnHive(int32 HiveIndex, FVector HiveCenter)
 
 void ALevel2SFacade::OnEnemyKilled(AEnemyBase* DeadEnemy)
 {
-    // Buscamos en qué colmena estaba
+    // Buscamos en quï¿½ colmena estaba
     for (FHiveData& Hive : Hives)
     {
         if (Hive.Enemies.Contains(DeadEnemy))
@@ -193,7 +196,9 @@ void ALevel2SFacade::CheckLevelComplete()
         GI->Level2State = ELevelState::Boss;
     }
 
-    UE_LOG(LogTemp, Warning, TEXT("[Level2SFacade] Todas las colmenas limpias — VK debilitado"));
+    UE_LOG(LogTemp, Warning, TEXT("[Level2SFacade] Todas las colmenas limpias ï¿½ VK debilitado"));
+    if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+        Music->TransitionTo(AmbientSong, 3.0f, 0.5f, 0.0f);
     OpenPortal();
 }
 

@@ -8,6 +8,7 @@
 
 class UEuclidianPhase;
 class AEnemyBase;
+class USoundBase;
 
 UCLASS()
 class BULLETRUSH_API AEuclidianGameMode : public ABulletRushGameModeBase
@@ -16,8 +17,23 @@ class BULLETRUSH_API AEuclidianGameMode : public ABulletRushGameModeBase
 
 public:
 
+	AEuclidianGameMode();
+
 	virtual void BeginPlay() override;
-		
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+	UFUNCTION()
+	void OnPlayerDeath();
+
+	UPROPERTY(EditAnywhere, Category = "Music")
+	USoundBase* CombatSong;
+
+	UPROPERTY(EditAnywhere, Category = "Music")
+	USoundBase* AmbientSong;
+
+	UPROPERTY(EditAnywhere, Category = "Music")
+	float CombatStartOffset = 0.0f;
+
 	UFUNCTION()
 	void OnDroneDestroyed(AEnemyBase* DeadEnemy);
 

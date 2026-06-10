@@ -11,7 +11,9 @@ class ALevelPortal;
 class AEnemyBase;
 class ASkySphereWorld;
 
-class APlayingPlayer;   
+class APlayingPlayer;
+class USoundBase;
+
 UCLASS()
 class BULLETRUSH_API ABloodseekerGameMode : public ABulletRushGameModeBase
 {
@@ -62,6 +64,10 @@ protected:
 
 private:
     void CleanupLevel();
+
+public:
+    UPROPERTY(EditAnywhere, Category = "Music")
+    USoundBase* AmbientSong;
 
     bool bBossDied;
 };
