@@ -16,6 +16,7 @@
 #include "Subsystems/MusicManagerSubsystem.h"
 #include "Sound/SoundBase.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Core/BulletRushHUD.h"
 
 ALevel21Facade::ALevel21Facade()
 {
@@ -96,6 +97,12 @@ void ALevel21Facade::StartLevel()
 
         ReqMgr->InitializeRequirements(PC);
         RequirementManagerRef = ReqMgr;
+
+        ABulletRushHUD* HUD = PC ? Cast<ABulletRushHUD>(PC->GetHUD()) : nullptr;
+        if (HUD)
+        {
+            HUD->SetObjective(TEXT("Derrota a todos los enemigos"));
+        }
     }
 
     // Timer de 3 minutos

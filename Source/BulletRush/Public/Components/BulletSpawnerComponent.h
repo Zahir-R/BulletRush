@@ -65,7 +65,7 @@ public:
 	*/
 	void InternalSpawn(FVector Origin, FVector Direction, float Speed, float Damage, FVector Scale = FVector(0.4f));
 
-	void InternalSpawnAt(FVector SpawnLocation, FVector Direction, float Speed, float Damage);
+	void InternalSpawnAt(FVector SpawnLocation, FVector Direction, float Speed, float Damage, FVector Scale = FVector(0.4f));
 
 	void StopCurrentSequence();
 

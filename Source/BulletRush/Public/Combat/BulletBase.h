@@ -57,6 +57,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "VFX")
 	FLinearColor EnemyTrailColor = FLinearColor(1.0f, 0.3f, 0.2f, 1.0f);
 
+	UPROPERTY()
+	float BaseRadius;
+
 protected:
 	virtual void BeginPlay() override;
 	

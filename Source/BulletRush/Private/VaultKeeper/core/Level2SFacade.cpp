@@ -14,6 +14,7 @@
 #include "Subsystems/MusicManagerSubsystem.h"
 #include "Sound/SoundBase.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Core/BulletRushHUD.h"
 
 ALevel2SFacade::ALevel2SFacade()
 {
@@ -52,7 +53,13 @@ void ALevel2SFacade::StartLevel()
     APlayingPlayer* Player = Cast<APlayingPlayer>(
         UGameplayStatics::GetPlayerPawn(this, 0));
 
-    
+
+    APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+    ABulletRushHUD* HUD = PC ? Cast<ABulletRushHUD>(PC->GetHUD()) : nullptr;
+    if (HUD)
+    {
+        HUD->SetObjective(TEXT("Derrota a todos los enemigos"));
+    }
 
     // Veneno cada segundo
     GetWorld()->GetTimerManager().SetTimer(

@@ -76,7 +76,15 @@ bool UProjectilesSubsystem::Tick(float DeltaTime)
 				}
 			}
 
-			if (GetWorld()->LineTraceSingleByChannel(Hit, CurrentLoc, NewLoc, ECC_Visibility, Params))
+			FVector BoundsOrigin, BoxExtent;
+			Bullet->GetActorBounds(true, BoundsOrigin, BoxExtent);
+			
+			float BulletRadius = Bullet->BaseRadius * Bullet->GetActorScale3D().GetMax();
+
+			FCollisionShape SphereShape = FCollisionShape::MakeSphere(BulletRadius);
+			
+			//float SweepRadius = 15.0f * Bullet->GetActorRelativeScale3D().X;
+			if (GetWorld()->SweepSingleByChannel(Hit, CurrentLoc, NewLoc, FQuat::Identity, ECC_Visibility, SphereShape, Params))
 			{
 				AActor* OtherActor = Hit.GetActor();
 

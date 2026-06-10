@@ -41,6 +41,6 @@ void UFanAttack::Execute(UBulletSpawnerComponent* Spawner, const FAttackParams& 
         Dir = Dir.RotateAngleAxis(FMath::RadiansToDegrees(V_Angle), LocalRight);
         Dir = Dir.GetSafeNormal();
 
-        Spawner->InternalSpawnAt(CommonOrigin, Dir, Params.Speed, Params.Damage);
+        Spawner->InternalSpawn(CommonOrigin, Dir, Params.Speed, Params.Damage, Params.Scale);
     }
 }

@@ -33,7 +33,7 @@ void UBurstAttack::Execute(UBulletSpawnerComponent* Spawner, const FAttackParams
 					FireDirection = SpawnerPtr->GetOwner()->GetActorForwardVector();
 				}
 
-				SpawnerPtr->InternalSpawn(BurstData->Config.Origin, FireDirection, BurstData->Config.Speed, BurstData->Config.Damage);
+				SpawnerPtr->InternalSpawn(BurstData->Config.Origin, FireDirection, BurstData->Config.Speed, BurstData->Config.Damage, BurstData->Config.Scale);
 				BurstData->Remaining--;
 			}
 			else if (SpawnerPtr.IsValid())
