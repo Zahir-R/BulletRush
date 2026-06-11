@@ -93,13 +93,14 @@ void ALevelPortal::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 			}
 			OnBeforeLevelTravel.Broadcast();
 			EvaluarEstadoDeDesbloqueo();
-			if (bIsExitPortal)
+			ULevelRoutingSubsystem* LevelRouter = GetGameInstance()->GetSubsystem<ULevelRoutingSubsystem>();
+			if (LevelRouter)
 			{
-				UGameplayStatics::OpenLevel(this, TargetLevelName);
-			}
-			else // Si es un portal del Hub, usamos la validación estricta
-			{
-				if (ULevelRoutingSubsystem* LevelRouter = GetGameInstance()->GetSubsystem<ULevelRoutingSubsystem>())
+				if (bIsExitPortal)
+				{
+					LevelRouter->SolicitarViajeANivel(TargetLevelName, NAME_None, this);
+				}
+				else // Si es un portal del Hub, usamos la validación estricta
 				{
 					LevelRouter->SolicitarViajeANivel(TargetLevelName, RequiredLevelToUnlock, this);
 				}

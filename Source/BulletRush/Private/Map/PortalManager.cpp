@@ -17,7 +17,7 @@ APortalManager::APortalManager()
 	PortalesDataBase.Add(FPortalData("Map_02Boss", FVector(-700.0f,900.0f,50.0f), NAME_None));
 	PortalesDataBase.Add(FPortalData("Map_03Boss", FVector(700.0f,-400.0f,50.0f), "Map_02Boss"));
 	PortalesDataBase.Add(FPortalData("Map_Test", FVector(700.0f,900.0f,50.0f), "Map_01Boss"));
-	PortalesDataBase.Add(FPortalData("Map_05Boss", FVector(-800.0f,250.0f,50.0f), "Map_02Boss"));
+	PortalesDataBase.Add(FPortalData("Map_05Boss", FVector(-800.0f,250.0f,50.0f), NAME_None));
 	PortalesDataBase.Add(FPortalData("Map_04Boss", FVector(-2200.0f, -80.0f, 50.0f), "Map_03Boss"));
 }	
 // Called when the game starts or when spawned
@@ -64,6 +64,8 @@ void APortalManager::VolverCupHead(FVector Location)
 		if (PortalCup)
 		{
 			PortalCup->TargetLevelName = FName(TEXT("Map_CupHeadMap"));
+			PortalCup->bIsExitPortal = true;
+			PortalCup->bIsUnlocked = true;
 		}
 	}
 }

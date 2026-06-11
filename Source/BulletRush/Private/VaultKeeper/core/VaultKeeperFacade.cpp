@@ -189,6 +189,7 @@ void AVaultKeeperFacade::OpenPortal()
         PortalToMap->TargetLevelName = FName("Map_CupHeadMap");
         PortalToMap->bIsExitPortal = true;
         PortalToMap->EvaluarEstadoDeDesbloqueo();
+        PortalToMap->RequiredLevelToUnlock = NAME_None;
         PortalToMap->CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
         PortalToMap->SetActorHiddenInGame(false);
         UE_LOG(LogTemp, Warning, TEXT("[VaultKeeperFacade] Portal al mapa abierto"));
