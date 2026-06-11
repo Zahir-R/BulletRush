@@ -37,6 +37,9 @@ void ALevel2SFacade::BeginPlay()
     PortalToBoss = GetWorld()->SpawnActor<ALevelPortal>(
         ALevelPortal::StaticClass(),
         FVector(0.f, 0.f, 0.f), FRotator::ZeroRotator);
+
+    PortalToBoss->bIsExitPortal = true;
+    PortalToBoss->EvaluarEstadoDeDesbloqueo();
 	PortalToBoss->SetActorHiddenInGame(true);
 }
 

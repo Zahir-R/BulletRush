@@ -14,9 +14,10 @@ struct FPortalData
 
 	FName LevelName;
 	FVector SpawnLocation;
+	FName RequiredLevel;
 
-	FPortalData() : LevelName(NAME_None), SpawnLocation(FVector::ZeroVector) {}
-	FPortalData(FName InLevelName, FVector InLocation) : LevelName(InLevelName), SpawnLocation(InLocation) {}
+	FPortalData() : LevelName(NAME_None), SpawnLocation(FVector::ZeroVector), RequiredLevel(NAME_None) {}
+	FPortalData(FName InLevelName, FVector InLocation, FName InReqLevel = NAME_None) : LevelName(InLevelName), SpawnLocation(InLocation), RequiredLevel(InReqLevel) {}
 };
 
 UCLASS(Blueprintable)

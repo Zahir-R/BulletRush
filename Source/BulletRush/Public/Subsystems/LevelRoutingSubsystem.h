@@ -18,11 +18,11 @@ class BULLETRUSH_API ULevelRoutingSubsystem : public UGameInstanceSubsystem
 public:
 	// Funci�n principal que llamara el Portal fisico ALevelPortal
 	UFUNCTION()
-	void SolicitarViajeANivel(FName NombreNivelDestino, const UObject* WorldContextObject);
+	void SolicitarViajeANivel(FName NombreNivelDestino, FName NivelRequerido, const UObject* WorldContextObject);
 
-	// Verifica si el jugador cumple los requisitos para entrar al nivel
+	// Verifica si el jugadro cumple los requisitos
 	UFUNCTION()
-	bool PuedeViajarANivel(FName NombreNivelDestino);
+	bool PuedeViajarANivel(FName NombreNivelDestino, FName NivelRequerido);
 
 private:
 	// Funci�n interna para obtener tu GameInstance casteado de forma limpia

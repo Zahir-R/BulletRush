@@ -4,6 +4,7 @@
 #include "Map/LevelPortal.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/BoxComponent.h"
+#include "Core/BulletRushGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/TopDownPlayer.h"
 #include "Subsystems/LevelRoutingSubsystem.h"
@@ -17,6 +18,7 @@ ALevelPortal::ALevelPortal()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 	
+	bIsExitPortal = true;
 	
 	CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
 	CollisionBox->SetBoxExtent(FVector(100.0f, 100.0f, 100.0f));
@@ -84,12 +86,23 @@ void ALevelPortal::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 		APlayingPlayer* Player2 = Cast<APlayingPlayer>(OtherActor);
 		if ((Player || Player2) && !TargetLevelName.IsNone())
 		{
-			OnBeforeLevelTravel.Broadcast();
-
-			ULevelRoutingSubsystem* LevelRouter = GetGameInstance()->GetSubsystem<ULevelRoutingSubsystem>();
-			if (LevelRouter)
+			if (!bIsUnlocked)
 			{
-				LevelRouter->SolicitarViajeANivel(TargetLevelName, this);
+				UE_LOG(LogTemp, Warning, TEXT("NIVEL BLOQUEADO. Debes pasar: %s"), *RequiredLevelToUnlock.ToString());
+				return;
+			}
+			OnBeforeLevelTravel.Broadcast();
+			EvaluarEstadoDeDesbloqueo();
+			if (bIsExitPortal)
+			{
+				UGameplayStatics::OpenLevel(this, TargetLevelName);
+			}
+			else // Si es un portal del Hub, usamos la validación estricta
+			{
+				if (ULevelRoutingSubsystem* LevelRouter = GetGameInstance()->GetSubsystem<ULevelRoutingSubsystem>())
+				{
+					LevelRouter->SolicitarViajeANivel(TargetLevelName, RequiredLevelToUnlock, this);
+				}
 			}
 			/*
 			//cargamos el nivel corespondiente
@@ -105,4 +118,32 @@ void ALevelPortal::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void ALevelPortal::EvaluarEstadoDeDesbloqueo()
+{
+
+	if (bIsExitPortal)
+	{
+		bIsUnlocked = true;
+	}
+	else
+	{
+		bIsUnlocked = false;
+
+		if (ULevelRoutingSubsystem* LevelRouter = GetGameInstance()->GetSubsystem<ULevelRoutingSubsystem>())
+		{
+			bIsUnlocked = LevelRouter->PuedeViajarANivel(TargetLevelName, RequiredLevelToUnlock);
+		}
+	}
+
+	// Apagamos las partículas si está cerrado
+	if (!bIsUnlocked && NiagaraComponent)
+	{
+		NiagaraComponent->Deactivate();
+	}
+	else if (bIsUnlocked && NiagaraComponent)
+	{
+		NiagaraComponent->Activate();
+	}
 }

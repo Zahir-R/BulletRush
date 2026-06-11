@@ -12,20 +12,27 @@ UBulletRushGameInstance* ULevelRoutingSubsystem::GetBulletRushGameInstance() con
 	return Cast<UBulletRushGameInstance>(GetGameInstance());
 }
 
-bool ULevelRoutingSubsystem::PuedeViajarANivel(FName NombreNivelDestino)
+bool ULevelRoutingSubsystem::PuedeViajarANivel(FName NombreNivelDestino, FName NivelRequerido)
 {
-	UBulletRushGameInstance* GameInstance = GetBulletRushGameInstance();
-	if (!GameInstance)
+	// Si no hay nivel requerido (Es el primer nivel), entra directo
+	if (NivelRequerido.IsNone())
 	{
-		return false;
+		return true;
 	}
-	// true por defecto para testeo
-	return true;
+
+	// Consultamos al GameInstance si el nivel requerido ya fue completado
+	UBulletRushGameInstance* GameInstance = GetBulletRushGameInstance();
+	if (GameInstance)
+	{
+		return GameInstance->IsMapaCompletado(NivelRequerido);
+	}
+
+	return false;
 }
 
-void ULevelRoutingSubsystem::SolicitarViajeANivel(FName NombreNivelDestino, const UObject* WorldContextObject)
+void ULevelRoutingSubsystem::SolicitarViajeANivel(FName NombreNivelDestino, FName NivelRequerido, const UObject* WorldContextObject)
 {
-	if (PuedeViajarANivel(NombreNivelDestino))
+	if (PuedeViajarANivel(NombreNivelDestino, NivelRequerido))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Navegando al mapa: %s"), *NombreNivelDestino.ToString());
 

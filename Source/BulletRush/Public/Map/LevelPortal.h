@@ -55,4 +55,12 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Componentes")
 	UBoxComponent* CollisionBox;
 
+	FName RequiredLevelToUnlock = NAME_None;
+	bool bIsUnlocked;            
+
+	void EvaluarEstadoDeDesbloqueo();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Progression")
+	bool bIsExitPortal = true;
+
 };

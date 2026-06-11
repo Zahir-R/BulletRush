@@ -61,6 +61,9 @@ void ALevel21Facade::BeginPlay()
     PortalToBoss = GetWorld()->SpawnActor<ALevelPortal>(
         ALevelPortal::StaticClass(),
         FVector(0.f, 0.f, 100.f), FRotator::ZeroRotator);
+
+    PortalToBoss->bIsExitPortal = true;
+    PortalToBoss->EvaluarEstadoDeDesbloqueo();
     PortalToBoss->SetActorHiddenInGame(true);
 
     PowerUpPublisher = GetWorld()->SpawnActor<APowerUpUsagePublisher>(
