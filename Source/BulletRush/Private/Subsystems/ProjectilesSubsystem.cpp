@@ -21,8 +21,12 @@ float UProjectilesSubsystem::GetPlayerProjectileSpeedMultiplier(AActor* OwnerAct
     return 1.f;
 }
 
-void UProjectilesSubsystem::Tick(float DeltaTime)
+bool UProjectilesSubsystem::Tick(float DeltaTime)
 {
+	if (!bIsActive) return true;
+
+	if (GetWorld() && GetWorld()->IsPaused()) return true;
+
 	if (BulletPool.Num() == 0) InitializePool();
 
 	for (ABulletBase* Bullet : BulletPool)
@@ -72,7 +76,15 @@ void UProjectilesSubsystem::Tick(float DeltaTime)
 				}
 			}
 
-			if (GetWorld()->LineTraceSingleByChannel(Hit, CurrentLoc, NewLoc, ECC_Visibility, Params))
+			FVector BoundsOrigin, BoxExtent;
+			Bullet->GetActorBounds(true, BoundsOrigin, BoxExtent);
+			
+			float BulletRadius = Bullet->BaseRadius * Bullet->GetActorScale3D().GetMax();
+
+			FCollisionShape SphereShape = FCollisionShape::MakeSphere(BulletRadius);
+			
+			//float SweepRadius = 15.0f * Bullet->GetActorRelativeScale3D().X;
+			if (GetWorld()->SweepSingleByChannel(Hit, CurrentLoc, NewLoc, FQuat::Identity, ECC_Visibility, SphereShape, Params))
 			{
 				AActor* OtherActor = Hit.GetActor();
 
@@ -87,7 +99,17 @@ void UProjectilesSubsystem::Tick(float DeltaTime)
 					{
 						if (bIsBoss)
 						{
-							// Check if boss has active weak points
+							UWeakPointComponent* HitWP = Cast<UWeakPointComponent>(Hit.GetComponent());
+							if (HitWP)
+							{
+								if (HitWP->GetGenerateOverlapEvents() && HitWP->CurrentHealth > 0.0f)
+								{
+									HitWP->TakeDamageFromHit(Bullet->BulletData.Damage);
+								}
+								ReturnBullet(Bullet);
+								continue;
+							}
+
 							bool bHasActiveWeakPoints = false;
 							TArray<UWeakPointComponent*> WPs;
 							OtherActor->GetComponents<UWeakPointComponent>(WPs);
@@ -102,10 +124,8 @@ void UProjectilesSubsystem::Tick(float DeltaTime)
 
 							if (bHasActiveWeakPoints)
 							{
-								// Let the WeakPointComponent overlap handler process
-								// damage + return. Don't ApplyDamage or ReturnBullet here.
-								// The sweep movement (SetActorLocation with bSweep=true)
-								// will trigger OnComponentBeginOverlap on the weak point.
+								ReturnBullet(Bullet);
+								continue;
 							}
 							else
 							{
@@ -160,16 +180,18 @@ void UProjectilesSubsystem::Tick(float DeltaTime)
 			}
 		}
 	}
+	return true;
 }
 
 void UProjectilesSubsystem::InitializePool()
 {
-	if (!GetWorld()) return;
+	UWorld* World = GetWorld();
+	if (!World) return;
 
 	FActorSpawnParameters SpawnParams;
 	for (int32 i = 0; i < PoolSize; i++)
 	{
-		ABulletBase* NewBullet = GetWorld()->SpawnActor<ABulletBase>(ABulletBase::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+		ABulletBase* NewBullet = World->SpawnActor<ABulletBase>(ABulletBase::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
 		if (NewBullet) BulletPool.Add(NewBullet);
 	}
 }
@@ -240,6 +262,11 @@ void UProjectilesSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
+	bIsActive = true;
+
+	TickHandle = FTicker::GetCoreTicker().AddTicker(
+		FTickerDelegate::CreateUObject(this, &UProjectilesSubsystem::Tick));
+
 	OnMapLoadedHandle = FCoreUObjectDelegates::PostLoadMapWithWorld.AddLambda(
 		[this](UWorld* LoadedWorld)
 		{
@@ -250,6 +277,13 @@ void UProjectilesSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 void UProjectilesSubsystem::Deinitialize()
 {
+	bIsActive = false;
+
+	if (TickHandle.IsValid())
+	{
+		FTicker::GetCoreTicker().RemoveTicker(TickHandle);
+		TickHandle.Reset();
+	}
 	FCoreUObjectDelegates::PostLoadMapWithWorld.Remove(OnMapLoadedHandle);
 	ClearPool();
 	Super::Deinitialize();

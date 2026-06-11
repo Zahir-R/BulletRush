@@ -20,6 +20,7 @@ AVaultKeeper::AVaultKeeper()
     RootComponent = VaultMesh;
     if (MeshAsset.Succeeded()) VaultMesh->SetStaticMesh(MeshAsset.Object);
     VaultMesh->SetRelativeScale3D(FVector(3.5f, 3.5f, 3.5f));
+    VaultMesh->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
 
     if (HealthBarWidget)
     {

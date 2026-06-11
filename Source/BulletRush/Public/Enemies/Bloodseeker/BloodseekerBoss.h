@@ -114,6 +114,7 @@ private:
     // Oleadas de Kamikazes
     void SpawnKamikazeWave(int32 Count, float DelayBetween);
 
+    UFUNCTION()
     void OnBossHealthChanged(float NewHealth);
 
     int32 UltimateCount;

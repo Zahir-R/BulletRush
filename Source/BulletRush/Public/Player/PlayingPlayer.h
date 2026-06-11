@@ -15,6 +15,7 @@ class UStaticMeshComponent;
 class USphereComponent;
 class UWeaponBaseComponent;
 class UPlayerStatsBase;
+class UPauseMenuWidget;
 
 UCLASS(Blueprintable)
 class BULLETRUSH_API APlayingPlayer : public ACharacter
@@ -54,7 +55,17 @@ public:
 	void OnFireReleased();
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
+	UFUNCTION()
 	void OnPlayerDeath();
+
+	UFUNCTION()
+	void TogglePauseMenu();
+
+	UFUNCTION()
+	void OnPauseVolverAlMapa();
+
+	UFUNCTION()
+	void OnPauseContinuar();
 
 	TArray<UWeaponBaseComponent*> EquippedWeapons;
 	UPROPERTY()
@@ -79,6 +90,12 @@ public:
 
 	UPROPERTY()
 	UUserWidget* WeaponWidget;
+
+	UPROPERTY()
+	UPauseMenuWidget* PauseMenuWidget;
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UPauseMenuWidget> PauseMenuWidgetClass;
 
 	void WrapStats(class UPlayerStatsDecorator* NewDecorator);
 	void UnwrapStats();

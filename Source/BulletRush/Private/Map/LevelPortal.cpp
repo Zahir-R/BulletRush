@@ -40,6 +40,18 @@ ALevelPortal::ALevelPortal()
 	}
 
 	CollisionBox->OnComponentBeginOverlap.AddDynamic(this, &ALevelPortal::OnOverlapBegin);
+	//niagara
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> NiagaraAsset(TEXT("NiagaraSystem'/Game/MixedVFX/Particles/Mix/NS_Mix_03.NS_Mix_03'"));
+	if (NiagaraAsset.Succeeded())
+	{
+		NiagaraSystem = NiagaraAsset.Object;
+
+
+		NiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComponent"));
+		NiagaraComponent->SetAsset(NiagaraSystem);
+		NiagaraComponent->SetupAttachment(RootComponent);
+		NiagaraComponent->bAutoActivate = true;
+	}
 
 
 }
@@ -50,6 +62,16 @@ void ALevelPortal::BeginPlay()
 	Super::BeginPlay();
 
 }
+void ALevelPortal::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (NiagaraComponent)
+	{
+		NiagaraComponent->Deactivate();
+		NiagaraComponent->SetAsset(nullptr);
+	}
+	Super::EndPlay(EndPlayReason);
+}
+
 void ALevelPortal::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	// Verificamos que el actor que chocó no sea nulo y no sea el portal mismo

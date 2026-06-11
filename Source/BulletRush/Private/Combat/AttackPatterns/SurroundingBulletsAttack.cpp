@@ -37,7 +37,7 @@ void USurroundingBulletsAttack::Execute(UBulletSpawnerComponent* Spawner, const 
 
 		FVector SpawnPos = TargetCenter + Dir * Radius;
 
-		ABulletBase* Bullet = Subsystem->RequestBullet(SpawnPos, Dir, 0.f, false, Params.Damage, SpawnPos, Owner);
+		ABulletBase* Bullet = Subsystem->RequestBullet(SpawnPos, Dir, 0.f, false, Params.Damage, SpawnPos, Owner, Params.Scale);
 		if (Bullet)
 		{
 			Bullet->BulletData.ConvergeCenter = TargetCenter;

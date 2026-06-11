@@ -3,6 +3,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "PlayerStatsDecorator.h"
+#include "NiagaraComponent.h"
+#include "NiagaraSystem.h"
 #include "PowerUpBase.generated.h"
 
 class APowerUpManager;
@@ -39,12 +41,22 @@ public:
 	float BuffMagnitude = 1.0f;
 
 	virtual void Tick(float DeltaTime) override;
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 protected:
 	UPROPERTY(VisibleAnywhere)
 	class USphereComponent* CollisionSphere;
 
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* Mesh;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	UNiagaraSystem* NiagaraSystem;
+
+	
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	UNiagaraComponent* NiagaraComponent;
 
 	UFUNCTION()
 	virtual void OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

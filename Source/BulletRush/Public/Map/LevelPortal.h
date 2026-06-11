@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Core/Subscriber.h"
+#include "NiagaraComponent.h"
+#include "NiagaraSystem.h"
 #include "LevelPortal.generated.h"
 
 class UBoxComponent;
@@ -27,10 +29,17 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	UPROPERTY(VisibleAnywhere, Category = "Componentes")
 	UStaticMeshComponent* PortalMesh;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	UNiagaraSystem* NiagaraSystem;
+
+
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	UNiagaraComponent* NiagaraComponent;
 
 	// Funcion que se activa cuando el player choca con el box, para cargar el nivel correspondiente
 	UFUNCTION()

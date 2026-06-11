@@ -63,9 +63,10 @@ private:
     USoundBase* CombatSong;
 
     UPROPERTY(EditAnywhere, Category = "Music")
-    float CombatStartOffset = 0.0f;
+    USoundBase* AmbientSong;
 
-  
+    UPROPERTY(EditAnywhere, Category = "Music")
+    float CombatStartOffset = 0.0f;
 
     UPROPERTY()
     TWeakObjectPtr<URequirementManager> RequirementManagerRef;
@@ -75,7 +76,7 @@ private:
 
 
     int32 EnemiesKilled = 0;
-    int32 TotalEnemies= 15;
+    int32 TotalEnemies= 22;
     bool bPlayerDied = false;
     bool bLevelComplete = false;
 

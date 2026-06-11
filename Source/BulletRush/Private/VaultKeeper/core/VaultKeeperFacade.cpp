@@ -13,6 +13,7 @@
 #include "Subsystems/MusicManagerSubsystem.h"
 #include "Sound/SoundBase.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Core/BulletRushHUD.h"
 
 AVaultKeeperFacade::AVaultKeeperFacade()
 {
@@ -27,6 +28,9 @@ AVaultKeeperFacade::AVaultKeeperFacade()
 
     static ConstructorHelpers::FObjectFinder<USoundBase> CombatFinder(TEXT("SoundWave'/Game/Audio/1-_Brave_reaction.1-_Brave_reaction'"));
     if (CombatFinder.Succeeded()) CombatSong = CombatFinder.Object;
+
+    static ConstructorHelpers::FObjectFinder<USoundBase> AmbientFinder(TEXT("SoundWave'/Game/Audio/Ambient.Ambient'"));
+    if (AmbientFinder.Succeeded()) AmbientSong = AmbientFinder.Object;
 }
 
 void AVaultKeeperFacade::BeginPlay()
@@ -66,6 +70,13 @@ void AVaultKeeperFacade::StartLevel()
         DroneSpawnInterval,
         true
     );
+
+    APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+    ABulletRushHUD* HUD = PC ? Cast<ABulletRushHUD>(PC->GetHUD()) : nullptr;
+    if (HUD)
+    {
+        HUD->SetObjective(TEXT("Derrota al VaultKeeper"));
+    }
 }
 
 void AVaultKeeperFacade::SpawnBoss()
@@ -150,6 +161,9 @@ void AVaultKeeperFacade::OnBossDeath(AEnemyBase* DeadEnemy)
         if (Enemy && IsValid(Cast<UObject>(Enemy)))
             Enemy->Destroy();
     ActiveEnemies.Empty();
+
+    if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+        Music->TransitionTo(AmbientSong, 3.0f, 0.5f, 0.0f);
 
     UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
     if (GI)

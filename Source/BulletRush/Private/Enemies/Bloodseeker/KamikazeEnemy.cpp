@@ -25,6 +25,7 @@ AKamikazeEnemy::AKamikazeEnemy()
         MeshEnemy->SetStaticMesh(MeshAsset.Object);
         MeshEnemy->SetRelativeScale3D(FVector(0.02));
     }
+    MeshEnemy->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 }
 
 void AKamikazeEnemy::BeginPlay()

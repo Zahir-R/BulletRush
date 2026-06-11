@@ -30,7 +30,7 @@ void AOrchestratorGameMode::BeginPlay()
 
 		if (LevelFacade)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("OrchestratorGameMode: Fachada del Nivel 5 instanciada con éxito."));
+			UE_LOG(LogTemp, Warning, TEXT("OrchestratorGameMode: Fachada del Nivel 5 instanciada con Ã©xito."));
 		}
 	}
 	APlayingPlayer* Player = Cast<APlayingPlayer>(UGameplayStatics::GetPlayerPawn(this, 0));
@@ -72,6 +72,7 @@ void AOrchestratorGameMode::OnPlayerDeath()
 	else
 	{
 		GI->OrchestratorLState = ELevelState::Normal;
+		GI->ResetVidas(MapName);
 		UGameplayStatics::OpenLevel(this, FName("Map_CupHeadMap"));
 	}
 }

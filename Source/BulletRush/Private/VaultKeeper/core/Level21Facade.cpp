@@ -16,6 +16,7 @@
 #include "Subsystems/MusicManagerSubsystem.h"
 #include "Sound/SoundBase.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Core/BulletRushHUD.h"
 
 ALevel21Facade::ALevel21Facade()
 {
@@ -24,7 +25,9 @@ ALevel21Facade::ALevel21Facade()
     static ConstructorHelpers::FObjectFinder<USoundBase> CombatFinder(TEXT("SoundWave'/Game/Audio/1-_Brave_reaction.1-_Brave_reaction'"));
     if (CombatFinder.Succeeded()) CombatSong = CombatFinder.Object;
 
-   
+    static ConstructorHelpers::FObjectFinder<USoundBase> AmbientFinder(TEXT("SoundWave'/Game/Audio/Ambient.Ambient'"));
+    if (AmbientFinder.Succeeded()) AmbientSong = AmbientFinder.Object;
+
     // Spawn locations por defecto si no se asignan en el editor
     DroneSpawnLocations = {
         FVector(580.f,    800.f, 100.f),
@@ -94,6 +97,12 @@ void ALevel21Facade::StartLevel()
 
         ReqMgr->InitializeRequirements(PC);
         RequirementManagerRef = ReqMgr;
+
+        ABulletRushHUD* HUD = PC ? Cast<ABulletRushHUD>(PC->GetHUD()) : nullptr;
+        if (HUD)
+        {
+            HUD->SetObjective(TEXT("Derrota a todos los enemigos"));
+        }
     }
 
     // Timer de 3 minutos
@@ -188,6 +197,8 @@ void ALevel21Facade::CheckLevelComplete()
     GetWorld()->GetTimerManager().ClearTimer(LevelTimer);
 
     UE_LOG(LogTemp, Warning, TEXT("[Level21Facade] Nivel completado!"));
+    if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+        Music->TransitionTo(AmbientSong, 3.0f, 0.5f, 0.0f);
     bool bSecretUnlocked = RequirementManagerRef.IsValid() && RequirementManagerRef->AreSecretRequirementsMet();
     OpenPortal(bSecretUnlocked);
 }

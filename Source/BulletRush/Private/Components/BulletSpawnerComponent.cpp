@@ -64,14 +64,14 @@ void UBulletSpawnerComponent::InternalSpawn(FVector Origin, FVector Direction, f
 	}
 }
 
-void UBulletSpawnerComponent::InternalSpawnAt(FVector SpawnLocation, FVector Direction, float Speed, float Damage)
+void UBulletSpawnerComponent::InternalSpawnAt(FVector SpawnLocation, FVector Direction, float Speed, float Damage, FVector Scale)
 {
 	if (!GetOwner() || !ProjectilesSubsystem) return;
 
 	AActor* OwnerActor = GetOwner();
 
 	ABulletBase* Bullet = ProjectilesSubsystem->RequestBullet(
-		SpawnLocation, Direction, Speed, bIsPlayerSource, Damage, SpawnLocation, OwnerActor
+		SpawnLocation, Direction, Speed, bIsPlayerSource, Damage, SpawnLocation, OwnerActor, Scale
 	);
 }
 

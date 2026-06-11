@@ -1,22 +1,19 @@
 ﻿#pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
-#include "Tickable.h"
+#include "Containers/Ticker.h"
 #include "Combat/BulletBase.h"
 #include "Materials/MaterialParameterCollection.h"
 
 #include "ProjectilesSubsystem.generated.h"
 
 UCLASS(Blueprintable)
-class BULLETRUSH_API UProjectilesSubsystem : public UGameInstanceSubsystem, public FTickableGameObject
+class BULLETRUSH_API UProjectilesSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 
 public:
-	// Boilerplate de FTickableGameObject
-	virtual void Tick(float DeltaTime) override;
-	virtual bool IsTickable() const override { return true; }
-	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(UProjectilesSubsystem, STATGROUP_Tickables); }
+	bool Tick(float DeltaTime);
 
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
@@ -50,7 +47,9 @@ private:
 	UPROPERTY()
 	TArray<ABulletBase*> BulletPool;
 	FDelegateHandle OnMapLoadedHandle;
+	FDelegateHandle TickHandle;
 
 	int32 PoolSize = 2500;
+	bool bIsActive = false;
 	void InitializePool();
 };

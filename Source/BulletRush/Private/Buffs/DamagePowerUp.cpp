@@ -14,4 +14,17 @@ ADamagePowerUp::ADamagePowerUp()
 	if (HealthMat.Succeeded()) Mesh->SetMaterial(0, HealthMat.Object);
 	Mesh->SetRelativeScale3D(FVector(0.60f, 0.60f, 0.60f));
 	Mesh->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
+
+	//niagara
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> NiagaraAsset(TEXT("NiagaraSystem'/Game/MixedVFX/Particles/Mix/NS_Mix_02.NS_Mix_02'"));
+	if (NiagaraAsset.Succeeded())
+	{
+		NiagaraSystem = NiagaraAsset.Object;
+
+
+		NiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComponent"));
+		NiagaraComponent->SetAsset(NiagaraSystem);
+		NiagaraComponent->SetupAttachment(RootComponent);
+		NiagaraComponent->bAutoActivate = true;
+	}
 }

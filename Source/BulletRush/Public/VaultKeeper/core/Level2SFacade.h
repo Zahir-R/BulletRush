@@ -54,6 +54,9 @@ public:
     USoundBase* CombatSong;
 
     UPROPERTY(EditAnywhere, Category = "Music")
+    USoundBase* AmbientSong;
+
+    UPROPERTY(EditAnywhere, Category = "Music")
     float CombatStartOffset = 0.0f;
 
 private:

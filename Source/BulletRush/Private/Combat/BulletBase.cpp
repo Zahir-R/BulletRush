@@ -43,7 +43,19 @@ ABulletBase::ABulletBase()
 void ABulletBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	FVector BoundsOrigin, BoxExtent;
+	GetActorBounds(false, BoundsOrigin, BoxExtent);
+
+	float InitialScale = GetActorScale3D().GetMax();
+
+	if (InitialScale > 0.0f)
+	{
+		BaseRadius = BoxExtent.GetMax() / InitialScale;
+	}
+	else
+	{
+		BaseRadius = 15.0f;
+	}
 }
 
 

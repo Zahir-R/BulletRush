@@ -6,10 +6,13 @@
 #include "Map/LevelPortal.h"
 #include "Core/BulletRushGameInstance.h"
 #include "Subsystems/ProjectilesSubsystem.h"
+#include "Subsystems/MusicManagerSubsystem.h"
 #include "Engine/World.h"
 #include "Enemies/Bloodseeker/SkySphereWorld.h"
 #include "Player/PlayingPlayer.h"
 #include "Kismet/GameplayStatics.h"
+#include "Sound/SoundBase.h"
+#include "UObject/ConstructorHelpers.h"
 
 ABloodseekerGameMode::ABloodseekerGameMode()
 {
@@ -19,7 +22,9 @@ ABloodseekerGameMode::ABloodseekerGameMode()
     BossTrigger = nullptr;
     bBossDied = false;
     SpawnBossTriggerLocation = FVector(900.0f, 0.0f, 100.0f);
- 
+
+    static ConstructorHelpers::FObjectFinder<USoundBase> AmbientFinder(TEXT("SoundWave'/Game/Audio/Ambient.Ambient'"));
+    if (AmbientFinder.Succeeded()) AmbientSong = AmbientFinder.Object;
 }
 
 void ABloodseekerGameMode::BeginPlay()
@@ -112,6 +117,11 @@ void ABloodseekerGameMode::OnBossDied(AEnemyBase* DeadBoss)
 
     CleanupLevel();
 
+    if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+    {
+        Music->TransitionTo(AmbientSong, 3.0f, 0.5f, 0.0f);
+    }
+
     UGameInstance* GameInstance = GetGameInstance();
     if (GameInstance)
     {
@@ -154,6 +164,9 @@ void ABloodseekerGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 }
 void ABloodseekerGameMode::OnPlayerDeath()
 {
+    if (UMusicManagerSubsystem* Music = GetGameInstance()->GetSubsystem<UMusicManagerSubsystem>())
+        Music->NotifyLevelTravel();
+
     UBulletRushGameInstance* GI = Cast<UBulletRushGameInstance>(GetGameInstance());
     if (!GI) return;
 

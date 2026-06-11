@@ -114,6 +114,7 @@ void AChronostasisGameMode::OnPlayerDeath()
 	else
 	{
 		GI->ChronostasisState = ELevelState::Normal;
+		GI->ResetVidas(MapName);
 		UGameplayStatics::OpenLevel(this, FName("Map_CupHeadMap"));
 	}
 }

@@ -25,7 +25,7 @@ ABossSpawnTrigger::ABossSpawnTrigger()
     ActivationDelay = 1.5f;
     bIsReady = false;
 
-    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshFinder(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Tube.Shape_Tube'"));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshFinder(TEXT("StaticMesh'/Game/Assets/portal/Meshy_AI_Portal_of_the_Floatin_0607235308_texture.Meshy_AI_Portal_of_the_Floatin_0607235308_texture'"));
     if (MeshFinder.Succeeded())
     {
         TriggerVisualMesh = MeshFinder.Object;
