@@ -56,9 +56,14 @@ APowerUpManager* ABulletRushGameModeBase::SpawnPowerUpsForLevel(UWorld* World, F
 	Classes.Add(ASpeedPowerUp::StaticClass());
 	Classes.Add(AUltimatePowerUp::StaticClass());
 
+	FVector SpawnLocation = FVector(5000.0f, 5000.0f, 2000.0f);
+	FString LName = LevelName.ToString();
+	if (LName.Contains("Map_02Boss")) SpawnLocation = FVector(0.0f, 0.0f, 300.0f);
+
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	APowerUpManager* Manager = World->SpawnActor<APowerUpManager>(APowerUpManager::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+
+	APowerUpManager* Manager = World->SpawnActor<APowerUpManager>(APowerUpManager::StaticClass(), SpawnLocation, FRotator::ZeroRotator, SpawnParams);
 	if (Manager) Manager->Initialize(Classes, FVector(5000.0f, 5000.0f, 2000.0f));
 	return Manager;
 }

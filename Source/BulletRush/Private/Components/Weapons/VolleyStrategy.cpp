@@ -122,7 +122,8 @@ void UVolleyStrategy::ExecuteFire(
 			UGameplayStatics::PlaySoundAtLocation(
 				Weapon,
 				FireSound,
-				Location
+				Location,
+				0.6f
 			);
 		}
 	}

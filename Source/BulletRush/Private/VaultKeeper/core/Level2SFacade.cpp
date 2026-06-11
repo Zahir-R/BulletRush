@@ -36,7 +36,7 @@ void ALevel2SFacade::BeginPlay()
 
     PortalToBoss = GetWorld()->SpawnActor<ALevelPortal>(
         ALevelPortal::StaticClass(),
-        FVector(0.f, 0.f, 0.f), FRotator::ZeroRotator);
+        FVector(0.f, 0.f, 50.f), FRotator::ZeroRotator);
 
     PortalToBoss->bIsExitPortal = true;
     PortalToBoss->EvaluarEstadoDeDesbloqueo();
@@ -192,7 +192,7 @@ void ALevel2SFacade::CheckLevelComplete()
     for (const FHiveData& Hive : Hives)
         if (Hive.IsCleared()) ClearedCount++;
 
-    if (ClearedCount < 2) return;
+    if (ClearedCount < 3) return;
     if (bLevelComplete) return;
 
 

@@ -132,7 +132,8 @@ void UPlusFireStrategy::ExecuteFire(
 				UGameplayStatics::PlaySoundAtLocation(
 					Weapon,
 					FireSound,
-					Location
+					Location,
+					0.3f
 				);
 			}
 		}

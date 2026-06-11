@@ -37,8 +37,8 @@ public:
     UPROPERTY(EditDefaultsOnly, Category = "VaultKeeperFacade|Config")
     int32 DronesPerSpawn = 2;
 
-    UPROPERTY(EditAnywhere, Category = "VaultKeeperFacade|References")
-    ALevelPortal* PortalToMap;
+    //UPROPERTY(EditAnywhere, Category = "VaultKeeperFacade|References")
+    //ALevelPortal* PortalToMap;
 
     void StartLevel();
 

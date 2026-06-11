@@ -45,10 +45,10 @@ void AVaultKeeperFacade::BeginPlay()
 
     //StartLevel();
 
-    PortalToMap = GetWorld()->SpawnActor<ALevelPortal>(
-        ALevelPortal::StaticClass(),
-        FVector(0.f, 0.f, 100.f), FRotator::ZeroRotator);
-    PortalToMap->SetActorHiddenInGame(true);
+    //PortalToMap = GetWorld()->SpawnActor<ALevelPortal>(
+    //    ALevelPortal::StaticClass(),
+    //    FVector(0.f, 0.f, 100.f), FRotator::ZeroRotator);
+    //PortalToMap->SetActorHiddenInGame(true);
 }
 
 void AVaultKeeperFacade::StartLevel()
@@ -184,18 +184,15 @@ void AVaultKeeperFacade::OnDroneKilled(AEnemyBase* DeadEnemy)
 
 void AVaultKeeperFacade::OpenPortal()
 {
-    if (PortalToMap)
-    {
-        PortalToMap->TargetLevelName = FName("Map_CupHeadMap");
-        PortalToMap->bIsExitPortal = true;
-        PortalToMap->EvaluarEstadoDeDesbloqueo();
-        PortalToMap->RequiredLevelToUnlock = NAME_None;
-        PortalToMap->CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-        PortalToMap->SetActorHiddenInGame(false);
-        UE_LOG(LogTemp, Warning, TEXT("[VaultKeeperFacade] Portal al mapa abierto"));
-    }
-    else
-        UE_LOG(LogTemp, Error, TEXT("[VaultKeeperFacade] PortalToMap no asignado"));
+    //if (PortalToMap)
+    //{
+      //  PortalToMap->TargetLevelName = FName("Map_CupHeadMap");
+       // PortalToMap->CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+        //PortalToMap->SetActorHiddenInGame(false);
+        //UE_LOG(LogTemp, Warning, TEXT("[VaultKeeperFacade] Portal al mapa abierto"));
+    //}
+    //else
+     //   UE_LOG(LogTemp, Error, TEXT("[VaultKeeperFacade] PortalToMap no asignado"));
 }
 
 
