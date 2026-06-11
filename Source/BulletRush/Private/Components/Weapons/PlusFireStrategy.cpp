@@ -2,7 +2,20 @@
 #include "Components/WeaponBaseComponent.h"
 #include "Subsystems/ProjectilesSubsystem.h"
 #include "Player/PlayingPlayer.h"
+#include "Kismet/GameplayStatics.h"
 #include "Combat/BulletBase.h"
+
+UPlusFireStrategy::UPlusFireStrategy()
+{
+	static ConstructorHelpers::FObjectFinder<USoundBase> SoundAsset(
+		TEXT("SoundWave'/Game/BlasterSFX/New_Project.New_Project'")
+	);
+
+	if (SoundAsset.Succeeded())
+	{
+		FireSound = SoundAsset.Object;
+	}
+}
 
 void UPlusFireStrategy::StartFiring(
 	UWeaponBaseComponent* Weapon)
@@ -113,6 +126,15 @@ void UPlusFireStrategy::ExecuteFire(
 		if (Bullet)
 		{
 			Bullet->Tags.Add("BalaJugador");
+
+			if (FireSound)
+			{
+				UGameplayStatics::PlaySoundAtLocation(
+					Weapon,
+					FireSound,
+					Location
+				);
+			}
 		}
 	}
 }
