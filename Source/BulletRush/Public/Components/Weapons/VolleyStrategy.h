@@ -3,10 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/Object.h"
 #include "WeaponsInterface.h"
+#include "Sound/SoundBase.h"
 #include "VolleyStrategy.generated.h"
 
+class USoundBase;
 UCLASS()
 class BULLETRUSH_API UVolleyStrategy
 	: public UObject,
@@ -15,6 +16,8 @@ class BULLETRUSH_API UVolleyStrategy
 	GENERATED_BODY()
 
 public:
+	UVolleyStrategy();
+
 	float FireRate = 0.05f;
 
 	int MaxShots = 20;
@@ -40,4 +43,7 @@ public:
 	) override;
 
 	void FinishRecharge();
+
+	UPROPERTY(EditAnywhere, Category = "Audio")
+	USoundBase* FireSound;
 };

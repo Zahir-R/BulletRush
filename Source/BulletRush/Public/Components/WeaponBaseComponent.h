@@ -7,7 +7,6 @@
 #include "Components/SceneComponent.h"
 #include "WeaponBaseComponent.generated.h"
 
-
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BULLETRUSH_API UWeaponBaseComponent : public USceneComponent
 {

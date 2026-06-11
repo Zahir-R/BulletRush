@@ -2,8 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "WeaponsInterface.h"
+#include "Sound/SoundBase.h"
 #include "PlusFireStrategy.generated.h"
 
+class USoundBase;
 UCLASS()
 class BULLETRUSH_API UPlusFireStrategy
 	: public UObject,
@@ -12,6 +14,8 @@ class BULLETRUSH_API UPlusFireStrategy
 	GENERATED_BODY()
 
 public:
+	UPlusFireStrategy();
+
 	float SpreadAngle = 2.f;
 
 	virtual void StartFiring(
@@ -28,4 +32,7 @@ public:
 
 	float NewFireRate = .5f;
 	float AdditionalDamage = 20.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Audio")
+	USoundBase* FireSound;
 };
