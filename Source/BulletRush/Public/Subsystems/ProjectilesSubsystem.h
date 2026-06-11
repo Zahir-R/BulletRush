@@ -31,9 +31,13 @@ public:
 
 	float GlobalSpeedMultiplier = 1.0f; // El jefe deber� poder cambiar esto
 
+	float CurrentEmissivePulse = 5.0f;
+	float BaseEmissiveValue = 5.0f;
+	float CurrentColorBlend = 0.0f;
+
 	UMaterialParameterCollection* RhythmMPC;
 
-	void HandleBeatHit(bool bIsStrongBeat);
+	void HandleBeatHit(bool bIsStrongBeat, float CurrentBPM);
 
 	void HandleSilenceEnter();
 

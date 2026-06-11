@@ -70,6 +70,19 @@ void UOrchestrator_Normal::HandleBeat()
 	FVector DynamicScale = GetScaleFromBPM(120.0f);
 	TArray<FAttackStep> CurrentBeatAttack;
 
+	int32 Compas = BeatCounter % 4;
+
+	if (UGameInstance* GameInst = OrchestratorRef->GetWorld()->GetGameInstance())
+	{
+		if (UProjectilesSubsystem* ProjSub = GameInst->GetSubsystem<UProjectilesSubsystem>())
+		{
+			// Si es el compás 1 (Fuerte), pasamos true. Si es otro, pasamos false.
+			bool bIsStrongBeat = (Compas == 1);
+			if (bIsStrongBeat)
+				ProjSub->HandleBeatHit(bIsStrongBeat, 120.0f);
+		}
+	}
+
 	// Cada 16 pulsos (4 compases completos), interrumpimos el patrón normal y lanzamos el gran ataque
 	if (BeatCounter % 16 == 0)
 	{
@@ -78,8 +91,6 @@ void UOrchestrator_Normal::HandleBeat()
 	}
 	else
 	{
-		// Patrón clásico 4/4
-		int32 Compas = BeatCounter % 4;
 
 		if (Compas == 1) // Fuerte
 			CurrentBeatAttack.Add(FAttackStep(EAttackType::Circle, 12, 600.0f, 0.0f, 0.0f, 10.0f, 0.1f, DynamicScale));
@@ -141,6 +152,16 @@ void UOrchestrator_Melancholy::HandleBeat()
 
 	int32 Compas = BeatCounter % 4;
 
+	if (UGameInstance* GameInst = OrchestratorRef->GetWorld()->GetGameInstance())
+	{
+		if (UProjectilesSubsystem* ProjSub = GameInst->GetSubsystem<UProjectilesSubsystem>())
+		{
+			bool bIsStrongBeat = (Compas == 1);
+			if (bIsStrongBeat)
+				ProjSub->HandleBeatHit(bIsStrongBeat, 60.0f);
+		}
+	}
+
 	if (Compas == 1)
 	{
 		// Anillo muy lento y abrumador
@@ -196,6 +217,16 @@ void UOrchestrator_Frenetic::HandleBeat()
 	TArray<FAttackStep> CurrentBeatAttack;
 
 	int32 Compas = BeatCounter % 4;
+
+	if (UGameInstance* GameInst = OrchestratorRef->GetWorld()->GetGameInstance())
+	{
+		if (UProjectilesSubsystem* ProjSub = GameInst->GetSubsystem<UProjectilesSubsystem>())
+		{
+			// Si es el compás 1 (Fuerte), pasamos true. Si es otro, pasamos false.
+			if (Compas == 1 || Compas == 3 || BeatCounter % 8 == 0)
+				ProjSub->HandleBeatHit(true, 160.0f);
+		}
+	}
 
 	float HalfBeatDelay = (60.0f / 160.0f) / 2.0f;
 	// Adicional: Cada 8 pulsos (clímax menor), invoca una espiral sucia que se superpone a los círculos
@@ -297,6 +328,19 @@ void UOrchestrator_Furious::HandleBeat()
 	}
 
 	int32 Compas = BeatCounter % 4;
+
+	if (UGameInstance* GameInst = OrchestratorRef->GetWorld()->GetGameInstance())
+	{
+		if (UProjectilesSubsystem* ProjSub = GameInst->GetSubsystem<UProjectilesSubsystem>())
+		{
+			bool bIsStrongBeat = BeatCounter % 84 == 0;
+			if (!bIsStrongBeat)
+			{
+				bIsStrongBeat = Compas == 1;
+				ProjSub->HandleBeatHit(bIsStrongBeat, 180.0f);
+			}
+		}
+	}
 
 	// Combinación de las fases anteriores por capas
 	if (Compas == 1)

@@ -59,7 +59,7 @@ APowerUpManager* ABulletRushGameModeBase::SpawnPowerUpsForLevel(UWorld* World, F
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	APowerUpManager* Manager = World->SpawnActor<APowerUpManager>(APowerUpManager::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
-	if (Manager) Manager->Initialize(Classes, FVector(1000.0f, 1000.0f, 400.0f));
+	if (Manager) Manager->Initialize(Classes, FVector(5000.0f, 5000.0f, 2000.0f));
 	return Manager;
 }
 

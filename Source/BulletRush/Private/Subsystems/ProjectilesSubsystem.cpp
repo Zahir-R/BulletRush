@@ -27,6 +27,23 @@ bool UProjectilesSubsystem::Tick(float DeltaTime)
 
 	if (GetWorld() && GetWorld()->IsPaused()) return true;
 
+	if (CurrentEmissivePulse > BaseEmissiveValue)
+	{
+		CurrentEmissivePulse = FMath::FInterpTo(CurrentEmissivePulse, BaseEmissiveValue, DeltaTime, 6.0f);
+
+		if (RhythmMPC && GetWorld())
+		{
+			// Actualizamos la tarjeta gráfica en cada fotograma mientras decae
+			UKismetMaterialLibrary::SetScalarParameterValue(GetWorld(), RhythmMPC, FName("BeatPulseScale"), CurrentEmissivePulse);
+		}
+	}
+
+	if (CurrentColorBlend > 0)
+	{
+		CurrentColorBlend = FMath::FInterpTo(CurrentColorBlend, 0.0f, DeltaTime, 4.0f);
+		UKismetMaterialLibrary::SetScalarParameterValue(GetWorld(), RhythmMPC, FName("BeatColorBlend"), CurrentColorBlend);
+	}
+
 	if (BulletPool.Num() == 0) InitializePool();
 
 	for (ABulletBase* Bullet : BulletPool)
@@ -76,9 +93,6 @@ bool UProjectilesSubsystem::Tick(float DeltaTime)
 				}
 			}
 
-			FVector BoundsOrigin, BoxExtent;
-			Bullet->GetActorBounds(true, BoundsOrigin, BoxExtent);
-			
 			float BulletRadius = Bullet->BaseRadius * Bullet->GetActorScale3D().GetMax();
 
 			FCollisionShape SphereShape = FCollisionShape::MakeSphere(BulletRadius);
@@ -239,13 +253,19 @@ void UProjectilesSubsystem::ReturnBullet(ABulletBase* Bullet)
 	Bullet->DesactivateBullet();
 }
 
-void UProjectilesSubsystem::HandleBeatHit(bool bIsStrongBeat)
+void UProjectilesSubsystem::HandleBeatHit(bool bIsStrongBeat, float CurrentBPM)
 {
 	GlobalSpeedMultiplier = 1.0f;
-	if (RhythmMPC && GetWorld())
+
+	if (CurrentBPM < 130.0f)
 	{
-		float ScaleTarget = bIsStrongBeat ? 2.0f : 1.25f;
-		UKismetMaterialLibrary::SetScalarParameterValue(GetWorld(), RhythmMPC, FName("BeatPulseScale"), ScaleTarget);
+		float MaxSpike = FMath::GetMappedRangeValueClamped(FVector2D(60.0f, 180.0f), FVector2D(50.0f, 15.0f), CurrentBPM);
+		float WeakSpike = MaxSpike * 0.4f;
+		CurrentEmissivePulse = bIsStrongBeat ? MaxSpike : WeakSpike;
+	}
+	else
+	{
+		CurrentColorBlend = 1.0f;
 	}
 }
 
@@ -266,6 +286,17 @@ void UProjectilesSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 	TickHandle = FTicker::GetCoreTicker().AddTicker(
 		FTickerDelegate::CreateUObject(this, &UProjectilesSubsystem::Tick));
+
+	RhythmMPC = LoadObject<UMaterialParameterCollection>(nullptr, TEXT("MaterialParameterCollection'/Game/ParagonMuriel/OrchestratorMusic/OrchestratorMPC.OrchestratorMPC'"));
+
+	if (RhythmMPC)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[ProjectilesSubsystem] RhythmMPC cargado correctamente."));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[ProjectilesSubsystem] FALLO AL CARGAR RhythmMPC. Revisa la ruta."));
+	}
 
 	OnMapLoadedHandle = FCoreUObjectDelegates::PostLoadMapWithWorld.AddLambda(
 		[this](UWorld* LoadedWorld)
