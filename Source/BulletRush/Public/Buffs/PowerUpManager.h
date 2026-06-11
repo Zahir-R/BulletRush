@@ -27,10 +27,10 @@ protected:
 	TArray<TSubclassOf<class APowerUpBase>> PowerUpClasses;
 
 	UPROPERTY(EditAnywhere, Category = "Spawning")
-	float MinSpawnTime = 3.0f;
+	float MinSpawnTime = 15.0f;
 	
 	UPROPERTY(EditAnywhere, Category = "Spawning")
-	float MaxSpawnTime = 6.0f;
+	float MaxSpawnTime = 30.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Spawning")
 	int32 MaxPowerUps = 5;
